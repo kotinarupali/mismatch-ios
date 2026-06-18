@@ -22,6 +22,8 @@ struct LobbyView: View {
                         isOn: $viewModel.mismatchGhostAlliance
                     )
                     Divider().overlay(AppColor.cardBorder).padding(.horizontal, 16)
+                    SettingsToggleRow(icon: "timer", title: "Discussion timer", isOn: $viewModel.discussionTimerEnabled)
+                    Divider().overlay(AppColor.cardBorder).padding(.horizontal, 16)
                     SettingsPickerRow(icon: "qrcode", title: "Distribution", selection: $viewModel.distributionMode) {
                         ForEach(DistributionMode.allCases, id: \.self) { mode in
                             Text(mode.displayName).tag(mode)
@@ -30,6 +32,7 @@ struct LobbyView: View {
                 }
                 .onChange(of: viewModel.hostIsPlaying) { viewModel.refreshSession() }
                 .onChange(of: viewModel.mismatchGhostAlliance) { viewModel.refreshSession() }
+                .onChange(of: viewModel.discussionTimerEnabled) { viewModel.refreshSession() }
                 .onChange(of: viewModel.showRoleOnCard) { viewModel.refreshSession() }
                 .onChange(of: viewModel.distributionMode) { viewModel.refreshSession() }
 
@@ -61,22 +64,20 @@ struct LobbyView: View {
                     HostPlayerChip()
                 }
 
-                if viewModel.playerNames.isEmpty && !viewModel.hostIsPlaying {
-                    Text("Add at least \(viewModel.guestsNeeded) players to start.")
+                if let shortfallMessage = viewModel.playersShortfallMessage {
+                    Text(shortfallMessage)
                         .font(AppTypography.caption)
                         .foregroundStyle(AppColor.secondaryLabel)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                } else if viewModel.playerNames.count < viewModel.guestsNeeded {
-                    Text("Add \(viewModel.guestsNeeded - viewModel.playerNames.count) more guest\(viewModel.guestsNeeded - viewModel.playerNames.count == 1 ? "" : "s") to reach 3 players.")
-                        .font(AppTypography.caption)
-                        .foregroundStyle(AppColor.secondaryLabel)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                } else {
+                }
+
+                if !viewModel.playerNames.isEmpty {
                     VStack(spacing: 8) {
                         ForEach(Array(viewModel.playerNames.enumerated()), id: \.offset) { index, name in
                             PlayerChip(
                                 name: name,
                                 color: viewModel.playerColors[index],
+                                onEdit: { viewModel.updatePlayer(at: index, name: $0) },
                                 onDelete: { viewModel.removePlayer(at: index) }
                             )
                         }

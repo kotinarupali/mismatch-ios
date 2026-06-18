@@ -40,16 +40,18 @@ final class GameSessionStore {
         )
         session.players = assigned
         session.state = .distributing
+        session.passOrderPlayerIds = try CryptoRandom.shuffled(session.players.map(\.id))
         let round = Round(index: session.rounds.count, wordPairId: wordPair.id)
         session.rounds.append(round)
         session.currentRoundIndex = session.rounds.count - 1
         currentSession = session
     }
 
-    func markCardOpened(playerId: UUID) {
+    func markCardOpened(playerId: UUID, cardIndex: Int) {
         guard var session = currentSession else { return }
         guard let index = session.players.firstIndex(where: { $0.id == playerId }) else { return }
         session.players[index].hasOpenedCard = true
+        session.players[index].pickedCardIndex = cardIndex
         currentSession = session
     }
 
@@ -59,12 +61,21 @@ final class GameSessionStore {
 
     func passThePhoneOrder() -> [PlayerSlot] {
         guard let session = currentSession else { return [] }
-        var players = session.players
-        if let hostIndex = players.firstIndex(where: \.isHost) {
-            let host = players.remove(at: hostIndex)
-            players.append(host)
+        if !session.passOrderPlayerIds.isEmpty {
+            return session.passOrderPlayerIds.compactMap { id in
+                session.players.first { $0.id == id }
+            }
         }
-        return players
+        return session.players
+    }
+
+    func claimedCards() -> [ClaimedCard] {
+        guard let session = currentSession else { return [] }
+        return session.players.compactMap { player in
+            guard player.hasOpenedCard, let index = player.pickedCardIndex else { return nil }
+            let name = player.isHost ? "You" : player.displayName
+            return ClaimedCard(index: index, playerName: name)
+        }
     }
 
     func updatePlayerCardURL(playerId: UUID, token: String, url: String) {
@@ -116,11 +127,13 @@ final class GameSessionStore {
         session.state = .lobby
         session.rounds = []
         session.currentRoundIndex = 0
+        session.passOrderPlayerIds = []
         session.players = session.players.map { player in
             var updated = player
             updated.assignment = nil
             updated.hasOpenedCard = false
             updated.isEliminated = false
+            updated.pickedCardIndex = nil
             updated.cardToken = nil
             updated.cardURL = nil
             return updated

@@ -47,14 +47,10 @@ final class ResultsViewModel {
     }
 
     func playAgainTapped() {
-        dependencies.localNetworkCardServer.stop()
-        dependencies.gameSessionStore.resetRoundForPlayAgain()
-        dependencies.router.replaceWithLobby()
+        dependencies.repickRoles()
     }
 
     func newGameTapped() {
-        dependencies.localNetworkCardServer.stop()
-        dependencies.gameSessionStore.reset()
-        dependencies.router.popToRoot()
+        dependencies.endGame()
     }
 }

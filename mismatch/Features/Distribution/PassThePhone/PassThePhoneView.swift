@@ -17,7 +17,9 @@ struct PassThePhoneView: View {
                     cardCount: viewModel.faceDownCardCount,
                     showRoleOnCard: viewModel.showRoleOnCard,
                     assignment: assignment,
-                    onComplete: { viewModel.cardCompleted() }
+                    claimedCards: viewModel.claimedCards,
+                    nextPlayerName: viewModel.nextPlayerDisplayName,
+                    onComplete: { viewModel.cardCompleted(cardIndex: $0) }
                 )
                 .id(viewModel.currentPlayerId)
             } else {
@@ -31,19 +33,32 @@ struct PassThePhoneView: View {
         .navigationBarBackButtonHidden(true)
         .toolbarBackground(AppColor.background.opacity(0.9), for: .navigationBar)
         .toolbarColorScheme(.dark, for: .navigationBar)
+        .hostGameMenu(
+            onRepick: { viewModel.repickRoles() },
+            onEndGame: { viewModel.endGame() }
+        )
     }
 
     private var handoffContent: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "iphone.gen3.radiowaves.left.and.right")
-                .font(.system(size: 48))
-                .foregroundStyle(AppColor.heroGradient)
-                .padding(.top, 8)
+        VStack(spacing: 28) {
+            AvatarView(
+                name: viewModel.currentPlayerDisplayName,
+                color: viewModel.currentPlayerAvatarColor,
+                size: 80
+            )
+            .padding(.top, 8)
 
-            Text("Only \(viewModel.currentPlayerDisplayName) should continue.")
-                .font(AppTypography.body)
-                .foregroundStyle(AppColor.secondaryLabel)
-                .multilineTextAlignment(.center)
+            VStack(spacing: 8) {
+                Text(viewModel.currentPlayerDisplayName)
+                    .font(AppTypography.display)
+                    .foregroundStyle(AppColor.label)
+                    .minimumScaleFactor(0.5)
+                    .lineLimit(1)
+
+                Text("Your turn to pick a card")
+                    .font(AppTypography.body)
+                    .foregroundStyle(AppColor.secondaryLabel)
+            }
 
             PrimaryButton(title: "I'm \(viewModel.currentPlayerDisplayName) — Pick my card") {
                 viewModel.readyToPickTapped()

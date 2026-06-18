@@ -8,6 +8,7 @@ struct GameSession: Identifiable, Codable, Equatable, Sendable {
     var players: [PlayerSlot]
     var rounds: [Round]
     var currentRoundIndex: Int
+    var passOrderPlayerIds: [UUID]
 
     init(
         id: UUID = UUID(),
@@ -16,7 +17,8 @@ struct GameSession: Identifiable, Codable, Equatable, Sendable {
         state: GameState = .lobby,
         players: [PlayerSlot] = [],
         rounds: [Round] = [],
-        currentRoundIndex: Int = 0
+        currentRoundIndex: Int = 0,
+        passOrderPlayerIds: [UUID] = []
     ) {
         self.id = id
         self.createdAt = createdAt
@@ -25,6 +27,7 @@ struct GameSession: Identifiable, Codable, Equatable, Sendable {
         self.players = players
         self.rounds = rounds
         self.currentRoundIndex = currentRoundIndex
+        self.passOrderPlayerIds = passOrderPlayerIds
     }
 
     var playerCount: Int { players.count }

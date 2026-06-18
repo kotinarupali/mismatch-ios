@@ -15,7 +15,7 @@ struct MyCardView: View {
                             cardCount: viewModel.faceDownCardCount,
                             showRoleOnCard: viewModel.showRoleOnCard,
                             assignment: assignment,
-                            onComplete: {
+                            onComplete: { _ in
                                 viewModel.markOpened()
                                 dismiss()
                             }

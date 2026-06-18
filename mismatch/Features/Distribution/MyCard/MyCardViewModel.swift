@@ -28,6 +28,6 @@ final class MyCardViewModel {
     func markOpened() {
         guard let hostId = dependencies.gameSessionStore.currentSession?.players
             .first(where: \.isHost)?.id else { return }
-        dependencies.gameSessionStore.markCardOpened(playerId: hostId)
+        dependencies.gameSessionStore.markCardOpened(playerId: hostId, cardIndex: 0)
     }
 }

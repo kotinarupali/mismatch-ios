@@ -8,6 +8,7 @@ final class LobbyViewModel {
     var hostIsPlaying: Bool
     var showRoleOnCard: Bool
     var mismatchGhostAlliance: Bool
+    var discussionTimerEnabled: Bool
     var distributionMode: DistributionMode
     var playerNames: [String]
     var newPlayerName: String = ""
@@ -22,6 +23,7 @@ final class LobbyViewModel {
         hostIsPlaying = settings.hostIsPlaying
         showRoleOnCard = settings.showRoleOnCard
         mismatchGhostAlliance = settings.mismatchGhostAlliance
+        discussionTimerEnabled = settings.discussionTimerEnabled
         distributionMode = settings.distributionMode
         playerNames = dependencies.gameSessionStore.currentSession?.players
             .filter { !$0.isHost }
@@ -72,6 +74,23 @@ final class LobbyViewModel {
         guard playerNames.indices.contains(index) else { return }
         playerNames.remove(at: index)
         syncSession()
+    }
+
+    func updatePlayer(at index: Int, name: String) {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard playerNames.indices.contains(index), !trimmed.isEmpty else { return }
+        playerNames[index] = trimmed
+        syncSession()
+    }
+
+    var playersShortfallMessage: String? {
+        let shortfall = guestsNeeded - playerNames.count
+        guard shortfall > 0 else { return nil }
+
+        if playerNames.isEmpty && !hostIsPlaying {
+            return "Add at least \(guestsNeeded) players to start."
+        }
+        return "Add \(shortfall) more guest\(shortfall == 1 ? "" : "s") to reach \(minimumPlayers) players."
     }
 
     func distributeRolesTapped() {
@@ -136,6 +155,7 @@ final class LobbyViewModel {
         settings.hostIsPlaying = hostIsPlaying
         settings.ghostEnabled = mismatchGhostAlliance
         settings.mismatchGhostAlliance = mismatchGhostAlliance
+        settings.discussionTimerEnabled = discussionTimerEnabled
         settings.showRoleOnCard = showRoleOnCard
         settings.distributionMode = distributionMode
         dependencies.gameSessionStore.updateSettings(settings)

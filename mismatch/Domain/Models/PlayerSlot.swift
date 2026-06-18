@@ -10,6 +10,7 @@ struct PlayerSlot: Identifiable, Codable, Equatable, Sendable {
     var cardURL: String?
     var isEliminated: Bool
     var hasOpenedCard: Bool
+    var pickedCardIndex: Int?
 
     init(
         id: UUID = UUID(),
@@ -20,7 +21,8 @@ struct PlayerSlot: Identifiable, Codable, Equatable, Sendable {
         cardToken: String? = nil,
         cardURL: String? = nil,
         isEliminated: Bool = false,
-        hasOpenedCard: Bool = false
+        hasOpenedCard: Bool = false,
+        pickedCardIndex: Int? = nil
     ) {
         self.id = id
         self.displayName = displayName
@@ -31,5 +33,6 @@ struct PlayerSlot: Identifiable, Codable, Equatable, Sendable {
         self.cardURL = cardURL
         self.isEliminated = isEliminated
         self.hasOpenedCard = hasOpenedCard
+        self.pickedCardIndex = pickedCardIndex
     }
 }

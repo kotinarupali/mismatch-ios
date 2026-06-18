@@ -33,4 +33,18 @@ final class AppDependencies {
         self.localCardTokenStore = localCardTokenStore
         self.localNetworkCardServer = localNetworkCardServer
     }
+
+    func repickRoles() {
+        timerService.stop()
+        localNetworkCardServer.stop()
+        gameSessionStore.resetRoundForPlayAgain()
+        router.replaceWithLobby()
+    }
+
+    func endGame() {
+        timerService.stop()
+        localNetworkCardServer.stop()
+        gameSessionStore.reset()
+        router.popToRoot()
+    }
 }

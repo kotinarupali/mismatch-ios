@@ -30,6 +30,10 @@ struct VotingView: View {
         .navigationBarBackButtonHidden(true)
         .toolbarBackground(AppColor.background.opacity(0.9), for: .navigationBar)
         .toolbarColorScheme(.dark, for: .navigationBar)
+        .hostGameMenu(
+            onRepick: { viewModel.repickRoles() },
+            onEndGame: { viewModel.endGame() }
+        )
         .confirmDialog(
             isPresented: $viewModel.showConfirmDialog,
             title: "Confirm elimination",

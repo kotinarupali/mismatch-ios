@@ -17,12 +17,14 @@ final class PassThePhoneViewModel {
             passOrder = dependencies.gameSessionStore.passThePhoneOrder()
                 .filter { $0.assignment != nil }
             currentIndex = passOrder.count
+        } else {
+            awaitingHandoff = true
         }
     }
 
     var title: String {
         guard currentPlayer != nil else { return "All roles revealed" }
-        return awaitingHandoff ? "Hand off the phone" : "Pass the phone"
+        return awaitingHandoff ? "Hand off the phone" : "Pick your card"
     }
 
     var subtitle: String {
@@ -30,9 +32,9 @@ final class PassThePhoneViewModel {
             return "Everyone has seen their card."
         }
         if awaitingHandoff {
-            return "Give the phone to \(player.isHost ? "You" : player.displayName). Only they should tap below."
+            return "Only \(displayName(for: player)) should tap below."
         }
-        return "Pass to \(player.isHost ? "You" : player.displayName)"
+        return "\(displayName(for: player)), pick a card"
     }
 
     var currentPlayerId: UUID? {
@@ -41,7 +43,11 @@ final class PassThePhoneViewModel {
 
     var currentPlayerDisplayName: String {
         guard let player = currentPlayer else { return "Player" }
-        return player.isHost ? "You" : player.displayName
+        return displayName(for: player)
+    }
+
+    var currentPlayerAvatarColor: AvatarColor {
+        currentPlayer?.avatarColor ?? .blue
     }
 
     var showRoleOnCard: Bool {
@@ -58,6 +64,15 @@ final class PassThePhoneViewModel {
         )
     }
 
+    var claimedCards: [ClaimedCard] {
+        dependencies.gameSessionStore.claimedCards()
+    }
+
+    var nextPlayerDisplayName: String? {
+        guard currentIndex + 1 < passOrder.count else { return nil }
+        return displayName(for: passOrder[currentIndex + 1])
+    }
+
     var canShowCardPick: Bool {
         currentAssignment != nil && !awaitingHandoff
     }
@@ -71,9 +86,9 @@ final class PassThePhoneViewModel {
         awaitingHandoff = false
     }
 
-    func cardCompleted() {
+    func cardCompleted(cardIndex: Int) {
         guard let player = currentPlayer else { return }
-        dependencies.gameSessionStore.markCardOpened(playerId: player.id)
+        dependencies.gameSessionStore.markCardOpened(playerId: player.id, cardIndex: cardIndex)
         currentIndex += 1
 
         if dependencies.gameSessionStore.allCardsOpened() {
@@ -83,5 +98,17 @@ final class PassThePhoneViewModel {
         }
 
         awaitingHandoff = true
+    }
+
+    func repickRoles() {
+        dependencies.repickRoles()
+    }
+
+    func endGame() {
+        dependencies.endGame()
+    }
+
+    private func displayName(for player: PlayerSlot) -> String {
+        player.isHost ? "You" : player.displayName
     }
 }

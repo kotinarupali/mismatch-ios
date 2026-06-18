@@ -39,4 +39,12 @@ final class VotingViewModel {
         dependencies.gameSessionStore.eliminate(playerId: id)
         dependencies.router.navigate(to: .results)
     }
+
+    func repickRoles() {
+        dependencies.repickRoles()
+    }
+
+    func endGame() {
+        dependencies.endGame()
+    }
 }

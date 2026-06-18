@@ -7,6 +7,7 @@ struct GameSettings: Codable, Equatable, Sendable {
     var ghostMode: GhostMode
     var mismatchGhostAlliance: Bool
     var timerSeconds: Int
+    var discussionTimerEnabled: Bool
     var wordPackId: String
     var distributionMode: DistributionMode
 
@@ -17,6 +18,7 @@ struct GameSettings: Codable, Equatable, Sendable {
         ghostMode: .classic,
         mismatchGhostAlliance: false,
         timerSeconds: 180,
+        discussionTimerEnabled: false,
         wordPackId: "general",
         distributionMode: .passThePhone
     )

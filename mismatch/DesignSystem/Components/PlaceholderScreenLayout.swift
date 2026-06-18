@@ -186,25 +186,88 @@ struct HostPlayerChip: View {
 struct PlayerChip: View {
     let name: String
     let color: AvatarColor
+    let onEdit: (String) -> Void
     let onDelete: () -> Void
+
+    @State private var isEditing = false
+    @State private var draftName = ""
+    @FocusState private var isNameFocused: Bool
 
     var body: some View {
         HStack(spacing: 10) {
-            AvatarView(name: name, color: color, size: 36)
-            Text(name)
-                .font(AppTypography.body)
-                .foregroundStyle(AppColor.label)
-            Spacer()
-            Button(action: onDelete) {
-                Image(systemName: "xmark.circle.fill")
-                    .foregroundStyle(AppColor.secondaryLabel)
+            AvatarView(name: isEditing ? draftName : name, color: color, size: 36)
+
+            if isEditing {
+                TextField("Player name", text: $draftName)
+                    .textFieldStyle(.plain)
+                    .font(AppTypography.body)
+                    .foregroundStyle(AppColor.label)
+                    .focused($isNameFocused)
+                    .onSubmit { commitEdit() }
+            } else {
+                Text(name)
+                    .font(AppTypography.body)
+                    .foregroundStyle(AppColor.label)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .contentShape(Rectangle())
+                    .onTapGesture { beginEditing() }
             }
-            .buttonStyle(.plain)
+
+            if isEditing {
+                Button(action: commitEdit) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(AppColor.accent)
+                }
+                .buttonStyle(.plain)
+                .disabled(draftName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+
+                Button {
+                    isEditing = false
+                    draftName = name
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(AppColor.secondaryLabel)
+                }
+                .buttonStyle(.plain)
+            } else {
+                Button(action: beginEditing) {
+                    Image(systemName: "pencil.circle.fill")
+                        .foregroundStyle(AppColor.secondaryLabel)
+                }
+                .buttonStyle(.plain)
+
+                Button(action: onDelete) {
+                    Image(systemName: "minus.circle.fill")
+                        .foregroundStyle(AppColor.accentSecondary)
+                }
+                .buttonStyle(.plain)
+            }
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
         .background(AppColor.backgroundElevated)
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .onChange(of: name) { _, updated in
+            if !isEditing {
+                draftName = updated
+            }
+        }
+        .onAppear {
+            draftName = name
+        }
+    }
+
+    private func beginEditing() {
+        draftName = name
+        isEditing = true
+        isNameFocused = true
+    }
+
+    private func commitEdit() {
+        let trimmed = draftName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        onEdit(trimmed)
+        isEditing = false
     }
 }
 

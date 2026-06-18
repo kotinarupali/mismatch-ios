@@ -52,6 +52,14 @@ final class QRGridViewModel {
         dependencies.router.navigate(to: .passThePhone)
     }
 
+    func repickRoles() {
+        dependencies.repickRoles()
+    }
+
+    func endGame() {
+        dependencies.endGame()
+    }
+
     private func buildRows() {
         guard let session = dependencies.gameSessionStore.currentSession else { return }
 

@@ -166,3 +166,45 @@ struct CardPickRulesTests {
         #expect(CardPickRules.faceDownCardCount(playerCount: 8) == 6)
     }
 }
+
+struct GameSettingsTests {
+
+    @Test func discussionTimerOffByDefault() {
+        #expect(GameSettings.default.discussionTimerEnabled == false)
+    }
+}
+
+struct PassThePhoneOrderTests {
+
+    @Test @MainActor func distributeRolesSetsRandomPassOrder() throws {
+        let store = GameSessionStore()
+        store.createSession()
+        let players = (1...5).map { index in
+            PlayerSlot(displayName: "P\(index)", avatarColor: AvatarColor.forIndex(index))
+        }
+        store.setPlayers(players)
+
+        let pair = WordPair(id: "1", insiderWord: "A", mismatchWord: "B", category: "Test")
+        try store.distributeRoles(wordPair: pair)
+
+        let order = store.passThePhoneOrder()
+        #expect(order.count == 5)
+        #expect(Set(order.map(\.id)) == Set(players.map(\.id)))
+        #expect(store.currentSession?.passOrderPlayerIds.count == 5)
+    }
+
+    @Test @MainActor func claimedCardsTracksPickedSlots() throws {
+        let store = GameSessionStore()
+        store.createSession()
+        let alice = PlayerSlot(displayName: "Alice", avatarColor: .red)
+        let bob = PlayerSlot(displayName: "Bob", avatarColor: .blue)
+        store.setPlayers([alice, bob, PlayerSlot(displayName: "C", avatarColor: .green)])
+
+        store.markCardOpened(playerId: alice.id, cardIndex: 2)
+
+        let claimed = store.claimedCards()
+        #expect(claimed.count == 1)
+        #expect(claimed[0].index == 2)
+        #expect(claimed[0].playerName == "Alice")
+    }
+}

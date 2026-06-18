@@ -44,8 +44,13 @@ struct QRGridView: View {
         }
         .navigationTitle("QR Codes")
         .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
         .toolbarBackground(AppColor.background.opacity(0.9), for: .navigationBar)
         .toolbarColorScheme(.dark, for: .navigationBar)
+        .hostGameMenu(
+            onRepick: { viewModel.repickRoles() },
+            onEndGame: { viewModel.endGame() }
+        )
         .sheet(isPresented: $showMyCard) {
             MyCardView(viewModel: MyCardViewModel(dependencies: viewModel.dependencies))
         }
