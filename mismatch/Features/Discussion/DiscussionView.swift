@@ -6,10 +6,15 @@ struct DiscussionView: View {
     var body: some View {
         PlaceholderScreenLayout(
             title: "Discussion",
-            subtitle: "Find who doesn't know the secret word."
+            subtitle: "Find who doesn't know the secret word.",
+            icon: "bubble.left.and.bubble.right.fill",
+            roomStyle: .discussion
         ) {
-            VStack(spacing: 24) {
-                TimerView(timeLabel: viewModel.timerService.formattedTime)
+            VStack(spacing: 28) {
+                TimerView(
+                    timeLabel: viewModel.timerService.formattedTime,
+                    totalSeconds: viewModel.timerDurationSeconds
+                )
 
                 PrimaryButton(title: "End Early") {
                     viewModel.endEarlyTapped()
@@ -20,6 +25,8 @@ struct DiscussionView: View {
         .navigationTitle("Discussion")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
+        .toolbarBackground(AppColor.background.opacity(0.9), for: .navigationBar)
+        .toolbarColorScheme(.dark, for: .navigationBar)
         .onAppear { viewModel.onAppear() }
         .onDisappear { viewModel.onDisappear() }
     }

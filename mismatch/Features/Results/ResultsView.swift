@@ -6,19 +6,14 @@ struct ResultsView: View {
     var body: some View {
         PlaceholderScreenLayout(
             title: "Reveal",
-            subtitle: viewModel.outcomeText
+            subtitle: viewModel.outcomeText,
+            icon: "sparkles",
+            roomStyle: .reveal
         ) {
-            VStack(alignment: .leading, spacing: 16) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(viewModel.eliminatedName)
-                        .font(AppTypography.title)
-                    Label(viewModel.eliminatedRole, systemImage: "person.fill.questionmark")
-                        .font(AppTypography.body)
-                    Text("Word: \(viewModel.eliminatedWord)")
-                        .font(AppTypography.body)
-                        .foregroundStyle(AppColor.secondaryLabel)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
+            VStack(spacing: 16) {
+                OutcomeCard(title: "Eliminated", value: viewModel.eliminatedName, icon: "person.crop.circle.badge.xmark")
+                OutcomeCard(title: "Role", value: viewModel.eliminatedRole, icon: "theatermasks.fill")
+                OutcomeCard(title: "Word", value: viewModel.eliminatedWord, icon: "text.quote")
 
                 PrimaryButton(title: "Play Again") {
                     viewModel.playAgainTapped()
@@ -32,6 +27,8 @@ struct ResultsView: View {
         .navigationTitle("Results")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
+        .toolbarBackground(AppColor.background.opacity(0.9), for: .navigationBar)
+        .toolbarColorScheme(.dark, for: .navigationBar)
     }
 }
 

@@ -6,29 +6,36 @@ struct MyCardView: View {
 
     var body: some View {
         NavigationStack {
-            VStack {
-                if let assignment = viewModel.assignment {
-                    CardPickView(
-                        showRoleOnCard: viewModel.showRoleOnCard,
-                        assignment: assignment,
-                        onComplete: {
-                            viewModel.markOpened()
-                            dismiss()
-                        }
-                    )
-                    .padding()
-                } else {
-                    Text("No card assigned.")
-                        .foregroundStyle(AppColor.secondaryLabel)
+            ZStack {
+                PartyRoomBackground(style: .distribution)
+
+                VStack {
+                    if let assignment = viewModel.assignment {
+                        CardPickView(
+                            showRoleOnCard: viewModel.showRoleOnCard,
+                            assignment: assignment,
+                            onComplete: {
+                                viewModel.markOpened()
+                                dismiss()
+                            }
+                        )
+                        .padding()
+                    } else {
+                        Text("No card assigned.")
+                            .foregroundStyle(AppColor.secondaryLabel)
+                    }
                 }
             }
             .navigationTitle("My Card")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(AppColor.background.opacity(0.85), for: .navigationBar)
+            .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Close") { dismiss() }
                 }
             }
         }
+        .preferredColorScheme(.dark)
     }
 }

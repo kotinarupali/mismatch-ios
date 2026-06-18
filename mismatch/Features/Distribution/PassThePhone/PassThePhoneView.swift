@@ -6,7 +6,9 @@ struct PassThePhoneView: View {
     var body: some View {
         PlaceholderScreenLayout(
             title: viewModel.title,
-            subtitle: viewModel.subtitle
+            subtitle: viewModel.subtitle,
+            icon: "iphone.and.arrow.forward",
+            roomStyle: .distribution
         ) {
             if let assignment = viewModel.currentAssignment {
                 CardPickView(
@@ -22,6 +24,8 @@ struct PassThePhoneView: View {
         }
         .navigationTitle("Roles")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(AppColor.background.opacity(0.9), for: .navigationBar)
+        .toolbarColorScheme(.dark, for: .navigationBar)
     }
 }
 

@@ -1,9 +1,10 @@
 import SwiftUI
 
 enum AppTypography {
-    static let largeTitle = Font.largeTitle.weight(.bold)
-    static let title = Font.title2.weight(.semibold)
-    static let headline = Font.headline
-    static let body = Font.body
-    static let caption = Font.caption
+    static let largeTitle = Font.system(size: 34, weight: .bold, design: .rounded)
+    static let title = Font.system(size: 22, weight: .semibold, design: .rounded)
+    static let headline = Font.system(size: 17, weight: .semibold, design: .rounded)
+    static let body = Font.system(size: 16, weight: .regular, design: .default)
+    static let caption = Font.system(size: 13, weight: .medium, design: .rounded)
+    static let display = Font.system(size: 56, weight: .bold, design: .rounded)
 }

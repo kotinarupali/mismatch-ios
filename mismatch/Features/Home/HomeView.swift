@@ -4,31 +4,67 @@ struct HomeView: View {
     @Bindable var viewModel: HomeViewModel
 
     var body: some View {
-        PlaceholderScreenLayout(
-            title: "Mismatch",
-            subtitle: "Private role cards for big groups."
-        ) {
-            VStack(spacing: 16) {
-                if let count = viewModel.wordPackPairCount {
-                    Text("\(count) word pairs loaded")
-                        .font(AppTypography.caption)
+        ZStack {
+            PartyRoomBackground(style: .home)
+
+            VStack(spacing: 0) {
+                Spacer()
+
+                VStack(spacing: 16) {
+                    ZStack {
+                        Circle()
+                            .fill(AppColor.heroGradient)
+                            .frame(width: 88, height: 88)
+                            .shadow(color: AppColor.accent.opacity(0.5), radius: 24, y: 12)
+
+                        Image(systemName: "theatermasks.fill")
+                            .font(.system(size: 38, weight: .semibold))
+                            .foregroundStyle(.white)
+                    }
+
+                    Text("Mismatch")
+                        .font(AppTypography.largeTitle)
+                        .foregroundStyle(AppColor.label)
+
+                    Text("Secret words. Suspicious faces.\nOne wrong answer.")
+                        .font(AppTypography.body)
+                        .multilineTextAlignment(.center)
                         .foregroundStyle(AppColor.secondaryLabel)
+                        .padding(.horizontal, 24)
+
+                    if let count = viewModel.wordPackPairCount {
+                        Text("\(count) word pairs ready")
+                            .font(AppTypography.caption)
+                            .foregroundStyle(AppColor.secondaryLabel)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 8)
+                            .background(AppColor.card.opacity(0.85))
+                            .clipShape(Capsule())
+                            .overlay {
+                                Capsule().strokeBorder(AppColor.cardBorder, lineWidth: 1)
+                            }
+                    }
                 }
 
-                PrimaryButton(title: "Host Game") {
+                Spacer()
+
+                PrimaryButton(title: "Host a Game") {
                     viewModel.hostGameTapped()
                 }
+                .padding(.horizontal, 24)
+                .padding(.bottom, 40)
             }
         }
         .toolbar(.hidden, for: .navigationBar)
+        .preferredColorScheme(.dark)
         .onAppear { viewModel.onAppear() }
         .alert("How to Play", isPresented: $viewModel.showInlineRules) {
-            Button("Got it") { viewModel.dismissInlineRules() }
+            Button("Let's go") { viewModel.dismissInlineRules() }
         } message: {
             Text("""
-            • Most players share a secret word — one player has a similar wrong word.
-            • Discuss and vote to eliminate the odd one out.
-            • Insiders win if they eliminate a Mismatch or Ghost.
+            • Most players share a secret word — one has a similar wrong word.
+            • Discuss, then vote to eliminate who seems off.
+            • Find the Mismatch before they blend in.
             """)
         }
     }

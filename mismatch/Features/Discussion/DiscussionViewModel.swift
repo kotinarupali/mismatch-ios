@@ -6,9 +6,12 @@ final class DiscussionViewModel {
     private let dependencies: AppDependencies
     let timerService: TimerService
 
+    let timerDurationSeconds: Int
+
     init(dependencies: AppDependencies) {
         self.dependencies = dependencies
         self.timerService = dependencies.timerService
+        timerDurationSeconds = dependencies.gameSessionStore.currentSession?.settings.timerSeconds ?? 180
     }
 
     var timerLabel: String {

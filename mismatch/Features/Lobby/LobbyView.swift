@@ -6,65 +6,82 @@ struct LobbyView: View {
     var body: some View {
         PlaceholderScreenLayout(
             title: "Lobby",
-            subtitle: viewModel.statusMessage
+            subtitle: viewModel.statusMessage,
+            icon: "person.3.fill",
+            roomStyle: .lobby
         ) {
-            VStack(spacing: 16) {
-                Form {
-                    Toggle("I'm playing", isOn: $viewModel.hostIsPlaying)
-                    Toggle("Ghost role", isOn: $viewModel.ghostEnabled)
-                    Toggle("Show role on card", isOn: $viewModel.showRoleOnCard)
-
-                    Picker("Distribution", selection: $viewModel.distributionMode) {
+            VStack(spacing: 20) {
+                SettingsCard {
+                    SettingsToggleRow(icon: "person.crop.circle.badge.checkmark", title: "I'm playing", isOn: $viewModel.hostIsPlaying)
+                    Divider().overlay(AppColor.cardBorder).padding(.horizontal, 16)
+                    SettingsToggleRow(icon: "eye.slash.fill", title: "Show role on card", isOn: $viewModel.showRoleOnCard)
+                    Divider().overlay(AppColor.cardBorder).padding(.horizontal, 16)
+                    SettingsPickerRow(icon: "qrcode", title: "Distribution", selection: $viewModel.distributionMode) {
                         ForEach(DistributionMode.allCases, id: \.self) { mode in
                             Text(mode.displayName).tag(mode)
                         }
                     }
                 }
-                .frame(height: 220)
 
-                HStack {
+                HStack(spacing: 10) {
                     TextField("Player name", text: $viewModel.newPlayerName)
-                        .textFieldStyle(.roundedBorder)
+                        .textFieldStyle(.plain)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 14)
+                        .background(AppColor.card)
+                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .strokeBorder(AppColor.cardBorder, lineWidth: 1)
+                        }
+                        .foregroundStyle(AppColor.label)
                         .onSubmit { viewModel.addPlayer() }
 
-                    Button("Add") {
+                    Button {
                         viewModel.addPlayer()
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.system(size: 36))
+                            .foregroundStyle(AppColor.heroGradient)
                     }
                     .disabled(!viewModel.canAddPlayer)
                 }
 
                 if viewModel.playerNames.isEmpty {
-                    Text("Add at least 4 players to continue.")
+                    Text("Add at least 3 players to start.")
                         .font(AppTypography.caption)
                         .foregroundStyle(AppColor.secondaryLabel)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 } else {
-                    List {
-                        ForEach(viewModel.playerNames, id: \.self) { name in
-                            HStack {
-                                AvatarView(name: name, color: .gray, size: 36)
-                                Text(name)
-                            }
+                    VStack(spacing: 8) {
+                        ForEach(Array(viewModel.playerNames.enumerated()), id: \.offset) { index, name in
+                            PlayerChip(
+                                name: name,
+                                color: viewModel.playerColors[index],
+                                onDelete: { viewModel.removePlayer(at: index) }
+                            )
                         }
-                        .onDelete(perform: viewModel.removePlayer)
                     }
-                    .listStyle(.plain)
-                    .frame(minHeight: 160)
                 }
 
-                PrimaryButton(title: "Distribute Roles") {
+                PrimaryButton(
+                    title: viewModel.isDistributing ? "Dealing roles…" : "Distribute Roles",
+                    isEnabled: viewModel.canContinue
+                ) {
                     viewModel.distributeRolesTapped()
                 }
-                .disabled(!viewModel.canContinue)
 
                 if let error = viewModel.errorMessage {
                     Text(error)
                         .font(AppTypography.caption)
-                        .foregroundStyle(.red)
+                        .foregroundStyle(AppColor.accentSecondary)
                 }
             }
         }
         .navigationTitle("Lobby")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(AppColor.background.opacity(0.9), for: .navigationBar)
+        .toolbarColorScheme(.dark, for: .navigationBar)
     }
 }
 

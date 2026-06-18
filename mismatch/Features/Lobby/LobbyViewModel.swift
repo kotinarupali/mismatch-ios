@@ -6,7 +6,6 @@ final class LobbyViewModel {
     private let dependencies: AppDependencies
 
     var hostIsPlaying: Bool
-    var ghostEnabled: Bool
     var showRoleOnCard: Bool
     var distributionMode: DistributionMode
     var playerNames: [String]
@@ -14,13 +13,12 @@ final class LobbyViewModel {
     var isDistributing = false
     var errorMessage: String?
 
-    private let minimumPlayers = 4
+    private let minimumPlayers = 3
 
     init(dependencies: AppDependencies) {
         self.dependencies = dependencies
         let settings = dependencies.gameSessionStore.currentSession?.settings ?? .default
         hostIsPlaying = settings.hostIsPlaying
-        ghostEnabled = settings.ghostEnabled
         showRoleOnCard = settings.showRoleOnCard
         distributionMode = settings.distributionMode
         playerNames = dependencies.gameSessionStore.currentSession?.players
@@ -37,7 +35,12 @@ final class LobbyViewModel {
     }
 
     var statusMessage: String {
-        "\(playerNames.count) players · minimum \(minimumPlayers)"
+        "\(playerNames.count) of \(minimumPlayers)+ players"
+    }
+
+    var playerColors: [AvatarColor] {
+        let start = hostIsPlaying ? 1 : 0
+        return playerNames.enumerated().map { AvatarColor.forIndex(start + $0.offset) }
     }
 
     func addPlayer() {
@@ -48,10 +51,9 @@ final class LobbyViewModel {
         syncSession()
     }
 
-    func removePlayer(at offsets: IndexSet) {
-        for index in offsets.sorted(by: >) {
-            playerNames.remove(at: index)
-        }
+    func removePlayer(at index: Int) {
+        guard playerNames.indices.contains(index) else { return }
+        playerNames.remove(at: index)
         syncSession()
     }
 
@@ -115,7 +117,7 @@ final class LobbyViewModel {
     private func syncSession() {
         var settings = dependencies.gameSessionStore.currentSession?.settings ?? .default
         settings.hostIsPlaying = hostIsPlaying
-        settings.ghostEnabled = ghostEnabled
+        settings.ghostEnabled = false
         settings.showRoleOnCard = showRoleOnCard
         settings.distributionMode = distributionMode
         dependencies.gameSessionStore.updateSettings(settings)

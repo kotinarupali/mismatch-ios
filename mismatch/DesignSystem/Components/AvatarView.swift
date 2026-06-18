@@ -14,16 +14,19 @@ struct AvatarView: View {
     var body: some View {
         ZStack {
             Circle()
-                .fill(AppColor.avatar(color).opacity(0.85))
+                .fill(
+                    LinearGradient(
+                        colors: [AppColor.avatar(color), AppColor.avatar(color).opacity(0.7)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
             Text(initials.isEmpty ? "?" : initials)
-                .font(.system(size: size * 0.35, weight: .semibold))
+                .font(.system(size: size * 0.35, weight: .bold, design: .rounded))
                 .foregroundStyle(.white)
         }
         .frame(width: size, height: size)
+        .shadow(color: AppColor.avatar(color).opacity(0.4), radius: size * 0.12, y: size * 0.06)
         .accessibilityLabel(name)
     }
-}
-
-#Preview {
-    AvatarView(name: "Jordan", color: .blue)
 }

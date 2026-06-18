@@ -20,20 +20,24 @@ struct CardPickView: View {
             case .pick:
                 Text("Pick a card to see your role")
                     .font(AppTypography.headline)
+                    .foregroundStyle(AppColor.label)
 
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
                     ForEach(0..<cardCount, id: \.self) { _ in
                         Button {
-                            withAnimation { phase = .revealed }
+                            withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) {
+                                phase = .revealed
+                            }
                         } label: {
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(AppColor.accent.opacity(0.85))
-                                .frame(height: 100)
+                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                .fill(AppColor.heroGradient)
+                                .frame(height: 110)
                                 .overlay {
                                     Image(systemName: "questionmark")
-                                        .font(.title)
-                                        .foregroundStyle(.white)
+                                        .font(.system(size: 32, weight: .bold, design: .rounded))
+                                        .foregroundStyle(.white.opacity(0.9))
                                 }
+                                .shadow(color: AppColor.accent.opacity(0.35), radius: 10, y: 6)
                         }
                         .accessibilityLabel("Face-down card")
                     }
@@ -52,6 +56,7 @@ struct CardPickView: View {
                         if let hint = assignment.categoryHint {
                             Text("Hint: \(hint)")
                                 .font(AppTypography.caption)
+                                .foregroundStyle(AppColor.secondaryLabel)
                         }
                     } else if let word = assignment.word {
                         HoldToRevealView(secret: word)

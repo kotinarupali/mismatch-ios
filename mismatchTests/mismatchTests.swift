@@ -12,17 +12,16 @@ struct WordPackLoaderTests {
         #expect(pack.pairs.count == 30)
     }
 
-    @Test func gameSessionRequiresMinimumFourPlayers() {
+    @Test func gameSessionRequiresMinimumThreePlayers() {
         let session = GameSession(players: [
             PlayerSlot(displayName: "A", avatarColor: .red),
-            PlayerSlot(displayName: "B", avatarColor: .blue),
-            PlayerSlot(displayName: "C", avatarColor: .green)
+            PlayerSlot(displayName: "B", avatarColor: .blue)
         ])
 
         #expect(session.canStartGame == false)
 
         var readySession = session
-        readySession.players.append(PlayerSlot(displayName: "D", avatarColor: .orange))
+        readySession.players.append(PlayerSlot(displayName: "C", avatarColor: .green))
         #expect(readySession.canStartGame == true)
     }
 }

@@ -7,9 +7,13 @@ struct HoldToRevealView: View {
     var body: some View {
         VStack(spacing: 12) {
             ZStack {
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(AppColor.secondaryBackground)
-                    .frame(height: 80)
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(AppColor.backgroundElevated)
+                    .frame(height: 88)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .strokeBorder(AppColor.cardBorder, lineWidth: 1)
+                    }
 
                 Text(isRevealed ? secret : "Hold to reveal")
                     .font(AppTypography.title)

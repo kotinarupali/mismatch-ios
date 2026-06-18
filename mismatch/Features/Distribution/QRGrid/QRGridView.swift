@@ -7,7 +7,9 @@ struct QRGridView: View {
     var body: some View {
         PlaceholderScreenLayout(
             title: "QR Grid",
-            subtitle: viewModel.statusMessage
+            subtitle: viewModel.statusMessage,
+            icon: "qrcode.viewfinder",
+            roomStyle: .distribution
         ) {
             VStack(spacing: 16) {
                 if viewModel.serverFailed {
@@ -42,6 +44,8 @@ struct QRGridView: View {
         }
         .navigationTitle("QR Codes")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(AppColor.background.opacity(0.9), for: .navigationBar)
+        .toolbarColorScheme(.dark, for: .navigationBar)
         .sheet(isPresented: $showMyCard) {
             MyCardView(viewModel: MyCardViewModel(dependencies: viewModel.dependencies))
         }
@@ -77,7 +81,11 @@ private struct QRGridCell: View {
             }
         }
         .padding()
-        .background(AppColor.secondaryBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .background(AppColor.card)
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .strokeBorder(AppColor.cardBorder, lineWidth: 1)
+        }
     }
 }
