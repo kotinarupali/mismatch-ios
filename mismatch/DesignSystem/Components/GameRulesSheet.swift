@@ -15,6 +15,7 @@ struct GameRulesSheet: View {
                         setupSection
                         discussionSection
                         winningSection
+                        scoringSection
                         tipsSection
                     }
                     .padding(.horizontal, 24)
@@ -36,14 +37,19 @@ struct GameRulesSheet: View {
     }
 
     private var introSection: some View {
-        GameRuleSection(
-            title: "The idea",
-            icon: "lightbulb.fill",
-            text: """
-            Most players share one secret word. A few players are outsiders with a wrong word — or no word at all. \
-            Talk, bluff, and vote to eliminate whoever seems suspicious before they blend in.
-            """
-        )
+        VStack(spacing: 16) {
+            MismatchLogoView(size: 72, showsShadow: false)
+                .frame(maxWidth: .infinity)
+
+            GameRuleSection(
+                title: "The idea",
+                icon: "lightbulb.fill",
+                text: """
+                Most players share one secret word. A few players are outsiders with a wrong word — or no word at all. \
+                Talk, bluff, and vote to eliminate whoever seems suspicious before they blend in.
+                """
+            )
+        }
     }
 
     private var rolesSection: some View {
@@ -105,6 +111,21 @@ struct GameRulesSheet: View {
             With Mismatch & Ghost alliance enabled, outsiders share a team win — if either Mismatch or Ghost wins, the whole team wins.
             """
         )
+    }
+
+    private var scoringSection: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            GameRuleSectionHeader(title: "Scoring", icon: "list.number")
+
+            ScoreExplanationView(style: .full)
+                .padding(14)
+                .background(AppColor.card)
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .strokeBorder(AppColor.cardBorder, lineWidth: 1)
+                }
+        }
     }
 
     private var tipsSection: some View {

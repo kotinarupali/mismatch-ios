@@ -8,6 +8,8 @@
   let ghostBluffMode = false;
   let lastRevision = null;
   let claiming = false;
+  let votingRound = 0;
+  let myVoteTargetId = null;
 
   if (!app) return;
 
@@ -18,22 +20,52 @@
 
   boot();
 
-  function screenShell(content) {
+  function screenShell(content, subtitle) {
+    const sub = subtitle || 'Pick your card';
     return (
       '<div class="screen">' +
         '<header class="brand">' +
-          '<div class="brand-mark" aria-hidden="true">M</div>' +
+          '<div class="brand-mark" aria-hidden="true">' +
+            '<span class="brand-tile brand-tile-mismatch"></span>' +
+            '<span class="brand-tile brand-tile-insider"></span>' +
+            '<span class="brand-tile brand-tile-sad"></span>' +
+            '<span class="brand-tile brand-tile-ghost"></span>' +
+          '</div>' +
           '<h1 class="brand-title">Mismatch</h1>' +
-          '<p class="brand-sub">Pick your card</p>' +
+          '<p class="brand-sub">' + escapeHtml(sub) + '</p>' +
         '</header>' +
         '<div class="panel">' + content + '</div>' +
       '</div>'
     );
   }
 
+  function shouldShowVote(session) {
+    return session.votingEnabled && session.votingOpen && selectedPlayerId;
+  }
+
+  function routeSession(session) {
+    if (session.votingRound != null) {
+      if (session.votingRound !== votingRound) {
+        votingRound = session.votingRound;
+        myVoteTargetId = loadVote();
+      }
+    }
+
+    if (shouldShowVote(session)) {
+      const player = findPlayer(session, selectedPlayerId);
+      if (player && player.hasOpenedCard) {
+        renderVote(session);
+        return true;
+      }
+    }
+    return false;
+  }
+
   function boot() {
     fetchSession()
       .then(function (session) {
+        if (routeSession(session)) return;
+
         if (!session.players || session.players.length === 0) {
           app.innerHTML = screenShell(
             '<h2 class="headline">Waiting for players</h2>' +
@@ -175,11 +207,108 @@
 
     startPolling(function () {
       fetchSession().then(function (next) {
+        if (routeSession(next)) return;
         if (lastRevision !== next.revision) {
           renderPick(next, true);
         }
       }).catch(function () {});
     });
+  }
+
+  function renderVote(session) {
+    const player = findPlayer(session, selectedPlayerId);
+    if (!player) {
+      renderWhoAreYou(session);
+      return;
+    }
+
+    const targets = (session.voteTargets || []).filter(function (target) {
+      return !target.isEliminated && target.id !== selectedPlayerId;
+    });
+
+    let list = '';
+    targets.forEach(function (target) {
+      const selected = myVoteTargetId === target.id ? ' selected' : '';
+      const tally = (session.voteTallies && session.voteTallies[target.id]) || 0;
+      list += '<button type="button" class="player-btn vote-btn' + selected + '" data-id="' + target.id + '">' +
+        escapeHtml(target.displayName) +
+        (tally > 0 ? ' <span class="vote-count">' + tally + '</span>' : '') +
+        '</button>';
+    });
+
+    let status = myVoteTargetId
+      ? '<p class="sub success-copy">Vote submitted. You can change it until the host closes voting.</p>'
+      : '<p class="sub">Tap who you think should be eliminated.</p>';
+
+    app.innerHTML = screenShell(
+      '<div class="top-bar">' +
+        '<button type="button" class="link-btn" id="view-card">View my card</button>' +
+        '<span class="player-tag">' + escapeHtml(player.displayName) + '</span>' +
+      '</div>' +
+      '<h2 class="headline">Cast your vote</h2>' +
+      status +
+      '<div class="player-list vote-list">' + list + '</div>',
+      'Vote on your phone'
+    );
+
+    document.getElementById('view-card').onclick = function () {
+      assignment = loadAssignment();
+      if (assignment) {
+        stopPolling();
+        renderReveal(assignment);
+      }
+    };
+
+    app.querySelectorAll('.vote-btn').forEach(function (btn) {
+      btn.onclick = function () {
+        submitVote(btn.getAttribute('data-id'));
+      };
+    });
+
+    startPolling(function () {
+      fetchSession().then(function (next) {
+        if (!shouldShowVote(next)) {
+          boot();
+          return;
+        }
+        if (next.votingRound !== votingRound || next.revision !== lastRevision) {
+          routeSession(next);
+        }
+      }).catch(function () {});
+    });
+  }
+
+  function submitVote(targetPlayerId) {
+    if (!selectedPlayerId || !targetPlayerId) return;
+
+    fetch('/api/session/' + encodeURIComponent(sessionToken) + '/vote', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ voterId: selectedPlayerId, targetPlayerId: targetPlayerId })
+    })
+      .then(function (r) {
+        if (!r.ok) throw new Error('failed');
+        return r.json();
+      })
+      .then(function (payload) {
+        myVoteTargetId = targetPlayerId;
+        saveVote(targetPlayerId);
+        if (payload.revision != null) lastRevision = payload.revision;
+        fetchSession().then(renderVote).catch(showError);
+      })
+      .catch(showError);
+  }
+
+  function voteStorageKey() {
+    return 'mismatch_vote_' + sessionToken + '_' + selectedPlayerId + '_' + votingRound;
+  }
+
+  function saveVote(targetPlayerId) {
+    localStorage.setItem(voteStorageKey(), targetPlayerId);
+  }
+
+  function loadVote() {
+    return localStorage.getItem(voteStorageKey());
   }
 
   function claimCard(cardIndex, button) {
@@ -267,7 +396,34 @@
     }
 
     body += '</div>';
-    app.innerHTML = screenShell(body);
+    app.innerHTML = screenShell(body, 'Your secret card');
+
+    fetchSession().then(function (session) {
+      if (shouldShowVote(session)) {
+        const banner = document.createElement('button');
+        banner.type = 'button';
+        banner.className = 'vote-banner';
+        banner.textContent = 'Voting is open — tap to cast your vote';
+        banner.onclick = function () { renderVote(session); };
+        app.querySelector('.panel').prepend(banner);
+      }
+    }).catch(function () {});
+
+    startPolling(function () {
+      fetchSession().then(function (session) {
+        if (shouldShowVote(session)) {
+          const existing = app.querySelector('.vote-banner');
+          if (!existing) {
+            const banner = document.createElement('button');
+            banner.type = 'button';
+            banner.className = 'vote-banner';
+            banner.textContent = 'Voting is open — tap to cast your vote';
+            banner.onclick = function () { renderVote(session); };
+            app.querySelector('.panel').prepend(banner);
+          }
+        }
+      }).catch(function () {});
+    });
 
     const repick = document.getElementById('ghost-repick');
     if (repick) {

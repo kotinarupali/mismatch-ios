@@ -8,6 +8,7 @@ struct Round: Identifiable, Codable, Equatable, Sendable {
     var wordPairId: String?
     var ghostGuessPending: Bool
     var ghostGuessSubmitted: Bool
+    var scoreEvents: [ScoreEvent]
 
     init(
         id: UUID = UUID(),
@@ -16,7 +17,8 @@ struct Round: Identifiable, Codable, Equatable, Sendable {
         outcome: RoundOutcome? = nil,
         wordPairId: String? = nil,
         ghostGuessPending: Bool = false,
-        ghostGuessSubmitted: Bool = false
+        ghostGuessSubmitted: Bool = false,
+        scoreEvents: [ScoreEvent] = []
     ) {
         self.id = id
         self.index = index
@@ -25,5 +27,6 @@ struct Round: Identifiable, Codable, Equatable, Sendable {
         self.wordPairId = wordPairId
         self.ghostGuessPending = ghostGuessPending
         self.ghostGuessSubmitted = ghostGuessSubmitted
+        self.scoreEvents = scoreEvents
     }
 }

@@ -16,7 +16,10 @@ struct GameSession: Identifiable, Codable, Equatable, Sendable {
     var forcedSessionOutcome: RoundOutcome?
     var sharedJoinURL: String?
     var joinSessionToken: String?
+    var cloudHostKey: String?
     var cardDeliveryBackend: CardDeliveryBackend
+    var sessionEndScoreEvents: [ScoreEvent]
+    var sessionWinBonusesApplied: Bool
 
     init(
         id: UUID = UUID(),
@@ -34,7 +37,10 @@ struct GameSession: Identifiable, Codable, Equatable, Sendable {
         forcedSessionOutcome: RoundOutcome? = nil,
         sharedJoinURL: String? = nil,
         joinSessionToken: String? = nil,
-        cardDeliveryBackend: CardDeliveryBackend = .local
+        cloudHostKey: String? = nil,
+        cardDeliveryBackend: CardDeliveryBackend = .local,
+        sessionEndScoreEvents: [ScoreEvent] = [],
+        sessionWinBonusesApplied: Bool = false
     ) {
         self.id = id
         self.createdAt = createdAt
@@ -51,7 +57,10 @@ struct GameSession: Identifiable, Codable, Equatable, Sendable {
         self.forcedSessionOutcome = forcedSessionOutcome
         self.sharedJoinURL = sharedJoinURL
         self.joinSessionToken = joinSessionToken
+        self.cloudHostKey = cloudHostKey
         self.cardDeliveryBackend = cardDeliveryBackend
+        self.sessionEndScoreEvents = sessionEndScoreEvents
+        self.sessionWinBonusesApplied = sessionWinBonusesApplied
     }
 
     var playerCount: Int { players.count }

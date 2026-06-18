@@ -18,6 +18,7 @@ final class LobbyViewModel {
     var mismatchGhostAlliance: Bool
     var discussionTimerEnabled: Bool
     var distributionMode: DistributionMode
+    var cloudGuestVotingEnabled: Bool
     var seatedPlayers: [LobbySeatedPlayer]
     var newPlayerName: String = ""
     var isDistributing = false
@@ -36,6 +37,7 @@ final class LobbyViewModel {
         mismatchGhostAlliance = settings.mismatchGhostAlliance
         discussionTimerEnabled = settings.discussionTimerEnabled
         distributionMode = Self.resolvedDistributionMode(settings.distributionMode)
+        cloudGuestVotingEnabled = settings.cloudGuestVotingEnabled
 
         seatedPlayers = Self.loadSeatedPlayers(from: dependencies.gameSessionStore.currentSession)
         reservedHostId = dependencies.gameSessionStore.currentSession?.players.first(where: \.isHost)?.id
@@ -52,6 +54,7 @@ final class LobbyViewModel {
         mismatchGhostAlliance = settings.mismatchGhostAlliance
         discussionTimerEnabled = settings.discussionTimerEnabled
         distributionMode = Self.resolvedDistributionMode(settings.distributionMode)
+        cloudGuestVotingEnabled = settings.cloudGuestVotingEnabled
         let playerCount = dependencies.gameSessionStore.currentSession?.players.count ?? 0
         ghostDisabledByUser = playerCount >= RoleDistributionTable.minimumPlayerCountForGhost
             && !settings.ghostEnabled
@@ -116,7 +119,12 @@ final class LobbyViewModel {
         if mismatchGhostAlliance { parts.append("Alliance") }
         if showRoleOnCard { parts.append("Roles on card") }
         if discussionTimerEnabled { parts.append("Timer") }
+        if distributionMode == .cloudQR, cloudGuestVotingEnabled { parts.append("Guest voting") }
         return parts.joined(separator: " · ")
+    }
+
+    var showsCloudGuestVotingToggle: Bool {
+        distributionMode == .cloudQR && CloudCardConfig.isConfigured
     }
 
     var projectedMismatchCount: Int {
@@ -253,6 +261,7 @@ final class LobbyViewModel {
             dependencies.gameSessionStore.setSharedJoinURL(
                 result.joinURL,
                 sessionToken: result.sessionToken,
+                hostKey: result.hostKey,
                 backend: .cloud
             )
             dependencies.router.navigate(to: .qrGrid)
@@ -307,6 +316,7 @@ final class LobbyViewModel {
         settings.discussionTimerEnabled = discussionTimerEnabled
         settings.showRoleOnCard = showRoleOnCard
         settings.distributionMode = distributionMode
+        settings.cloudGuestVotingEnabled = distributionMode == .cloudQR && cloudGuestVotingEnabled
         dependencies.gameSessionStore.updateSettings(settings)
 
         let existingById = Dictionary(

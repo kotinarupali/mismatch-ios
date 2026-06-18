@@ -20,21 +20,21 @@ final class PassThePhoneViewModel {
         if isMissingRoleAssignments {
             return "Roles not ready"
         }
-        guard currentPlayer != nil else { return "All roles revealed" }
-        return awaitingHandoff ? "Hand off the phone" : "Pick your card"
+        guard let player = currentPlayer else { return "All roles revealed" }
+        return displayName(for: player)
     }
 
     var subtitle: String {
         if isMissingRoleAssignments {
             return "Go back to the lobby and tap Distribute Roles again."
         }
-        guard let player = currentPlayer else {
+        guard currentPlayer != nil else {
             return "Everyone has seen their card."
         }
         if awaitingHandoff {
-            return "Only \(displayName(for: player)) should tap below."
+            return "Tap below when you have the phone"
         }
-        return "\(displayName(for: player)), pick a card"
+        return "Pick a card"
     }
 
     var currentPlayerId: UUID? {
@@ -85,6 +85,10 @@ final class PassThePhoneViewModel {
         currentAssignment != nil && !awaitingHandoff
     }
 
+    var usesHeroTitle: Bool {
+        currentPlayer != nil && !isMissingRoleAssignments
+    }
+
     var isMissingRoleAssignments: Bool {
         guard let session = dependencies.gameSessionStore.currentSession else { return true }
         guard !allCardsOpened else { return false }
@@ -130,6 +134,10 @@ final class PassThePhoneViewModel {
 
     func endGame() {
         dependencies.endGame()
+    }
+
+    var gameSessionStore: GameSessionStore {
+        dependencies.gameSessionStore
     }
 
     func returnToLobby() {

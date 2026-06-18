@@ -10,6 +10,7 @@ enum LocalNetworkCardServerError: Error {
 struct SharedCardSessionStartResult: Sendable {
     let joinURL: String
     let sessionToken: String
+    let hostKey: String?
 }
 
 @MainActor
@@ -69,7 +70,8 @@ final class LocalNetworkCardServer {
 
                 return SharedCardSessionStartResult(
                     joinURL: urlBuilder.sessionJoinURL(baseURL: url, sessionToken: token),
-                    sessionToken: token
+                    sessionToken: token,
+                    hostKey: nil
                 )
             }
             try await Task.sleep(for: .milliseconds(50))

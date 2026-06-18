@@ -10,6 +10,8 @@ struct GameSettings: Codable, Equatable, Sendable {
     var discussionTimerEnabled: Bool
     var wordPackId: String
     var distributionMode: DistributionMode
+    /// When true with Cloud QR, guests can cast elimination votes on their web card.
+    var cloudGuestVotingEnabled: Bool
 
     static let `default` = GameSettings(
         hostIsPlaying: true,
@@ -20,6 +22,7 @@ struct GameSettings: Codable, Equatable, Sendable {
         timerSeconds: 180,
         discussionTimerEnabled: false,
         wordPackId: "general",
-        distributionMode: .passThePhone
+        distributionMode: .passThePhone,
+        cloudGuestVotingEnabled: false
     )
 }

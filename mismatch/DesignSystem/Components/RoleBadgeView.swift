@@ -22,6 +22,7 @@ struct RoleBadgeView: View {
 
 struct RoleIconBadge: View {
     enum Size {
+        case tiny
         case small
         case medium
         case large
@@ -30,6 +31,7 @@ struct RoleIconBadge: View {
 
         var dimension: CGFloat {
             switch self {
+            case .tiny: 22
             case .small: 34
             case .medium: 52
             case .large: 68
@@ -40,6 +42,7 @@ struct RoleIconBadge: View {
 
         var iconScale: CGFloat {
             switch self {
+            case .tiny: 0.58
             case .small: 0.62
             case .medium: 0.68
             case .large: 0.72
@@ -63,7 +66,7 @@ struct RoleIconBadge: View {
                 .scaleEffect(size.iconScale)
         }
         .frame(width: size.dimension, height: size.dimension)
-        .shadow(color: roleShadowColor.opacity(0.45), radius: 6, y: 3)
+        .shadow(color: roleShadowColor.opacity(size == .tiny ? 0.35 : 0.45), radius: size == .tiny ? 3 : 6, y: size == .tiny ? 1 : 3)
         .accessibilityLabel(role.displayName)
     }
 
@@ -123,6 +126,27 @@ struct RoleIconBadge: View {
                 .foregroundStyle(.white)
                 .frame(width: size.dimension * 0.68, height: size.dimension * 0.78)
         }
+    }
+}
+
+/// Role artwork without the circular badge — for compact overlays on avatars.
+struct RoleGlyphView: View {
+    let role: Role
+    var size: CGFloat = 18
+
+    var body: some View {
+        Group {
+            switch role {
+            case .insider:
+                InsiderGlyph()
+            case .mismatch:
+                MismatchGlyph()
+            case .ghost:
+                GhostGlyph()
+            }
+        }
+        .frame(width: size, height: size)
+        .accessibilityLabel(role.displayName)
     }
 }
 

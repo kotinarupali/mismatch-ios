@@ -353,6 +353,10 @@ struct GameSettingsTests {
     @Test func discussionTimerOffByDefault() {
         #expect(GameSettings.default.discussionTimerEnabled == false)
     }
+
+    @Test func cloudGuestVotingOffByDefault() {
+        #expect(GameSettings.default.cloudGuestVotingEnabled == false)
+    }
 }
 
 struct PassThePhoneOrderTests {
@@ -643,5 +647,185 @@ struct CloudCardDistributionTests {
         let guest = store.currentSession?.players.first { $0.id == guestId }
         #expect(guest?.hasOpenedCard == true)
         #expect(guest?.pickedCardIndex == 2)
+    }
+
+    @Test func voteTalliesDecodeByPlayerId() {
+        let guestId = UUID()
+        let snapshot = RemoteCardSessionSnapshot(
+            players: [],
+            claimedCards: [],
+            faceDownCardCount: 4,
+            showRoleOnCard: false,
+            revision: 2,
+            votingEnabled: true,
+            votingOpen: true,
+            votingRound: 1,
+            voteTallies: [guestId.uuidString: 3]
+        )
+
+        #expect(snapshot.voteTalliesByPlayerId[guestId] == 3)
+    }
+}
+
+struct ScoringEngineTests {
+
+    @Test func survivorEarnsOnePointPerRound() {
+        let insider = PlayerSlot(displayName: "A", avatarColor: .blue, assignment: RoleAssignment(role: .insider, word: "A"))
+        let eliminated = PlayerSlot(displayName: "B", avatarColor: .red, assignment: RoleAssignment(role: .mismatch, word: "B"), isEliminated: true)
+
+        let events = ScoringEngine.computeRoundScores(
+            players: [insider, eliminated],
+            eliminatedPlayerId: eliminated.id,
+            ghostGuessCorrect: nil
+        )
+
+        #expect(ScoringEngine.totalPoints(for: events.filter { $0.playerId == insider.id }) == 1)
+        #expect(events.contains { $0.playerId == eliminated.id } == false)
+    }
+
+    @Test func mismatchSurvivorEarnsOnlyOnePointPerRound() {
+        let mismatch = PlayerSlot(displayName: "M", avatarColor: .orange, assignment: RoleAssignment(role: .mismatch, word: "B"))
+        let eliminated = PlayerSlot(displayName: "I", avatarColor: .green, assignment: RoleAssignment(role: .insider, word: "A"), isEliminated: true)
+
+        let events = ScoringEngine.computeRoundScores(
+            players: [mismatch, eliminated],
+            eliminatedPlayerId: eliminated.id,
+            ghostGuessCorrect: nil
+        )
+
+        #expect(ScoringEngine.totalPoints(for: events.filter { $0.playerId == mismatch.id }) == 1)
+    }
+
+    @Test func survivingInsidersGetWinBonus() {
+        let insider = PlayerSlot(displayName: "I", avatarColor: .green, assignment: RoleAssignment(role: .insider, word: "A"))
+        let mismatch = PlayerSlot(displayName: "M", avatarColor: .orange, assignment: RoleAssignment(role: .mismatch, word: "B"), isEliminated: true)
+
+        let events = ScoringEngine.computeSessionWinBonuses(
+            players: [insider, mismatch],
+            outcome: .insiderSideWins,
+            settings: .default
+        )
+
+        #expect(ScoringEngine.totalPoints(for: events.filter { $0.playerId == insider.id }) == 3)
+        #expect(events.contains { $0.playerId == mismatch.id } == false)
+    }
+
+    @Test func survivingMismatchGetsWinBonus() {
+        let mismatch = PlayerSlot(displayName: "M", avatarColor: .orange, assignment: RoleAssignment(role: .mismatch, word: "B"))
+        let insider = PlayerSlot(displayName: "I", avatarColor: .green, assignment: RoleAssignment(role: .insider, word: "A"), isEliminated: true)
+
+        let events = ScoringEngine.computeSessionWinBonuses(
+            players: [mismatch, insider],
+            outcome: .mismatchWins,
+            settings: .default
+        )
+
+        #expect(ScoringEngine.totalPoints(for: events.filter { $0.playerId == mismatch.id }) == 3)
+    }
+
+    @Test func eliminatedGhostWithCorrectGuessEarnsSixPoints() {
+        let insider = PlayerSlot(displayName: "I", avatarColor: .green, assignment: RoleAssignment(role: .insider, word: "A"))
+        let ghost = PlayerSlot(displayName: "G", avatarColor: .purple, assignment: RoleAssignment(role: .ghost, word: nil), isEliminated: true)
+
+        let events = ScoringEngine.computeRoundScores(
+            players: [insider, ghost],
+            eliminatedPlayerId: ghost.id,
+            ghostGuessCorrect: true
+        )
+
+        #expect(ScoringEngine.totalPoints(for: events.filter { $0.playerId == ghost.id }) == 6)
+        #expect(ScoringEngine.totalPoints(for: events.filter { $0.playerId == insider.id }) == 1)
+    }
+
+    @Test func eliminatedInsiderDoesNotCountAsSessionWinner() {
+        let store = GameSessionStore()
+        store.createSession()
+        store.setPlayers([
+            PlayerSlot(displayName: "I1", avatarColor: .green, assignment: RoleAssignment(role: .insider, word: "A")),
+            PlayerSlot(displayName: "I2", avatarColor: .blue, assignment: RoleAssignment(role: .insider, word: "A"), isEliminated: true),
+            PlayerSlot(displayName: "M", avatarColor: .orange, assignment: RoleAssignment(role: .mismatch, word: "B"), isEliminated: true)
+        ])
+
+        #expect(store.sessionWinnerPlayerIds().contains(store.currentSession!.players[0].id))
+        #expect(store.sessionWinnerPlayerIds().contains(store.currentSession!.players[1].id) == false)
+    }
+
+    @Test func eliminatedMismatchDoesNotCountAsSessionWinner() {
+        let store = GameSessionStore()
+        store.createSession()
+        store.setPlayers([
+            PlayerSlot(displayName: "M1", avatarColor: .orange, assignment: RoleAssignment(role: .mismatch, word: "B")),
+            PlayerSlot(displayName: "M2", avatarColor: .red, assignment: RoleAssignment(role: .mismatch, word: "B"), isEliminated: true),
+            PlayerSlot(displayName: "I", avatarColor: .green, assignment: RoleAssignment(role: .insider, word: "A"), isEliminated: true)
+        ])
+
+        #expect(store.sessionWinnerPlayerIds().contains(store.currentSession!.players[0].id))
+        #expect(store.sessionWinnerPlayerIds().contains(store.currentSession!.players[1].id) == false)
+    }
+
+    @Test @MainActor func gameSessionStoreAppliesWinBonusWhenInsidersWin() throws {
+        let store = GameSessionStore()
+        store.createSession()
+        store.setPlayers((1...5).map { index in
+            PlayerSlot(displayName: "P\(index)", avatarColor: AvatarColor.forIndex(index))
+        })
+
+        let pair = WordPair(id: "1", insiderWord: "Apple", mismatchWord: "Apricot", category: "Fruit")
+        try store.distributeRoles(wordPair: pair)
+
+        guard let mismatchId = store.currentSession?.players.first(where: { $0.assignment?.role == .mismatch })?.id else {
+            Issue.record("Expected mismatch player.")
+            return
+        }
+
+        store.eliminate(playerId: mismatchId)
+
+        #expect(store.isSessionComplete == true)
+        #expect(store.sessionEndScoreEvents.isEmpty == false)
+
+        let insiderScores = store.currentSession?.players
+            .filter { $0.assignment?.role == .insider && !$0.isEliminated }
+            .map(\.sessionScore) ?? []
+        #expect(insiderScores.allSatisfy { $0 >= 4 })
+    }
+
+    @Test func personaEngineAssignsPartyLegendToTopScorer() {
+        let alex = UUID()
+        let jordan = UUID()
+        var session = GameSession()
+        session.players = [
+            PlayerSlot(id: alex, displayName: "Alex", avatarColor: .green, sessionScore: 8),
+            PlayerSlot(id: jordan, displayName: "Jordan", avatarColor: .orange, sessionScore: 2)
+        ]
+        session.rounds = [
+            Round(index: 0, scoreEvents: [
+                ScoreEvent(playerId: alex, reason: .survived),
+                ScoreEvent(playerId: jordan, reason: .survived)
+            ])
+        ]
+
+        let cards = PersonaEngine.buildCards(from: session)
+        let alexCard = cards.first { $0.id == alex }
+
+        #expect(alexCard?.title == "Party Legend")
+    }
+
+    @Test func personaEngineAssignsGraveRobberForGhostGuess() {
+        let ghost = UUID()
+        var session = GameSession()
+        session.players = [
+            PlayerSlot(id: ghost, displayName: "Ghost", avatarColor: .purple, isEliminated: true, sessionScore: 6)
+        ]
+        session.rounds = [
+            Round(
+                index: 0,
+                eliminatedPlayerId: ghost,
+                scoreEvents: [ScoreEvent(playerId: ghost, reason: .ghostCorrectGuess)]
+            )
+        ]
+
+        let cards = PersonaEngine.buildCards(from: session)
+
+        #expect(cards.first?.title == "Grave Robber")
     }
 }

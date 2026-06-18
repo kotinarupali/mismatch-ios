@@ -11,6 +11,9 @@ final class DiscussionViewModel {
     var showConfirmDialog = false
     var showPlayerRolePicker = false
     var playerToReveal: PlayerSlot?
+    var guestVoteTallies: [UUID: Int] = [:]
+
+    private var votePollTask: Task<Void, Never>?
 
     init(dependencies: AppDependencies) {
         self.dependencies = dependencies
@@ -24,6 +27,18 @@ final class DiscussionViewModel {
 
     var ghostEnabled: Bool {
         dependencies.gameSessionStore.currentSession?.settings.ghostEnabled ?? false
+    }
+
+    var cloudGuestVotingEnabled: Bool {
+        guard let session = dependencies.gameSessionStore.currentSession else { return false }
+        return session.settings.cloudGuestVotingEnabled
+            && session.cardDeliveryBackend == .cloud
+            && session.joinSessionToken != nil
+            && session.cloudHostKey != nil
+    }
+
+    var showsGuestVoteTallies: Bool {
+        cloudGuestVotingEnabled && !guestVoteTallies.isEmpty
     }
 
     var allPlayers: [PlayerSlot] {
@@ -82,15 +97,20 @@ final class DiscussionViewModel {
            allPlayers.first(where: { $0.id == id })?.isEliminated == true {
             selectedPlayerId = nil
         }
-        guard timerEnabled else { return }
+        guard timerEnabled else {
+            startCloudGuestVotingIfNeeded()
+            return
+        }
         let duration = dependencies.gameSessionStore.currentSession?.settings.timerSeconds ?? 180
         dependencies.timerService.start(durationSeconds: duration) { [weak self] in
             self?.dependencies.timerService.stop()
         }
+        startCloudGuestVotingIfNeeded()
     }
 
     func onDisappear() {
         dependencies.timerService.stop()
+        stopGuestVotePolling()
     }
 
     func selectPlayer(_ id: UUID) {
@@ -108,6 +128,7 @@ final class DiscussionViewModel {
         guard let id = selectedPlayerId else { return }
         dependencies.timerService.stop()
         dependencies.gameSessionStore.eliminate(playerId: id)
+        Task { await closeCloudGuestVoting() }
         dependencies.router.navigate(to: .results)
     }
 
@@ -120,10 +141,77 @@ final class DiscussionViewModel {
     }
 
     func repickRoles() {
+        stopGuestVotePolling()
         dependencies.repickRoles()
     }
 
     func endGame() {
+        stopGuestVotePolling()
         dependencies.endGame()
+    }
+
+    var gameSessionStore: GameSessionStore {
+        dependencies.gameSessionStore
+    }
+
+    private func startCloudGuestVotingIfNeeded() {
+        guard cloudGuestVotingEnabled else { return }
+
+        Task { await openCloudGuestVoting() }
+        startGuestVotePolling()
+    }
+
+    private func startGuestVotePolling() {
+        stopGuestVotePolling()
+        votePollTask = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .milliseconds(500))
+                guard let self, self.cloudGuestVotingEnabled else { continue }
+                await self.refreshGuestVoteTallies()
+            }
+        }
+    }
+
+    private func stopGuestVotePolling() {
+        votePollTask?.cancel()
+        votePollTask = nil
+    }
+
+    private func openCloudGuestVoting() async {
+        guard let session = dependencies.gameSessionStore.currentSession,
+              let token = session.joinSessionToken,
+              let hostKey = session.cloudHostKey else { return }
+
+        let eliminatedIds = session.players.filter(\.isEliminated).map(\.id)
+        try? await dependencies.remoteCardSessionClient.controlVoting(
+            token: token,
+            hostKey: hostKey,
+            action: .open,
+            eliminatedPlayerIds: eliminatedIds
+        )
+        await refreshGuestVoteTallies()
+    }
+
+    private func closeCloudGuestVoting() async {
+        guard let session = dependencies.gameSessionStore.currentSession,
+              let token = session.joinSessionToken,
+              let hostKey = session.cloudHostKey else { return }
+
+        let eliminatedIds = session.players.filter(\.isEliminated).map(\.id)
+        try? await dependencies.remoteCardSessionClient.controlVoting(
+            token: token,
+            hostKey: hostKey,
+            action: .close,
+            eliminatedPlayerIds: eliminatedIds
+        )
+        guestVoteTallies = [:]
+    }
+
+    private func refreshGuestVoteTallies() async {
+        guard let token = dependencies.gameSessionStore.currentSession?.joinSessionToken else { return }
+        guard let snapshot = try? await dependencies.remoteCardSessionClient.fetchSnapshot(token: token) else {
+            return
+        }
+        guestVoteTallies = snapshot.voteTalliesByPlayerId
     }
 }

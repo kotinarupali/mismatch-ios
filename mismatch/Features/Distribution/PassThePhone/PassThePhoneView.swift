@@ -7,7 +7,8 @@ struct PassThePhoneView: View {
         PlaceholderScreenLayout(
             title: viewModel.title,
             subtitle: viewModel.subtitle,
-            icon: "iphone.and.arrow.forward",
+            showsBrandLogo: true,
+            usesHeroTitle: viewModel.usesHeroTitle,
             roomStyle: .distribution
         ) {
             if viewModel.awaitingHandoff {
@@ -20,6 +21,7 @@ struct PassThePhoneView: View {
                     insiderWord: viewModel.insiderWord,
                     claimedCards: viewModel.claimedCards,
                     nextPlayerName: viewModel.nextPlayerDisplayName,
+                    showsInstructions: false,
                     onComplete: { viewModel.cardCompleted(cardIndex: $0) }
                 )
                 .id(viewModel.currentPlayerId)
@@ -48,6 +50,7 @@ struct PassThePhoneView: View {
         .toolbarColorScheme(.dark, for: .navigationBar)
         .onAppear { viewModel.onAppear() }
         .hostGameMenu(
+            gameSessionStore: viewModel.gameSessionStore,
             onRepick: { viewModel.repickRoles() },
             onEndGame: { viewModel.endGame() },
             onCheckPlayerRole: { viewModel.checkPlayerRoleTapped() }
@@ -67,21 +70,9 @@ struct PassThePhoneView: View {
             AvatarView(
                 name: viewModel.currentPlayerDisplayName,
                 color: viewModel.currentPlayerAvatarColor,
-                size: 80
+                size: 96
             )
             .padding(.top, 8)
-
-            VStack(spacing: 8) {
-                Text(viewModel.currentPlayerDisplayName)
-                    .font(AppTypography.display)
-                    .foregroundStyle(AppColor.label)
-                    .minimumScaleFactor(0.5)
-                    .lineLimit(1)
-
-                Text("Your turn to pick a card")
-                    .font(AppTypography.body)
-                    .foregroundStyle(AppColor.secondaryLabel)
-            }
 
             PrimaryButton(title: "I'm \(viewModel.currentPlayerDisplayName) — Pick my card") {
                 viewModel.readyToPickTapped()

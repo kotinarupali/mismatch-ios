@@ -47,4 +47,8 @@ final class VotingViewModel {
     func endGame() {
         dependencies.endGame()
     }
+
+    var gameSessionStore: GameSessionStore {
+        dependencies.gameSessionStore
+    }
 }

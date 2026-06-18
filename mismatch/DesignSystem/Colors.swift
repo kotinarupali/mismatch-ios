@@ -47,3 +47,25 @@ enum AppColor {
         }
     }
 }
+
+/// Shared brand colors — face-grid logo + matching room backgrounds.
+enum BrandPalette {
+    static let navyTop = Color(red: 0.10, green: 0.11, blue: 0.18)
+    static let navyBottom = Color(red: 0.06, green: 0.07, blue: 0.12)
+
+    static let mismatchLight = Color(red: 0.98, green: 0.55, blue: 0.50)
+    static let mismatchMid = Color(red: 0.92, green: 0.38, blue: 0.34)
+    static let mismatchDeep = Color(red: 0.72, green: 0.22, blue: 0.20)
+
+    static let insiderLight = Color(red: 0.45, green: 1.0, blue: 0.82)
+    static let insiderMid = Color(red: 0.22, green: 0.88, blue: 0.68)
+    static let insiderDeep = Color(red: 0.08, green: 0.62, blue: 0.48)
+
+    static let sadLight = Color(red: 1.0, green: 0.88, blue: 0.42)
+    static let sadMid = Color(red: 1.0, green: 0.76, blue: 0.22)
+    static let sadDeep = Color(red: 0.88, green: 0.58, blue: 0.08)
+
+    static let ghostLight = Color(red: 0.88, green: 0.72, blue: 1.0)
+    static let ghostMid = Color(red: 0.68, green: 0.48, blue: 0.98)
+    static let ghostDeep = Color(red: 0.44, green: 0.26, blue: 0.82)
+}

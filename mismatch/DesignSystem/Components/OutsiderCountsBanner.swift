@@ -4,6 +4,7 @@ struct OutsiderCountsBanner: View {
     enum Style {
         case full
         case compact
+        case lobby
     }
 
     let mismatchCount: Int
@@ -18,6 +19,8 @@ struct OutsiderCountsBanner: View {
             fullBanner
         case .compact:
             compactTray
+        case .lobby:
+            lobbyBanner
         }
     }
 
@@ -38,6 +41,40 @@ struct OutsiderCountsBanner: View {
                 compactCountChip(role: .ghost, count: ghostCount)
             }
         }
+    }
+
+    private var lobbyBanner: some View {
+        HStack(spacing: 8) {
+            lobbyCountChip(role: .mismatch, count: mismatchCount)
+            if showsGhostCount {
+                lobbyCountChip(role: .ghost, count: ghostCount)
+            }
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private func lobbyCountChip(role: Role, count: Int) -> some View {
+        HStack(spacing: 10) {
+            RoleIconBadge(role: role, size: .small)
+
+            VStack(alignment: .leading, spacing: 1) {
+                Text(role.displayName)
+                    .font(AppTypography.caption)
+                    .foregroundStyle(AppColor.secondaryLabel)
+                Text("\(count) \(countSuffix)")
+                    .font(AppTypography.body)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(AppColor.label)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .background(AppColor.backgroundElevated)
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .accessibilityLabel("\(role.displayName), \(count) \(countSuffix)")
     }
 
     private func fullCountChip(role: Role, count: Int) -> some View {

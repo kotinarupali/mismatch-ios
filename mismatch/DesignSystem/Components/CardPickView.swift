@@ -12,6 +12,7 @@ struct CardPickView: View {
     var insiderWord: String? = nil
     var claimedCards: [ClaimedCard] = []
     var nextPlayerName: String? = nil
+    var showsInstructions: Bool = true
     let onComplete: (Int) -> Void
 
     @State private var phase: Phase = .pick
@@ -55,9 +56,11 @@ struct CardPickView: View {
 
     private var pickPhase: some View {
         VStack(spacing: 16) {
-            Text("Pick a card to see your role")
-                .font(AppTypography.headline)
-                .foregroundStyle(AppColor.label)
+            if showsInstructions {
+                Text("Pick a card to see your role")
+                    .font(AppTypography.headline)
+                    .foregroundStyle(AppColor.label)
+            }
 
             if !claimedCards.isEmpty {
                 Text("Cards already taken are marked with names")
@@ -104,10 +107,6 @@ struct CardPickView: View {
                         phase = .pick
                     }
                 }
-            }
-
-            if let nextPlayerName {
-                passToBanner(name: nextPlayerName)
             }
 
             PrimaryButton(title: nextButtonTitle) {
@@ -184,10 +183,7 @@ struct CardPickView: View {
     }
 
     private var nextButtonTitle: String {
-        if let nextPlayerName {
-            return "Pass to \(nextPlayerName)"
-        }
-        return "Finish"
+        nextPlayerName == nil ? "Finish" : "Continue"
     }
 
     private func finishPick() {
@@ -198,14 +194,37 @@ struct CardPickView: View {
 
     private var faceDownCard: some View {
         RoundedRectangle(cornerRadius: 16, style: .continuous)
-            .fill(AppColor.heroGradient)
+            .fill(
+                LinearGradient(
+                    colors: [
+                        AppColor.backgroundElevated,
+                        AppColor.card
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
             .frame(height: 110)
             .overlay {
-                Image(systemName: "questionmark")
-                    .font(.system(size: 32, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white.opacity(0.9))
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .strokeBorder(
+                        LinearGradient(
+                            colors: [
+                                BrandPalette.insiderMid.opacity(0.45),
+                                BrandPalette.ghostMid.opacity(0.35)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 1.5
+                    )
             }
-            .shadow(color: AppColor.accent.opacity(0.35), radius: 10, y: 6)
+            .overlay {
+                Image(systemName: "questionmark")
+                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white.opacity(0.55))
+            }
+            .shadow(color: .black.opacity(0.22), radius: 8, y: 4)
     }
 
     private func takenCardView(name: String) -> some View {
@@ -213,45 +232,23 @@ struct CardPickView: View {
             .fill(AppColor.card)
             .frame(height: 110)
             .overlay {
-                VStack(spacing: 6) {
+                VStack(spacing: 8) {
                     Image(systemName: "checkmark.seal.fill")
-                        .font(.system(size: 22))
+                        .font(.system(size: 26, weight: .semibold))
                         .foregroundStyle(AppColor.secondaryLabel)
                     Text(name)
-                        .font(AppTypography.headline)
+                        .font(AppTypography.title)
                         .foregroundStyle(AppColor.label)
                         .lineLimit(2)
                         .multilineTextAlignment(.center)
-                        .minimumScaleFactor(0.7)
+                        .minimumScaleFactor(0.75)
                 }
-                .padding(.horizontal, 8)
+                .padding(.horizontal, 10)
             }
             .overlay {
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .strokeBorder(AppColor.cardBorder, lineWidth: 1)
             }
             .accessibilityLabel("\(name)'s card")
-    }
-
-    private func passToBanner(name: String) -> some View {
-        VStack(spacing: 6) {
-            Text("Pass the phone to")
-                .font(AppTypography.caption)
-                .foregroundStyle(AppColor.secondaryLabel)
-            Text(name)
-                .font(AppTypography.display)
-                .foregroundStyle(AppColor.label)
-                .minimumScaleFactor(0.5)
-                .lineLimit(1)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 16)
-        .padding(.horizontal, 12)
-        .background(AppColor.card.opacity(0.9))
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .strokeBorder(AppColor.accent.opacity(0.4), lineWidth: 1)
-        }
     }
 }

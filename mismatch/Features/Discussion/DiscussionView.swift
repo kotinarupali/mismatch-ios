@@ -6,7 +6,9 @@ struct DiscussionView: View {
     var body: some View {
         PlaceholderScreenLayout(
             title: "Discuss & Vote",
-            subtitle: "Talk it out, then tap a player to eliminate.",
+            subtitle: viewModel.cloudGuestVotingEnabled
+                ? "Talk it out. Guests vote on their phones; you confirm the elimination."
+                : "Talk it out, then tap a player to eliminate.",
             icon: "bubble.left.and.bubble.right.fill",
             roomStyle: .discussion
         ) {
@@ -26,8 +28,17 @@ struct DiscussionView: View {
                     style: .tile,
                     showEliminatedRoleBadges: true,
                     discussionStarterId: viewModel.discussionStarterId,
+                    voteCounts: viewModel.guestVoteTallies,
+                    showsVoteCounts: viewModel.cloudGuestVotingEnabled,
                     onSelect: { viewModel.selectPlayer($0) }
                 )
+
+                if viewModel.showsGuestVoteTallies {
+                    Text("Numbers show guest votes from phones.")
+                        .font(AppTypography.caption)
+                        .foregroundStyle(AppColor.secondaryLabel)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
 
                 PrimaryButton(
                     title: "Confirm Vote",
@@ -44,6 +55,7 @@ struct DiscussionView: View {
         .toolbarBackground(AppColor.background.opacity(0.9), for: .navigationBar)
         .toolbarColorScheme(.dark, for: .navigationBar)
         .hostGameMenu(
+            gameSessionStore: viewModel.gameSessionStore,
             onRepick: { viewModel.repickRoles() },
             onEndGame: { viewModel.endGame() },
             onCheckPlayerRole: { viewModel.checkPlayerRoleTapped() }

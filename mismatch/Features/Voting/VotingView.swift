@@ -31,6 +31,7 @@ struct VotingView: View {
         .toolbarBackground(AppColor.background.opacity(0.9), for: .navigationBar)
         .toolbarColorScheme(.dark, for: .navigationBar)
         .hostGameMenu(
+            gameSessionStore: viewModel.gameSessionStore,
             onRepick: { viewModel.repickRoles() },
             onEndGame: { viewModel.endGame() }
         )

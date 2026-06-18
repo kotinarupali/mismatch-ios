@@ -4,6 +4,8 @@ struct PlaceholderScreenLayout<Content: View>: View {
     let title: String
     let subtitle: String
     var icon: String? = nil
+    var showsBrandLogo: Bool = false
+    var usesHeroTitle: Bool = false
     var roomStyle: PartyRoomStyle = .lobby
     @ViewBuilder var content: Content
 
@@ -26,7 +28,9 @@ struct PlaceholderScreenLayout<Content: View>: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 10) {
-            if let icon {
+            if showsBrandLogo {
+                MismatchLogoView(size: 56, style: .mini, showsShadow: false)
+            } else if let icon {
                 Image(systemName: icon)
                     .font(.system(size: 28, weight: .semibold))
                     .foregroundStyle(AppColor.heroGradient)
@@ -40,13 +44,17 @@ struct PlaceholderScreenLayout<Content: View>: View {
             }
 
             Text(title)
-                .font(AppTypography.largeTitle)
+                .font(usesHeroTitle ? AppTypography.display : AppTypography.largeTitle)
                 .foregroundStyle(AppColor.label)
+                .minimumScaleFactor(usesHeroTitle ? 0.5 : 1)
+                .lineLimit(usesHeroTitle ? 1 : 2)
 
-            Text(subtitle)
-                .font(AppTypography.body)
-                .foregroundStyle(AppColor.secondaryLabel)
-                .fixedSize(horizontal: false, vertical: true)
+            if !subtitle.isEmpty {
+                Text(subtitle)
+                    .font(AppTypography.body)
+                    .foregroundStyle(AppColor.secondaryLabel)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
     }
 }

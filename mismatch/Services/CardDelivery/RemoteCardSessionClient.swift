@@ -24,6 +24,48 @@ struct RemoteCardSessionSnapshot: Decodable, Sendable {
     let faceDownCardCount: Int
     let showRoleOnCard: Bool
     let revision: Int
+    let votingEnabled: Bool?
+    let votingOpen: Bool?
+    let votingRound: Int?
+    let voteTallies: [String: Int]?
+
+    init(
+        players: [Player],
+        claimedCards: [ClaimedCard],
+        faceDownCardCount: Int,
+        showRoleOnCard: Bool,
+        revision: Int,
+        votingEnabled: Bool? = nil,
+        votingOpen: Bool? = nil,
+        votingRound: Int? = nil,
+        voteTallies: [String: Int]? = nil
+    ) {
+        self.players = players
+        self.claimedCards = claimedCards
+        self.faceDownCardCount = faceDownCardCount
+        self.showRoleOnCard = showRoleOnCard
+        self.revision = revision
+        self.votingEnabled = votingEnabled
+        self.votingOpen = votingOpen
+        self.votingRound = votingRound
+        self.voteTallies = voteTallies
+    }
+
+    var voteTalliesByPlayerId: [UUID: Int] {
+        guard let voteTallies else { return [:] }
+        var mapped: [UUID: Int] = [:]
+        for (key, count) in voteTallies {
+            guard let id = UUID(uuidString: key) else { continue }
+            mapped[id] = count
+        }
+        return mapped
+    }
+}
+
+enum RemoteVotingAction: String, Encodable {
+    case open
+    case close
+    case sync
 }
 
 @MainActor
@@ -55,6 +97,7 @@ final class RemoteCardSessionClient {
         struct CreateResponse: Decodable {
             let sessionToken: String
             let joinURL: String
+            let hostKey: String?
         }
 
         guard let decoded = try? JSONDecoder().decode(CreateResponse.self, from: data) else {
@@ -63,7 +106,8 @@ final class RemoteCardSessionClient {
 
         return SharedCardSessionStartResult(
             joinURL: decoded.joinURL,
-            sessionToken: decoded.sessionToken
+            sessionToken: decoded.sessionToken,
+            hostKey: decoded.hostKey
         )
     }
 
@@ -83,6 +127,32 @@ final class RemoteCardSessionClient {
             throw RemoteCardSessionError.invalidResponse
         }
         return snapshot
+    }
+
+    func controlVoting(
+        token: String,
+        hostKey: String,
+        action: RemoteVotingAction,
+        eliminatedPlayerIds: [UUID]
+    ) async throws {
+        guard let baseURL = CloudCardConfig.baseURL else {
+            throw RemoteCardSessionError.notConfigured
+        }
+
+        let url = baseURL.appendingPathComponent("api/sessions/\(token)/voting")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONEncoder().encode(
+            VotingControlPayload(
+                hostKey: hostKey,
+                action: action.rawValue,
+                eliminatedPlayerIds: eliminatedPlayerIds.map(\.uuidString)
+            )
+        )
+
+        let (_, response) = try await session.data(for: request)
+        try validate(response: response)
     }
 
     func invalidate(token: String) async {
@@ -112,7 +182,8 @@ final class RemoteCardSessionClient {
             players: players,
             faceDownCardCount: faceDownCardCount,
             showRoleOnCard: gameSession.settings.showRoleOnCard,
-            insiderWord: gameSession.currentInsiderWord
+            insiderWord: gameSession.currentInsiderWord,
+            votingEnabled: gameSession.settings.cloudGuestVotingEnabled
         )
     }
 
@@ -140,4 +211,11 @@ private struct CreatePayload: Encodable {
     let faceDownCardCount: Int
     let showRoleOnCard: Bool
     let insiderWord: String?
+    let votingEnabled: Bool
+}
+
+private struct VotingControlPayload: Encodable {
+    let hostKey: String
+    let action: String
+    let eliminatedPlayerIds: [String]
 }

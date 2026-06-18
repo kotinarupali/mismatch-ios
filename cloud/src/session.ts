@@ -12,12 +12,19 @@ export interface SessionInit {
   faceDownCardCount: number;
   showRoleOnCard: boolean;
   insiderWord?: string | null;
+  votingEnabled?: boolean;
 }
 
 interface SessionState extends SessionInit {
   revision: number;
   claimedIndices: Record<number, string>;
   openedPlayerIds: string[];
+  hostKey: string;
+  votingEnabled: boolean;
+  votingOpen: boolean;
+  votingRound: number;
+  eliminatedPlayerIds: string[];
+  votes: Record<string, string>;
 }
 
 export class CardSession implements DurableObject {
@@ -37,6 +44,12 @@ export class CardSession implements DurableObject {
     if (url.pathname === "/claim" && request.method === "POST") {
       return this.claim(request);
     }
+    if (url.pathname === "/vote" && request.method === "POST") {
+      return this.submitVote(request);
+    }
+    if (url.pathname === "/voting" && request.method === "POST") {
+      return this.controlVoting(request);
+    }
     if (url.pathname === "/delete" && request.method === "POST") {
       this.session = null;
       return json({ ok: true });
@@ -47,13 +60,20 @@ export class CardSession implements DurableObject {
 
   private async initSession(request: Request): Promise<Response> {
     const body = (await request.json()) as SessionInit;
+    const hostKey = crypto.randomUUID();
     this.session = {
       ...body,
+      votingEnabled: body.votingEnabled === true,
+      hostKey,
       revision: 0,
       claimedIndices: {},
       openedPlayerIds: [],
+      votingOpen: false,
+      votingRound: 0,
+      eliminatedPlayerIds: [],
+      votes: {},
     };
-    return json({ ok: true, revision: 0 });
+    return json({ ok: true, revision: 0, hostKey });
   }
 
   private snapshot(): Response {
@@ -80,12 +100,29 @@ export class CardSession implements DurableObject {
       }
     );
 
+    const voteTargets = this.session.players.map((player) => ({
+      id: player.id,
+      displayName: player.isHost ? "Host" : player.displayName,
+      isHost: player.isHost,
+      isEliminated: this.session!.eliminatedPlayerIds.includes(player.id),
+    }));
+
+    const voteTallies: Record<string, number> = {};
+    for (const targetId of Object.values(this.session.votes)) {
+      voteTallies[targetId] = (voteTallies[targetId] ?? 0) + 1;
+    }
+
     return json({
       players: guestPlayers,
       claimedCards,
       faceDownCardCount: this.session.faceDownCardCount,
       showRoleOnCard: this.session.showRoleOnCard,
       revision: this.session.revision,
+      votingEnabled: this.session.votingEnabled,
+      votingOpen: this.session.votingOpen,
+      votingRound: this.session.votingRound,
+      voteTargets,
+      voteTallies,
     });
   }
 
@@ -136,6 +173,99 @@ export class CardSession implements DurableObject {
     }
 
     return json(payload);
+  }
+
+  private async submitVote(request: Request): Promise<Response> {
+    if (!this.session) {
+      return json({ error: "not_found" }, 404);
+    }
+    if (!this.session.votingEnabled) {
+      return json({ error: "voting_disabled" }, 403);
+    }
+    if (!this.session.votingOpen) {
+      return json({ error: "voting_closed" }, 409);
+    }
+
+    const body = (await request.json()) as { voterId?: string; targetPlayerId?: string };
+    const voterId = body.voterId;
+    const targetPlayerId = body.targetPlayerId;
+
+    if (!voterId || !targetPlayerId) {
+      return json({ error: "invalid_request" }, 400);
+    }
+
+    const voter = this.session.players.find((p) => p.id === voterId);
+    if (!voter || voter.isHost) {
+      return json({ error: "unknown_voter" }, 404);
+    }
+    if (!this.session.openedPlayerIds.includes(voterId)) {
+      return json({ error: "card_required" }, 403);
+    }
+    if (this.session.eliminatedPlayerIds.includes(voterId)) {
+      return json({ error: "voter_eliminated" }, 403);
+    }
+    if (voterId === targetPlayerId) {
+      return json({ error: "cannot_vote_self" }, 400);
+    }
+
+    const target = this.session.players.find((p) => p.id === targetPlayerId);
+    if (!target) {
+      return json({ error: "unknown_target" }, 404);
+    }
+    if (this.session.eliminatedPlayerIds.includes(targetPlayerId)) {
+      return json({ error: "target_eliminated" }, 400);
+    }
+
+    this.session.votes[voterId] = targetPlayerId;
+    this.session.revision += 1;
+
+    return json({ ok: true, revision: this.session.revision });
+  }
+
+  private async controlVoting(request: Request): Promise<Response> {
+    if (!this.session) {
+      return json({ error: "not_found" }, 404);
+    }
+
+    const body = (await request.json()) as {
+      hostKey?: string;
+      action?: string;
+      eliminatedPlayerIds?: string[];
+    };
+
+    if (!body.hostKey || body.hostKey !== this.session.hostKey) {
+      return json({ error: "forbidden" }, 403);
+    }
+
+    if (Array.isArray(body.eliminatedPlayerIds)) {
+      this.session.eliminatedPlayerIds = body.eliminatedPlayerIds.filter((id) =>
+        this.session!.players.some((player) => player.id === id)
+      );
+    }
+
+    if (body.action === "open") {
+      if (!this.session.votingEnabled) {
+        return json({ error: "voting_disabled" }, 403);
+      }
+      this.session.votes = {};
+      this.session.votingRound += 1;
+      this.session.votingOpen = true;
+      this.session.revision += 1;
+      return json({ ok: true, votingRound: this.session.votingRound, revision: this.session.revision });
+    }
+
+    if (body.action === "close") {
+      this.session.votingOpen = false;
+      this.session.revision += 1;
+      return json({ ok: true, revision: this.session.revision });
+    }
+
+    if (body.action === "sync") {
+      this.session.revision += 1;
+      return json({ ok: true, revision: this.session.revision });
+    }
+
+    return json({ error: "invalid_action" }, 400);
   }
 }
 

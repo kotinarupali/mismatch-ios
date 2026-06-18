@@ -11,6 +11,8 @@ struct PlayerGridView: View {
     var style: Style = .compact
     var showEliminatedRoleBadges: Bool = false
     var discussionStarterId: UUID?
+    var voteCounts: [UUID: Int] = [:]
+    var showsVoteCounts: Bool = false
     let onSelect: (UUID) -> Void
 
     private var columns: [GridItem] {
@@ -73,6 +75,13 @@ struct PlayerGridView: View {
                     .lineLimit(style == .tile ? 2 : 1)
                     .multilineTextAlignment(.center)
                     .foregroundStyle(labelColor(isEliminated: isEliminated, isSelected: isSelected))
+
+                if showsVoteCounts, !isEliminated, let count = voteCounts[player.id], count > 0 {
+                    Text("\(count) vote\(count == 1 ? "" : "s")")
+                        .font(AppTypography.caption)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(AppColor.accent)
+                }
             }
             .frame(minWidth: style == .tile ? 0 : 88, minHeight: style == .tile ? 132 : 96)
             .frame(maxWidth: .infinity)

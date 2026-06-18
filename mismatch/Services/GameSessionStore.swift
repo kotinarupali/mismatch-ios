@@ -133,10 +133,16 @@ final class GameSessionStore {
         currentSession = session
     }
 
-    func setSharedJoinURL(_ url: String, sessionToken: String, backend: CardDeliveryBackend = .local) {
+    func setSharedJoinURL(
+        _ url: String,
+        sessionToken: String,
+        hostKey: String? = nil,
+        backend: CardDeliveryBackend = .local
+    ) {
         guard var session = currentSession else { return }
         session.sharedJoinURL = url
         session.joinSessionToken = sessionToken
+        session.cloudHostKey = hostKey
         session.cardDeliveryBackend = backend
         currentSession = session
     }
@@ -184,6 +190,10 @@ final class GameSessionStore {
 
         session.state = .revealing
         currentSession = session
+
+        if eliminated.assignment?.role != .ghost {
+            finishScoringForCurrentRound(ghostGuessCorrect: nil)
+        }
     }
 
     @discardableResult
@@ -212,6 +222,7 @@ final class GameSessionStore {
         }
 
         currentSession = session
+        finishScoringForCurrentRound(ghostGuessCorrect: isCorrect)
         return isCorrect
     }
 
@@ -269,7 +280,10 @@ final class GameSessionStore {
         session.forcedSessionOutcome = nil
         session.sharedJoinURL = nil
         session.joinSessionToken = nil
+        session.cloudHostKey = nil
         session.cardDeliveryBackend = .local
+        session.sessionEndScoreEvents = []
+        session.sessionWinBonusesApplied = false
         session.players = session.players.map { player in
             var updated = player
             updated.assignment = nil
@@ -278,9 +292,15 @@ final class GameSessionStore {
             updated.pickedCardIndex = nil
             updated.cardToken = nil
             updated.cardURL = nil
+            updated.sessionScore = 0
             return updated
         }
         currentSession = session
+    }
+
+    func playerPersonaCards() -> [PlayerPersonaCard] {
+        guard let session = currentSession else { return [] }
+        return PersonaEngine.buildCards(from: session)
     }
 
     func reset() {
@@ -311,6 +331,34 @@ final class GameSessionStore {
         return SessionWinChecker.checkWinner(players: session.players, settings: session.settings)
     }
 
+    /// Players who actually won the session — surviving members of the winning faction,
+    /// plus an eliminated Ghost only if they stole the win with a correct guess.
+    func sessionWinnerPlayerIds() -> Set<UUID> {
+        guard let session = currentSession,
+              let outcome = sessionWinner else { return [] }
+
+        let winningRoles = outcome.winningRoles(allianceEnabled: session.settings.mismatchGhostAlliance)
+        var winners = Set<UUID>()
+
+        for player in session.players {
+            guard let role = player.assignment?.role, winningRoles.contains(role) else { continue }
+            if !player.isEliminated {
+                winners.insert(player.id)
+            } else if role == .ghost, playerHasGhostCorrectGuess(playerId: player.id) {
+                winners.insert(player.id)
+            }
+        }
+
+        return winners
+    }
+
+    func playerHasGhostCorrectGuess(playerId: UUID) -> Bool {
+        guard let session = currentSession else { return false }
+        return session.rounds.contains { round in
+            round.scoreEvents.contains { $0.playerId == playerId && $0.reason == .ghostCorrectGuess }
+        }
+    }
+
     var isSessionComplete: Bool {
         sessionWinner != nil
     }
@@ -321,6 +369,100 @@ final class GameSessionStore {
 
     var roundOutcome: RoundOutcome? {
         currentRound?.outcome
+    }
+
+    var currentRoundScoreEvents: [ScoreEvent] {
+        currentRound?.scoreEvents ?? []
+    }
+
+    var roundsPlayed: Int {
+        currentSession?.rounds.filter { $0.eliminatedPlayerId != nil }.count ?? 0
+    }
+
+    var sessionEndScoreEvents: [ScoreEvent] {
+        currentSession?.sessionEndScoreEvents ?? []
+    }
+
+    func sessionScoreboard(roundPoints: [UUID: Int]? = nil) -> [SessionScoreRow] {
+        guard let session = currentSession else { return [] }
+        let roundLookup = roundPoints ?? ScoringEngine.pointsByPlayer(from: currentRoundScoreEvents)
+        let rows = session.players.map { player in
+            SessionScoreRow(
+                id: player.id,
+                displayName: player.isHost ? "You" : player.displayName,
+                avatarColor: player.avatarColor,
+                sessionScore: player.sessionScore,
+                roundPoints: roundLookup[player.id] ?? 0,
+                isHost: player.isHost,
+                rank: 0
+            )
+        }
+        .sorted { lhs, rhs in
+            if lhs.sessionScore != rhs.sessionScore {
+                return lhs.sessionScore > rhs.sessionScore
+            }
+            return lhs.displayName.localizedCaseInsensitiveCompare(rhs.displayName) == .orderedAscending
+        }
+
+        return rows.enumerated().map { index, row in
+            SessionScoreRow(
+                id: row.id,
+                displayName: row.displayName,
+                avatarColor: row.avatarColor,
+                sessionScore: row.sessionScore,
+                roundPoints: row.roundPoints,
+                isHost: row.isHost,
+                rank: index + 1
+            )
+        }
+    }
+
+    private func finishScoringForCurrentRound(ghostGuessCorrect: Bool?) {
+        applyRoundScores(ghostGuessCorrect: ghostGuessCorrect)
+        applySessionWinBonusesIfNeeded()
+    }
+
+    private func applyRoundScores(ghostGuessCorrect: Bool?) {
+        guard var session = currentSession else { return }
+        let roundIndex = session.currentRoundIndex
+        guard roundIndex < session.rounds.count else { return }
+        guard session.rounds[roundIndex].scoreEvents.isEmpty else { return }
+        guard let eliminatedPlayerId = session.rounds[roundIndex].eliminatedPlayerId else { return }
+
+        let events = ScoringEngine.computeRoundScores(
+            players: session.players,
+            eliminatedPlayerId: eliminatedPlayerId,
+            ghostGuessCorrect: ghostGuessCorrect
+        )
+        guard !events.isEmpty else { return }
+
+        session.rounds[roundIndex].scoreEvents = events
+        for event in events {
+            guard let index = session.players.firstIndex(where: { $0.id == event.playerId }) else { continue }
+            session.players[index].sessionScore += event.points
+        }
+        currentSession = session
+    }
+
+    private func applySessionWinBonusesIfNeeded() {
+        guard var session = currentSession else { return }
+        guard !session.sessionWinBonusesApplied else { return }
+        guard !isGhostGuessPending else { return }
+        guard let outcome = sessionWinner else { return }
+
+        let events = ScoringEngine.computeSessionWinBonuses(
+            players: session.players,
+            outcome: outcome,
+            settings: session.settings
+        )
+
+        session.sessionEndScoreEvents = events
+        session.sessionWinBonusesApplied = true
+        for event in events {
+            guard let index = session.players.firstIndex(where: { $0.id == event.playerId }) else { continue }
+            session.players[index].sessionScore += event.points
+        }
+        currentSession = session
     }
 
     var discussionStarter: PlayerSlot? {

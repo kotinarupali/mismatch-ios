@@ -52,6 +52,7 @@ struct QRGridView: View {
         .toolbarBackground(AppColor.background.opacity(0.9), for: .navigationBar)
         .toolbarColorScheme(.dark, for: .navigationBar)
         .hostGameMenu(
+            gameSessionStore: sessionStore,
             onRepick: { viewModel.repickRoles() },
             onEndGame: { viewModel.endGame() },
             onCheckPlayerRole: { viewModel.checkPlayerRoleTapped() }

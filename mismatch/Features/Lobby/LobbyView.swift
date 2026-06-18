@@ -43,6 +43,15 @@ struct LobbyView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
 
+                if viewModel.showsProjectedRoleCounts {
+                    OutsiderCountsBanner(
+                        mismatchCount: viewModel.projectedMismatchCount,
+                        ghostCount: viewModel.projectedGhostCount,
+                        countSuffix: "in game",
+                        style: .lobby
+                    )
+                }
+
                 if !viewModel.seatedPlayers.isEmpty {
                     VStack(alignment: .leading, spacing: 8) {
                         VStack(alignment: .leading, spacing: 4) {
@@ -70,14 +79,6 @@ struct LobbyView: View {
                             }
                         }
                     }
-                }
-
-                if viewModel.showsProjectedRoleCounts {
-                    OutsiderCountsBanner(
-                        mismatchCount: viewModel.projectedMismatchCount,
-                        ghostCount: viewModel.projectedGhostCount,
-                        countSuffix: "in game"
-                    )
                 }
 
                 PrimaryButton(
@@ -178,7 +179,22 @@ struct LobbyView: View {
                         .foregroundStyle(AppColor.secondaryLabel)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, 16)
-                        .padding(.bottom, 12)
+                        .padding(.bottom, viewModel.showsCloudGuestVotingToggle ? 0 : 12)
+
+                    if viewModel.showsCloudGuestVotingToggle {
+                        Divider().overlay(AppColor.cardBorder).padding(.horizontal, 16)
+                        SettingsToggleRow(
+                            icon: "hand.raised.fill",
+                            title: "Guest voting on phones",
+                            isOn: cloudGuestVotingBinding
+                        )
+                        Text("Guests cast votes in their browser during discussion. You still confirm the elimination.")
+                            .font(AppTypography.caption)
+                            .foregroundStyle(AppColor.secondaryLabel)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, 16)
+                            .padding(.bottom, 12)
+                    }
                 }
                 .padding(.top, 10)
             }
@@ -230,6 +246,16 @@ struct LobbyView: View {
             get: { viewModel.distributionMode },
             set: {
                 viewModel.distributionMode = $0
+                viewModel.refreshSession()
+            }
+        )
+    }
+
+    private var cloudGuestVotingBinding: Binding<Bool> {
+        Binding(
+            get: { viewModel.cloudGuestVotingEnabled },
+            set: {
+                viewModel.cloudGuestVotingEnabled = $0
                 viewModel.refreshSession()
             }
         )

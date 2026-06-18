@@ -2,11 +2,13 @@ import SwiftUI
 
 extension View {
     func hostGameMenu(
+        gameSessionStore: GameSessionStore? = nil,
         onRepick: @escaping () -> Void,
         onEndGame: @escaping () -> Void,
         onCheckPlayerRole: (() -> Void)? = nil
     ) -> some View {
         modifier(HostGameMenuModifier(
+            gameSessionStore: gameSessionStore,
             onRepick: onRepick,
             onEndGame: onEndGame,
             onCheckPlayerRole: onCheckPlayerRole
@@ -17,7 +19,11 @@ extension View {
 private struct HostGameMenuModifier: ViewModifier {
     @State private var showRepickConfirm = false
     @State private var showEndGameConfirm = false
+    @State private var showScoresDashboard = false
+    @State private var showPartyPersonas = false
+    @State private var personaCards: [PlayerPersonaCard] = []
 
+    let gameSessionStore: GameSessionStore?
     let onRepick: () -> Void
     let onEndGame: () -> Void
     let onCheckPlayerRole: (() -> Void)?
@@ -27,6 +33,14 @@ private struct HostGameMenuModifier: ViewModifier {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
+                        if gameSessionStore != nil {
+                            Button {
+                                showScoresDashboard = true
+                            } label: {
+                                Label("Scores", systemImage: "list.number")
+                            }
+                        }
+
                         if let onCheckPlayerRole {
                             Button {
                                 onCheckPlayerRole()
@@ -52,6 +66,16 @@ private struct HostGameMenuModifier: ViewModifier {
                     }
                 }
             }
+            .sheet(isPresented: $showScoresDashboard) {
+                if let gameSessionStore {
+                    ScoresDashboardSheet(store: gameSessionStore)
+                }
+            }
+            .sheet(isPresented: $showPartyPersonas) {
+                GameNightPersonasSheet(cards: personaCards) {
+                    onEndGame()
+                }
+            }
             .confirmDialog(
                 isPresented: $showRepickConfirm,
                 title: "Re-pick roles?",
@@ -63,10 +87,11 @@ private struct HostGameMenuModifier: ViewModifier {
             .confirmDialog(
                 isPresented: $showEndGameConfirm,
                 title: "End game?",
-                message: "This ends the session and returns to the home screen.",
+                message: "Wrap up with party personas, then return home.",
                 confirmTitle: "End Game"
             ) {
-                onEndGame()
+                personaCards = gameSessionStore?.playerPersonaCards() ?? []
+                showPartyPersonas = true
             }
     }
 }

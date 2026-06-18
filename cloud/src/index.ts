@@ -19,6 +19,16 @@ export default {
       return createSession(request, env, url);
     }
 
+    const voteMatch = url.pathname.match(/^\/api\/session\/([^/]+)\/vote\/?$/);
+    if (voteMatch && request.method === "POST") {
+      const token = voteMatch[1];
+      const stub = env.CARD_SESSION.get(env.CARD_SESSION.idFromName(token));
+      const response = await stub.fetch(
+        new Request("https://do/vote", { method: "POST", body: request.body })
+      );
+      return cors(response);
+    }
+
     const sessionMatch = url.pathname.match(/^\/api\/session\/([^/]+)\/?$/);
     if (sessionMatch) {
       const token = sessionMatch[1];
@@ -35,6 +45,16 @@ export default {
         );
         return cors(response);
       }
+    }
+
+    const votingMatch = url.pathname.match(/^\/api\/sessions\/([^/]+)\/voting\/?$/);
+    if (votingMatch && request.method === "POST") {
+      const token = votingMatch[1];
+      const stub = env.CARD_SESSION.get(env.CARD_SESSION.idFromName(token));
+      const response = await stub.fetch(
+        new Request("https://do/voting", { method: "POST", body: request.body })
+      );
+      return cors(response);
     }
 
     const deleteMatch = url.pathname.match(/^\/api\/sessions\/([^/]+)\/delete$/);
@@ -76,9 +96,10 @@ async function createSession(request: Request, env: Env, url: URL): Promise<Resp
     return cors(initResponse);
   }
 
+  const initData = (await initResponse.json()) as { hostKey?: string };
   const joinURL = `${url.origin}/join/${token}`;
   return cors(
-    new Response(JSON.stringify({ sessionToken: token, joinURL }), {
+    new Response(JSON.stringify({ sessionToken: token, joinURL, hostKey: initData.hostKey }), {
       status: 200,
       headers: {
         "Content-Type": "application/json; charset=utf-8",

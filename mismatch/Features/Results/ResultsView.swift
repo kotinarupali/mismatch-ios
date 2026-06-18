@@ -21,11 +21,13 @@ struct ResultsView: View {
                     }
 
                     if viewModel.shouldShowFinalResults {
+                        if viewModel.shouldShowFinalScoreboard {
+                            FinalScoreboardView(rows: viewModel.finalScoreboardRows)
+                        }
+
                         GameFinalResultsSection(
                             insiderWord: viewModel.finalInsiderWord,
-                            mismatchWord: viewModel.finalMismatchWord,
-                            players: viewModel.finalPlayerReveals,
-                            winningRoles: viewModel.winningRoles
+                            mismatchWord: viewModel.finalMismatchWord
                         )
                     } else {
                         OutcomeCard(title: "Eliminated", value: viewModel.eliminatedName, icon: "person.crop.circle.badge.xmark")
@@ -69,6 +71,7 @@ struct ResultsView: View {
         .toolbarBackground(AppColor.background.opacity(0.9), for: .navigationBar)
         .toolbarColorScheme(.dark, for: .navigationBar)
         .hostGameMenu(
+            gameSessionStore: viewModel.gameSessionStore,
             onRepick: { viewModel.playAgainTapped() },
             onEndGame: { viewModel.exitTapped() }
         )
@@ -127,12 +130,12 @@ struct ResultsView: View {
 
     private var sessionOutcomeHeader: some View {
         VStack(spacing: 16) {
-            HStack(spacing: 10) {
-                Image(systemName: "crown.fill")
-                    .font(.system(size: 28, weight: .bold))
-                    .foregroundStyle(AppColor.warning)
-                    .shadow(color: AppColor.warning.opacity(0.5), radius: 6, y: 2)
+            Image(systemName: "crown.fill")
+                .font(.system(size: 32, weight: .bold))
+                .foregroundStyle(AppColor.warning)
+                .shadow(color: AppColor.warning.opacity(0.5), radius: 6, y: 2)
 
+            HStack(spacing: 10) {
                 ForEach(viewModel.winningRolesOrdered, id: \.self) { role in
                     RoleIconBadge(role: role, size: .extraLarge)
                 }

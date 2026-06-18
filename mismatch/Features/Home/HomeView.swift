@@ -33,16 +33,7 @@ struct HomeView: View {
                 Spacer()
 
                 VStack(spacing: 16) {
-                    ZStack {
-                        Circle()
-                            .fill(AppColor.heroGradient)
-                            .frame(width: 88, height: 88)
-                            .shadow(color: AppColor.accent.opacity(0.5), radius: 24, y: 12)
-
-                        Image(systemName: "theatermasks.fill")
-                            .font(.system(size: 38, weight: .semibold))
-                            .foregroundStyle(.white)
-                    }
+                    MismatchLogoView(size: 96)
 
                     Text("Mismatch")
                         .font(AppTypography.largeTitle)

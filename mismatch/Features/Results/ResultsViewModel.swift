@@ -28,12 +28,33 @@ final class ResultsViewModel {
 
     var roundSummary: String {
         if shouldPromptGhostGuess {
+            if roundsPlayed > 0 {
+                return "Round \(roundsPlayed) · ghost's last guess"
+            }
             return "One last chance to steal the win."
         }
         if isSessionComplete {
+            if roundsPlayed > 0 {
+                return "After \(roundsPlayed) rounds"
+            }
             return "Final results"
         }
-        return "\(dependencies.gameSessionStore.activePlayerCount) players still in the game"
+        if roundsPlayed > 0 {
+            return "Round \(roundsPlayed) complete · \(activePlayerCount) players left"
+        }
+        return "\(activePlayerCount) players still in the game"
+    }
+
+    var shouldShowRoundScoreboard: Bool {
+        false
+    }
+
+    var roundsPlayed: Int {
+        dependencies.gameSessionStore.roundsPlayed
+    }
+
+    var activePlayerCount: Int {
+        dependencies.gameSessionStore.activePlayerCount
     }
 
     var eliminatedName: String {
@@ -98,13 +119,82 @@ final class ResultsViewModel {
     }
 
     var winnerPlayerNames: [String] {
-        finalPlayerReveals
-            .filter { winningRoles.contains($0.role) }
+        let winnerIds = dependencies.gameSessionStore.sessionWinnerPlayerIds()
+        return finalPlayerReveals
+            .filter { winnerIds.contains($0.id) }
             .map(\.displayName)
     }
 
     var sessionOutcome: RoundOutcome? {
         dependencies.gameSessionStore.sessionWinner
+    }
+
+    var currentRoundScoreEvents: [ScoreEvent] {
+        dependencies.gameSessionStore.currentRoundScoreEvents
+    }
+
+    var scoringPlayers: [PlayerSlot] {
+        dependencies.gameSessionStore.currentSession?.players ?? []
+    }
+
+    var sessionScoreboard: [SessionScoreRow] {
+        dependencies.gameSessionStore.sessionScoreboard()
+    }
+
+    var hasRoundScores: Bool {
+        !currentRoundScoreEvents.isEmpty && !shouldPromptGhostGuess
+    }
+
+    var hasSessionScores: Bool {
+        sessionScoreboard.contains { $0.sessionScore > 0 }
+    }
+
+    var sessionEndScoreEvents: [ScoreEvent] {
+        dependencies.gameSessionStore.sessionEndScoreEvents
+    }
+
+    var hasWinBonuses: Bool {
+        !sessionEndScoreEvents.isEmpty
+    }
+
+    var finalScoreboardRows: [FinalScoreboardRow] {
+        let roleLookup = Dictionary(uniqueKeysWithValues: finalPlayerReveals.map { ($0.id, $0.role) })
+        let gains = finalScoringGains
+        let winnerIds = dependencies.gameSessionStore.sessionWinnerPlayerIds()
+
+        return sessionScoreboard.map { row in
+            let role = roleLookup[row.id] ?? .insider
+            return FinalScoreboardRow(
+                id: row.id,
+                displayName: row.displayName,
+                avatarColor: row.avatarColor,
+                role: role,
+                sessionScore: row.sessionScore,
+                pointsGained: gains[row.id] ?? 0,
+                rank: row.rank,
+                isWinner: winnerIds.contains(row.id)
+            )
+        }
+    }
+
+    var shouldShowFinalScoreboard: Bool {
+        shouldShowFinalResults && !finalScoreboardRows.isEmpty
+    }
+
+    private var finalScoringGains: [UUID: Int] {
+        var gains = ScoringEngine.pointsByPlayer(from: currentRoundScoreEvents)
+        for (playerId, points) in ScoringEngine.pointsByPlayer(from: sessionEndScoreEvents) {
+            gains[playerId, default: 0] += points
+        }
+        return gains
+    }
+
+    var scoreLeaderName: String? {
+        sessionScoreboard.first?.displayName
+    }
+
+    var gameSessionStore: GameSessionStore {
+        dependencies.gameSessionStore
     }
 
     var insidersWon: Bool {
