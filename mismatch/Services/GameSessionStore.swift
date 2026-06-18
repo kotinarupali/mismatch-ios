@@ -379,8 +379,21 @@ final class GameSessionStore {
         currentSession?.rounds.filter { $0.eliminatedPlayerId != nil }.count ?? 0
     }
 
+    var gamesPlayedCount: Int {
+        currentSession?.gamesPlayedCount ?? 0
+    }
+
+    var eliminationRoundsInCurrentGame: Int {
+        roundsPlayed
+    }
+
     var sessionEndScoreEvents: [ScoreEvent] {
         currentSession?.sessionEndScoreEvents ?? []
+    }
+
+    func allScoreEvents() -> [ScoreEvent] {
+        guard let session = currentSession else { return [] }
+        return session.rounds.flatMap(\.scoreEvents) + session.sessionEndScoreEvents
     }
 
     func sessionScoreboard(roundPoints: [UUID: Int]? = nil) -> [SessionScoreRow] {
@@ -458,6 +471,7 @@ final class GameSessionStore {
 
         session.sessionEndScoreEvents = events
         session.sessionWinBonusesApplied = true
+        session.gamesPlayedCount += 1
         for event in events {
             guard let index = session.players.firstIndex(where: { $0.id == event.playerId }) else { continue }
             session.players[index].sessionScore += event.points

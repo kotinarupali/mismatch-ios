@@ -810,6 +810,80 @@ struct ScoringEngineTests {
         #expect(insiderScores.allSatisfy { $0 >= 4 })
     }
 
+    @Test @MainActor func finalScoreboardGainsMatchSessionTotalsAcrossRounds() throws {
+        let dependencies = AppDependencies()
+        let store = dependencies.gameSessionStore
+        var settings = GameSettings.default
+        settings.ghostEnabled = false
+        store.createSession(settings: settings)
+        store.setPlayers([
+            PlayerSlot(displayName: "Adrian", avatarColor: .orange),
+            PlayerSlot(displayName: "Carol", avatarColor: .green),
+            PlayerSlot(displayName: "You", avatarColor: .blue, isHost: true),
+            PlayerSlot(displayName: "Ben", avatarColor: .yellow)
+        ])
+
+        let pair = WordPair(id: "1", insiderWord: "Apple", mismatchWord: "Apricot", category: "Fruit")
+        try store.distributeRoles(wordPair: pair)
+
+        let insiderIds = store.currentSession!.players
+            .filter { $0.assignment?.role == .insider }
+            .map(\.id)
+        guard insiderIds.count >= 2 else {
+            Issue.record("Expected at least two insiders.")
+            return
+        }
+
+        store.eliminate(playerId: insiderIds[0])
+        store.continueAfterElimination()
+        store.eliminate(playerId: insiderIds[1])
+
+        let viewModel = ResultsViewModel(dependencies: dependencies)
+
+        #expect(store.roundsPlayed == 2)
+        #expect(store.gamesPlayedCount == 1)
+        #expect(store.sessionWinner == .mismatchWins)
+        for row in viewModel.finalScoreboardRows {
+            #expect(row.pointsGained == row.sessionScore)
+        }
+    }
+
+    @Test @MainActor func gamesPlayedCountIncrementsOnCompletionAndPersistsAcrossPlayAgain() throws {
+        let dependencies = AppDependencies()
+        let store = dependencies.gameSessionStore
+        var settings = GameSettings.default
+        settings.ghostEnabled = false
+        store.createSession(settings: settings)
+        store.setPlayers((1...4).map { index in
+            PlayerSlot(displayName: "P\(index)", avatarColor: AvatarColor.forIndex(index))
+        })
+
+        let pair = WordPair(id: "1", insiderWord: "Apple", mismatchWord: "Apricot", category: "Fruit")
+        try store.distributeRoles(wordPair: pair)
+
+        let insiderIds = store.currentSession!.players
+            .filter { $0.assignment?.role == .insider }
+            .map(\.id)
+        guard insiderIds.count >= 2 else {
+            Issue.record("Expected at least two insiders.")
+            return
+        }
+
+        #expect(store.gamesPlayedCount == 0)
+
+        store.eliminate(playerId: insiderIds[0])
+        store.continueAfterElimination()
+        store.eliminate(playerId: insiderIds[1])
+
+        #expect(store.isSessionComplete == true)
+        #expect(store.gamesPlayedCount == 1)
+
+        store.resetRoundForPlayAgain()
+
+        #expect(store.gamesPlayedCount == 1)
+        #expect(store.roundsPlayed == 0)
+    }
+
     @Test func personaEngineAssignsPartyLegendToTopScorer() {
         let alex = UUID()
         let jordan = UUID()

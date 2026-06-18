@@ -72,7 +72,10 @@ private struct HostGameMenuModifier: ViewModifier {
                 }
             }
             .sheet(isPresented: $showPartyPersonas) {
-                GameNightPersonasSheet(cards: personaCards) {
+                GameNightPersonasSheet(
+                    cards: personaCards,
+                    gamesPlayedCount: gameSessionStore?.gamesPlayedCount ?? 0
+                ) {
                     onEndGame()
                 }
             }

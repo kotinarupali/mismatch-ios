@@ -106,10 +106,16 @@ final class LobbyViewModel {
     }
 
     var statusMessage: String {
+        let playerLine: String
         if hostIsPlaying {
-            return "\(totalPlayerCount) players · you + \(guestCount) guest\(guestCount == 1 ? "" : "s")"
+            playerLine = "\(totalPlayerCount) players · you + \(guestCount) guest\(guestCount == 1 ? "" : "s")"
+        } else {
+            playerLine = "\(totalPlayerCount) of \(minimumPlayers)+ players"
         }
-        return "\(totalPlayerCount) of \(minimumPlayers)+ players"
+
+        let gamesPlayed = dependencies.gameSessionStore.gamesPlayedCount
+        guard gamesPlayed > 0 else { return playerLine }
+        return "\(GameProgressCopy.gamesPlayedLabel(gamesPlayed)) · \(playerLine)"
     }
 
     var rulesSummary: String {

@@ -27,20 +27,22 @@ final class ResultsViewModel {
     }
 
     var roundSummary: String {
+        let eliminations = roundsPlayed
+
         if shouldPromptGhostGuess {
-            if roundsPlayed > 0 {
-                return "Round \(roundsPlayed) · ghost's last guess"
+            if eliminations > 0 {
+                return "\(GameProgressCopy.eliminationLabel(eliminations)) · ghost's last guess"
             }
             return "One last chance to steal the win."
         }
         if isSessionComplete {
-            if roundsPlayed > 0 {
-                return "After \(roundsPlayed) rounds"
+            if eliminations > 0 {
+                return GameProgressCopy.eliminationLabel(eliminations)
             }
             return "Final results"
         }
-        if roundsPlayed > 0 {
-            return "Round \(roundsPlayed) complete · \(activePlayerCount) players left"
+        if eliminations > 0 {
+            return "\(GameProgressCopy.eliminationLabel(eliminations)) · \(activePlayerCount) players left"
         }
         return "\(activePlayerCount) players still in the game"
     }
@@ -158,12 +160,13 @@ final class ResultsViewModel {
     }
 
     var finalScoreboardRows: [FinalScoreboardRow] {
-        let roleLookup = Dictionary(uniqueKeysWithValues: finalPlayerReveals.map { ($0.id, $0.role) })
+        let revealLookup = Dictionary(uniqueKeysWithValues: finalPlayerReveals.map { ($0.id, $0) })
         let gains = finalScoringGains
         let winnerIds = dependencies.gameSessionStore.sessionWinnerPlayerIds()
 
         return sessionScoreboard.map { row in
-            let role = roleLookup[row.id] ?? .insider
+            let reveal = revealLookup[row.id]
+            let role = reveal?.role ?? .insider
             return FinalScoreboardRow(
                 id: row.id,
                 displayName: row.displayName,
@@ -172,7 +175,8 @@ final class ResultsViewModel {
                 sessionScore: row.sessionScore,
                 pointsGained: gains[row.id] ?? 0,
                 rank: row.rank,
-                isWinner: winnerIds.contains(row.id)
+                isWinner: winnerIds.contains(row.id),
+                isEliminated: reveal?.isEliminated ?? false
             )
         }
     }
@@ -182,11 +186,7 @@ final class ResultsViewModel {
     }
 
     private var finalScoringGains: [UUID: Int] {
-        var gains = ScoringEngine.pointsByPlayer(from: currentRoundScoreEvents)
-        for (playerId, points) in ScoringEngine.pointsByPlayer(from: sessionEndScoreEvents) {
-            gains[playerId, default: 0] += points
-        }
-        return gains
+        ScoringEngine.pointsByPlayer(from: dependencies.gameSessionStore.allScoreEvents())
     }
 
     var scoreLeaderName: String? {

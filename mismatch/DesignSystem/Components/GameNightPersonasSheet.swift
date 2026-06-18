@@ -2,6 +2,7 @@ import SwiftUI
 
 struct GameNightPersonasSheet: View {
     let cards: [PlayerPersonaCard]
+    var gamesPlayedCount: Int = 0
     let onDone: () -> Void
 
     @Environment(\.dismiss) private var dismiss
@@ -55,6 +56,12 @@ struct GameNightPersonasSheet: View {
                 .font(AppTypography.body)
                 .foregroundStyle(AppColor.secondaryLabel)
                 .multilineTextAlignment(.center)
+
+            if gamesPlayedCount > 0 {
+                Text(gamesPlayedCount == 1 ? "1 game this session" : "\(gamesPlayedCount) games this session")
+                    .font(AppTypography.caption)
+                    .foregroundStyle(AppColor.warning)
+            }
         }
         .frame(maxWidth: .infinity)
         .padding(.bottom, 4)

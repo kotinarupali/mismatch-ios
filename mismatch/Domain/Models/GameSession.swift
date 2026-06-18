@@ -20,6 +20,7 @@ struct GameSession: Identifiable, Codable, Equatable, Sendable {
     var cardDeliveryBackend: CardDeliveryBackend
     var sessionEndScoreEvents: [ScoreEvent]
     var sessionWinBonusesApplied: Bool
+    var gamesPlayedCount: Int
 
     init(
         id: UUID = UUID(),
@@ -40,7 +41,8 @@ struct GameSession: Identifiable, Codable, Equatable, Sendable {
         cloudHostKey: String? = nil,
         cardDeliveryBackend: CardDeliveryBackend = .local,
         sessionEndScoreEvents: [ScoreEvent] = [],
-        sessionWinBonusesApplied: Bool = false
+        sessionWinBonusesApplied: Bool = false,
+        gamesPlayedCount: Int = 0
     ) {
         self.id = id
         self.createdAt = createdAt
@@ -61,6 +63,7 @@ struct GameSession: Identifiable, Codable, Equatable, Sendable {
         self.cardDeliveryBackend = cardDeliveryBackend
         self.sessionEndScoreEvents = sessionEndScoreEvents
         self.sessionWinBonusesApplied = sessionWinBonusesApplied
+        self.gamesPlayedCount = gamesPlayedCount
     }
 
     var playerCount: Int { players.count }

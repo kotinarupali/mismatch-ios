@@ -1,7 +1,8 @@
 import SwiftUI
 
 struct RoundProgressBanner: View {
-    let roundsPlayed: Int
+    let gamesPlayedCount: Int
+    let eliminationRoundsInCurrentGame: Int
     let leaderName: String?
     var style: Style = .standard
 
@@ -10,8 +11,11 @@ struct RoundProgressBanner: View {
         case compact
     }
 
-    private var roundsLabel: String {
-        roundsPlayed == 1 ? "1 round played" : "\(roundsPlayed) rounds played"
+    private var progressLabel: String {
+        GameProgressCopy.scoreBannerTitle(
+            gamesPlayed: gamesPlayedCount,
+            eliminationsInCurrentGame: eliminationRoundsInCurrentGame
+        )
     }
 
     var body: some View {
@@ -24,7 +28,7 @@ struct RoundProgressBanner: View {
                 .clipShape(Circle())
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(roundsLabel)
+                Text(progressLabel)
                     .font(style == .compact ? AppTypography.headline : AppTypography.title)
                     .foregroundStyle(AppColor.label)
 
@@ -32,8 +36,12 @@ struct RoundProgressBanner: View {
                     Text("\(leaderName) leads the scores")
                         .font(AppTypography.caption)
                         .foregroundStyle(AppColor.secondaryLabel)
-                } else if roundsPlayed == 0 {
+                } else if gamesPlayedCount == 0, eliminationRoundsInCurrentGame == 0 {
                     Text("Scores start after the first elimination")
+                        .font(AppTypography.caption)
+                        .foregroundStyle(AppColor.secondaryLabel)
+                } else if gamesPlayedCount > 0, eliminationRoundsInCurrentGame == 0 {
+                    Text("Ready for game \(gamesPlayedCount + 1)")
                         .font(AppTypography.caption)
                         .foregroundStyle(AppColor.secondaryLabel)
                 }
@@ -71,7 +79,8 @@ struct ScoresDashboardSheet: View {
             ScrollView {
                 VStack(spacing: 16) {
                     RoundProgressBanner(
-                        roundsPlayed: store.roundsPlayed,
+                        gamesPlayedCount: store.gamesPlayedCount,
+                        eliminationRoundsInCurrentGame: store.eliminationRoundsInCurrentGame,
                         leaderName: leaderName
                     )
 
@@ -79,7 +88,7 @@ struct ScoresDashboardSheet: View {
                         title: "Leaderboard",
                         rows: scoreboard,
                         showsRoundPoints: false,
-                        highlightTopRank: store.roundsPlayed > 0 && leaderName != nil
+                        highlightTopRank: store.eliminationRoundsInCurrentGame > 0 && leaderName != nil
                     )
 
                     ScoreExplanationView(style: .compact) {
