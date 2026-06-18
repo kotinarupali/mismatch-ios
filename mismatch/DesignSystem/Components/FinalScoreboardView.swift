@@ -99,32 +99,6 @@ struct FinalScoreboardView: View {
             Text(row.role.displayName)
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(roleColor(for: row.role))
-
-            if row.isWinner {
-                Text("Winner")
-                    .font(.system(size: 11, weight: .bold))
-                    .foregroundStyle(AppColor.warning)
-                    .padding(.horizontal, 7)
-                    .padding(.vertical, 3)
-                    .background(AppColor.warning.opacity(0.18))
-                    .clipShape(Capsule())
-            } else if row.isEliminated {
-                Text("Eliminated")
-                    .font(.system(size: 11, weight: .bold))
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 7)
-                    .padding(.vertical, 3)
-                    .background(AppColor.accentSecondary.opacity(0.92))
-                    .clipShape(Capsule())
-            } else {
-                Text("In")
-                    .font(.system(size: 11, weight: .bold))
-                    .foregroundStyle(AppColor.success)
-                    .padding(.horizontal, 7)
-                    .padding(.vertical, 3)
-                    .background(AppColor.success.opacity(0.16))
-                    .clipShape(Capsule())
-            }
         }
     }
 
