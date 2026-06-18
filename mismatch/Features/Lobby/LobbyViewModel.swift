@@ -35,7 +35,7 @@ final class LobbyViewModel {
         ghostEnabled = settings.ghostEnabled
         mismatchGhostAlliance = settings.mismatchGhostAlliance
         discussionTimerEnabled = settings.discussionTimerEnabled
-        distributionMode = settings.distributionMode
+        distributionMode = Self.resolvedDistributionMode(settings.distributionMode)
 
         seatedPlayers = Self.loadSeatedPlayers(from: dependencies.gameSessionStore.currentSession)
         reservedHostId = dependencies.gameSessionStore.currentSession?.players.first(where: \.isHost)?.id
@@ -51,7 +51,7 @@ final class LobbyViewModel {
         ghostEnabled = settings.ghostEnabled
         mismatchGhostAlliance = settings.mismatchGhostAlliance
         discussionTimerEnabled = settings.discussionTimerEnabled
-        distributionMode = settings.distributionMode
+        distributionMode = Self.resolvedDistributionMode(settings.distributionMode)
         let playerCount = dependencies.gameSessionStore.currentSession?.players.count ?? 0
         ghostDisabledByUser = playerCount >= RoleDistributionTable.minimumPlayerCountForGhost
             && !settings.ghostEnabled
@@ -236,7 +236,9 @@ final class LobbyViewModel {
             case .passThePhone:
                 dependencies.router.navigate(to: .passThePhone)
             case .localQR:
-                await startQRDistribution()
+                await startLocalQRDistribution()
+            case .cloudQR:
+                await startCloudQRDistribution()
             }
         } catch WordPairSelectorError.noPairsAvailable {
             errorMessage = "No word pairs available."
@@ -245,7 +247,7 @@ final class LobbyViewModel {
         }
     }
 
-    private func startQRDistribution() async {
+    private func startLocalQRDistribution() async {
         guard let session = dependencies.gameSessionStore.currentSession else { return }
 
         do {
@@ -253,16 +255,47 @@ final class LobbyViewModel {
                 session: session,
                 gameSessionStore: dependencies.gameSessionStore
             )
-            dependencies.gameSessionStore.setSharedJoinURL(result.joinURL, sessionToken: result.sessionToken)
+            dependencies.gameSessionStore.setSharedJoinURL(
+                result.joinURL,
+                sessionToken: result.sessionToken,
+                backend: .local
+            )
             dependencies.router.navigate(to: .qrGrid)
         } catch {
-            errorMessage = "QR server unavailable. Switching to pass-the-phone."
-            var settings = dependencies.gameSessionStore.currentSession?.settings ?? .default
-            settings.distributionMode = .passThePhone
-            dependencies.gameSessionStore.updateSettings(settings)
-            distributionMode = .passThePhone
-            dependencies.router.navigate(to: .passThePhone)
+            fallbackFromQRDistribution(message: "Local QR server unavailable. Switching to pass-the-phone.")
         }
+    }
+
+    private func startCloudQRDistribution() async {
+        guard let session = dependencies.gameSessionStore.currentSession else { return }
+
+        do {
+            let result = try await dependencies.remoteCardSessionClient.createSession(from: session)
+            dependencies.gameSessionStore.setSharedJoinURL(
+                result.joinURL,
+                sessionToken: result.sessionToken,
+                backend: .cloud
+            )
+            dependencies.router.navigate(to: .qrGrid)
+        } catch {
+            fallbackFromQRDistribution(message: "Cloud cards unavailable. Switching to pass-the-phone.")
+        }
+    }
+
+    private func fallbackFromQRDistribution(message: String) {
+        errorMessage = message
+        var settings = dependencies.gameSessionStore.currentSession?.settings ?? .default
+        settings.distributionMode = .passThePhone
+        dependencies.gameSessionStore.updateSettings(settings)
+        distributionMode = .passThePhone
+        dependencies.router.navigate(to: .passThePhone)
+    }
+
+    private static func resolvedDistributionMode(_ mode: DistributionMode) -> DistributionMode {
+        if mode == .cloudQR, !CloudCardConfig.isConfigured {
+            return .localQR
+        }
+        return mode
     }
 
     private func reconcileHostSeat() {

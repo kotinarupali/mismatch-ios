@@ -4,6 +4,7 @@ import Network
 enum LocalNetworkCardServerError: Error {
     case failedToStart
     case noLocalAddress
+    case webAssetsMissing
 }
 
 struct SharedCardSessionStartResult: Sendable {
@@ -28,13 +29,23 @@ final class LocalNetworkCardServer {
     /// Starts the LAN server with one shared join URL for all players.
     func start(session: GameSession, gameSessionStore: GameSessionStore) async throws -> SharedCardSessionStartResult {
         stop()
+
+        guard WebCardResourceLoader.validateBundleResources() else {
+            throw LocalNetworkCardServerError.webAssetsMissing
+        }
+
         self.gameSessionStore = gameSessionStore
         sessionStore.configure(with: session)
         sessionStore.onClaim = { [weak gameSessionStore] playerId, cardIndex in
             gameSessionStore?.markCardOpened(playerId: playerId, cardIndex: cardIndex)
         }
 
-        let listener = try NWListener(using: .tcp, on: .any)
+        let parameters = NWParameters.tcp
+        parameters.acceptLocalOnly = false
+        parameters.includePeerToPeer = true
+
+        let listener = try NWListener(using: parameters, on: .any)
+        listener.service = NWListener.Service(type: "_mismatch._tcp")
         self.listener = listener
 
         listener.newConnectionHandler = { [weak self] connection in
@@ -47,7 +58,7 @@ final class LocalNetworkCardServer {
 
         for _ in 0..<40 {
             if let port = listener.port, let ip = Self.localWiFiAddress() {
-                let url = "http://\(ip):\(port.rawValue)"
+                let url = LocalNetworkHostResolver.joinBaseURL(port: port.rawValue, ipAddress: ip)
                 baseURL = url
                 isRunning = true
 
@@ -79,55 +90,125 @@ final class LocalNetworkCardServer {
 
     private func handle(connection: NWConnection) {
         connection.start(queue: .main)
-        connection.receive(minimumIncompleteLength: 1, maximumLength: 65536) { [weak self] data, _, _, _ in
+        receiveRequest(on: connection, buffer: Data())
+    }
+
+    private func receiveRequest(on connection: NWConnection, buffer: Data) {
+        connection.receive(minimumIncompleteLength: 1, maximumLength: 131_072) { [weak self] data, _, isComplete, _ in
             Task { @MainActor in
-                guard let self, let data, let request = String(data: data, encoding: .utf8) else {
+                guard let self else {
                     connection.cancel()
                     return
                 }
-                let response = self.response(for: request)
-                connection.send(content: response.data(using: .utf8), completion: .contentProcessed { _ in
+
+                var nextBuffer = buffer
+                if let data {
+                    nextBuffer.append(data)
+                }
+
+                guard let raw = String(data: nextBuffer, encoding: .utf8) else {
                     connection.cancel()
-                })
+                    return
+                }
+
+                let normalized = Self.normalizeHTTPRaw(raw)
+                if Self.hasCompleteRequest(normalized) {
+                    let response = self.response(for: normalized)
+                    connection.send(content: response.data(using: .utf8), completion: .contentProcessed { _ in
+                        connection.cancel()
+                    })
+                } else if isComplete {
+                    if Self.headerBodySplit(normalized) != nil {
+                        let response = self.response(for: normalized)
+                        connection.send(content: response.data(using: .utf8), completion: .contentProcessed { _ in
+                            connection.cancel()
+                        })
+                    } else {
+                        connection.cancel()
+                    }
+                } else {
+                    self.receiveRequest(on: connection, buffer: nextBuffer)
+                }
             }
         }
+    }
+
+    private func hasCompleteRequest(_ raw: String) -> Bool {
+        guard let split = Self.headerBodySplit(raw) else { return false }
+        let headers = split.headers
+        let body = split.body
+
+        for line in headers.split(separator: "\r\n") {
+            let lower = line.lowercased()
+            if lower.hasPrefix("content-length:") {
+                let value = lower.replacingOccurrences(of: "content-length:", with: "").trimmingCharacters(in: .whitespaces)
+                guard let expected = Int(value) else { return true }
+                return body.utf8.count >= expected
+            }
+        }
+
+        return true
+    }
+
+    private static func normalizeHTTPRaw(_ raw: String) -> String {
+        if raw.contains("\r\n") { return raw }
+        return raw.replacingOccurrences(of: "\n", with: "\r\n")
+    }
+
+    private static func headerBodySplit(_ raw: String) -> (headers: String, body: String)? {
+        if let range = raw.range(of: "\r\n\r\n") {
+            return (String(raw[..<range.lowerBound]), String(raw[range.upperBound...]))
+        }
+        return nil
     }
 
     private func response(for rawRequest: String) -> String {
         guard let request = HTTPRequest.parse(rawRequest) else { return notFound() }
 
+        if request.method == "GET", request.path == "/favicon.ico" {
+            return httpResponse(status: 204, contentType: "image/x-icon", body: "")
+        }
+
         if request.method == "GET", request.path == "/card.css" {
-            return textResponse(body: Self.loadResource(name: "card", ext: "css") ?? "", contentType: "text/css")
+            return textResponse(body: WebCardResourceLoader.css(), contentType: "text/css; charset=utf-8")
         }
 
         if request.method == "GET", request.path == "/card.js" {
-            return textResponse(body: Self.loadResource(name: "card", ext: "js") ?? "", contentType: "application/javascript")
+            return textResponse(body: WebCardResourceLoader.js(), contentType: "application/javascript; charset=utf-8")
         }
 
         if request.method == "GET", request.path.hasPrefix("/join/") {
-            let token = String(request.path.dropFirst("/join/".count))
+            let token = normalizeToken(String(request.path.dropFirst("/join/".count)))
             return htmlResponse(sessionToken: token)
         }
 
         if request.method == "GET", request.path.hasPrefix("/api/session/") {
-            let token = String(request.path.dropFirst("/api/session/".count))
+            let token = normalizeToken(String(request.path.dropFirst("/api/session/".count)))
             return sessionJSONResponse(sessionToken: token)
         }
 
         if request.method == "POST", request.path.hasPrefix("/api/session/") {
-            let token = String(request.path.dropFirst("/api/session/".count).split(separator: "/").first ?? "")
+            let remainder = String(request.path.dropFirst("/api/session/".count))
+            let token = normalizeToken(remainder.split(separator: "/").first.map(String.init) ?? remainder)
             return claimJSONResponse(sessionToken: token, body: request.body)
         }
 
         return notFound()
     }
 
+    private func normalizeToken(_ raw: String) -> String {
+        raw.split(separator: "/").first.map(String.init)?
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? raw
+    }
+
     private func htmlResponse(sessionToken: String) -> String {
         guard sessionStore.sessionToken == sessionToken else {
             return htmlPage(body: "<h1>Invalid or expired game link</h1>", status: 404)
         }
-        let html = (Self.loadResource(name: "index", ext: "html") ?? "")
-            .replacingOccurrences(of: "{{TOKEN}}", with: sessionToken)
+        let html = WebCardResourceLoader.indexHTML(replacingToken: sessionToken)
+        guard !html.isEmpty else {
+            return htmlPage(body: "<h1>Game page unavailable</h1><p>Ask the host to restart distribution.</p>", status: 500)
+        }
         return htmlPage(body: html, status: 200)
     }
 
@@ -155,7 +236,8 @@ final class LocalNetworkCardServer {
             "players": players,
             "claimedCards": claimed,
             "faceDownCardCount": snapshot.faceDownCardCount,
-            "showRoleOnCard": snapshot.showRoleOnCard
+            "showRoleOnCard": snapshot.showRoleOnCard,
+            "revision": snapshot.revision
         ]
 
         return jsonPage(body: Self.encodeJSON(payload), status: 200)
@@ -179,7 +261,8 @@ final class LocalNetworkCardServer {
             var payload: [String: Any] = [
                 "role": assignment.role.rawValue,
                 "showRoleOnCard": sessionStore.showRoleOnCard,
-                "faceDownCardCount": sessionStore.faceDownCardCount
+                "faceDownCardCount": sessionStore.faceDownCardCount,
+                "revision": sessionStore.revision
             ]
             if let word = assignment.word { payload["word"] = word }
             if let hint = assignment.categoryHint { payload["categoryHint"] = hint }
@@ -189,9 +272,9 @@ final class LocalNetworkCardServer {
             return jsonPage(body: Self.encodeJSON(payload), status: 200)
 
         case .failure(.cardTaken):
-            return jsonPage(body: #"{"error":"card_taken"}"#, status: 409)
+            return jsonPage(body: #"{"error":"card_taken","revision":\#(sessionStore.revision)}"#, status: 409)
         case .failure(.alreadyClaimed):
-            return jsonPage(body: #"{"error":"already_claimed"}"#, status: 409)
+            return jsonPage(body: #"{"error":"already_claimed","revision":\#(sessionStore.revision)}"#, status: 409)
         case .failure(.hostMustUseApp):
             return jsonPage(body: #"{"error":"host_must_use_app"}"#, status: 403)
         case .failure(.unknownPlayer):
@@ -209,20 +292,12 @@ final class LocalNetworkCardServer {
         return body
     }
 
-    private static func loadResource(name: String, ext: String) -> String? {
-        guard let url = Bundle.main.url(forResource: name, withExtension: ext, subdirectory: "Resources/WebCard")
-            ?? Bundle.main.url(forResource: name, withExtension: ext) else {
-            return nil
-        }
-        return try? String(contentsOf: url, encoding: .utf8)
-    }
-
     private func htmlPage(body: String, status: Int) -> String {
         httpResponse(status: status, contentType: "text/html; charset=utf-8", body: body)
     }
 
     private func jsonPage(body: String, status: Int) -> String {
-        httpResponse(status: status, contentType: "application/json", body: body)
+        httpResponse(status: status, contentType: "application/json; charset=utf-8", body: body)
     }
 
     private func textResponse(body: String, contentType: String) -> String {
@@ -236,6 +311,7 @@ final class LocalNetworkCardServer {
         case 403: "Forbidden"
         case 404: "Not Found"
         case 409: "Conflict"
+        case 500: "Internal Server Error"
         default: "Error"
         }
         return """
@@ -244,6 +320,7 @@ final class LocalNetworkCardServer {
         Content-Length: \(body.utf8.count)\r
         Connection: close\r
         Cache-Control: no-store\r
+        Access-Control-Allow-Origin: *\r
         \r
         \(body)
         """
@@ -254,16 +331,17 @@ final class LocalNetworkCardServer {
     }
 
     private static func localWiFiAddress() -> String? {
-        var address: String?
         var ifaddr: UnsafeMutablePointer<ifaddrs>?
         guard getifaddrs(&ifaddr) == 0, let first = ifaddr else { return nil }
         defer { freeifaddrs(ifaddr) }
+
+        let preferredInterfaces = ["en0", "en1", "pdp_ip0"]
+        var found: [String: String] = [:]
 
         for ptr in sequence(first: first, next: { $0.pointee.ifa_next }) {
             let interface = ptr.pointee
             guard interface.ifa_addr.pointee.sa_family == UInt8(AF_INET) else { continue }
             let name = String(cString: interface.ifa_name)
-            guard name == "en0" else { continue }
             var hostname = [CChar](repeating: 0, count: Int(NI_MAXHOST))
             getnameinfo(
                 interface.ifa_addr,
@@ -274,9 +352,18 @@ final class LocalNetworkCardServer {
                 0,
                 NI_NUMERICHOST
             )
-            address = String(cString: hostname)
+            let address = String(cString: hostname)
+            guard !address.isEmpty, address != "127.0.0.1" else { continue }
+            found[name] = address
         }
-        return address
+
+        for interface in preferredInterfaces {
+            if let address = found[interface] {
+                return address
+            }
+        }
+
+        return found.values.first
     }
 }
 
@@ -286,7 +373,8 @@ private struct HTTPRequest {
     let body: String
 
     static func parse(_ raw: String) -> HTTPRequest? {
-        let parts = raw.split(separator: "\r\n\r\n", maxSplits: 1, omittingEmptySubsequences: false)
+        let normalized = raw.contains("\r\n") ? raw : raw.replacingOccurrences(of: "\n", with: "\r\n")
+        let parts = normalized.split(separator: "\r\n\r\n", maxSplits: 1, omittingEmptySubsequences: false)
         let headerBlock = String(parts.first ?? "")
         let body = parts.count > 1 ? String(parts[1]) : ""
 

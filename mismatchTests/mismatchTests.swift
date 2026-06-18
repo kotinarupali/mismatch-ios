@@ -579,3 +579,39 @@ struct GhostGuessTests {
         #expect(store.isSessionComplete == true)
     }
 }
+
+struct CloudCardDistributionTests {
+
+    @Test func lobbyOptionsHideCloudWhenNotConfigured() {
+        #expect(!DistributionMode.lobbyOptions.contains(.cloudQR))
+    }
+
+    @Test func applyRemoteCardSnapshotMarksPlayersPicked() {
+        let store = GameSessionStore()
+        store.createSession()
+        let guestId = UUID()
+        store.setPlayers([
+            PlayerSlot(id: UUID(), displayName: "You", avatarColor: .blue, isHost: true),
+            PlayerSlot(id: guestId, displayName: "Alex", avatarColor: .green, isHost: false),
+            PlayerSlot(id: UUID(), displayName: "Sam", avatarColor: .orange, isHost: false)
+        ])
+
+        let snapshot = RemoteCardSessionSnapshot(
+            players: [
+                .init(id: guestId, displayName: "Alex", hasOpenedCard: true)
+            ],
+            claimedCards: [
+                .init(cardIndex: 2, playerId: guestId, playerName: "Alex")
+            ],
+            faceDownCardCount: 4,
+            showRoleOnCard: false,
+            revision: 1
+        )
+
+        store.applyRemoteCardSnapshot(snapshot)
+
+        let guest = store.currentSession?.players.first { $0.id == guestId }
+        #expect(guest?.hasOpenedCard == true)
+        #expect(guest?.pickedCardIndex == 2)
+    }
+}

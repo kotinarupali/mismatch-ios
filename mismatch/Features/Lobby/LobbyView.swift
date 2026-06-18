@@ -168,10 +168,17 @@ struct LobbyView: View {
                     )
                     Divider().overlay(AppColor.cardBorder).padding(.horizontal, 16)
                     SettingsPickerRow(icon: "qrcode", title: "Distribution", selection: distributionModeBinding) {
-                        ForEach(DistributionMode.allCases, id: \.self) { mode in
+                        ForEach(DistributionMode.lobbyOptions, id: \.self) { mode in
                             Text(mode.displayName).tag(mode)
                         }
                     }
+
+                    Text(viewModel.distributionMode.detail)
+                        .font(AppTypography.caption)
+                        .foregroundStyle(AppColor.secondaryLabel)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 12)
                 }
                 .padding(.top, 10)
             }

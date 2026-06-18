@@ -31,6 +31,7 @@ struct LocalCardSessionSnapshot: Sendable {
     let claimedCards: [ClaimedCard]
     let faceDownCardCount: Int
     let showRoleOnCard: Bool
+    let revision: Int
 }
 
 @MainActor
@@ -45,6 +46,7 @@ final class LocalCardSessionStore {
     private(set) var faceDownCardCount = 4
     private(set) var showRoleOnCard = false
     private(set) var insiderWord: String?
+    private(set) var revision = 0
 
     var onClaim: ((UUID, Int) -> Void)?
 
@@ -96,7 +98,8 @@ final class LocalCardSessionStore {
             players: players,
             claimedCards: claimedCards,
             faceDownCardCount: faceDownCardCount,
-            showRoleOnCard: showRoleOnCard
+            showRoleOnCard: showRoleOnCard,
+            revision: revision
         )
     }
 
@@ -111,6 +114,7 @@ final class LocalCardSessionStore {
 
         claimedIndices[cardIndex] = playerId
         openedPlayerIds.insert(playerId)
+        revision += 1
         onClaim?(playerId, cardIndex)
         return .success(assignment)
     }
@@ -123,6 +127,7 @@ final class LocalCardSessionStore {
         playerNames.removeAll()
         hostPlayerIds.removeAll()
         insiderWord = nil
+        revision = 0
         onClaim = nil
     }
 }

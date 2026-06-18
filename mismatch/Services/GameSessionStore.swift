@@ -133,10 +133,24 @@ final class GameSessionStore {
         currentSession = session
     }
 
-    func setSharedJoinURL(_ url: String, sessionToken: String) {
+    func setSharedJoinURL(_ url: String, sessionToken: String, backend: CardDeliveryBackend = .local) {
         guard var session = currentSession else { return }
         session.sharedJoinURL = url
         session.joinSessionToken = sessionToken
+        session.cardDeliveryBackend = backend
+        currentSession = session
+    }
+
+    func applyRemoteCardSnapshot(_ snapshot: RemoteCardSessionSnapshot) {
+        guard var session = currentSession else { return }
+
+        for claim in snapshot.claimedCards {
+            guard let index = session.players.firstIndex(where: { $0.id == claim.playerId }) else { continue }
+            guard !session.players[index].hasOpenedCard else { continue }
+            session.players[index].hasOpenedCard = true
+            session.players[index].pickedCardIndex = claim.cardIndex
+        }
+
         currentSession = session
     }
 
@@ -256,6 +270,7 @@ final class GameSessionStore {
         session.forcedSessionOutcome = nil
         session.sharedJoinURL = nil
         session.joinSessionToken = nil
+        session.cardDeliveryBackend = .local
         session.players = session.players.map { player in
             var updated = player
             updated.assignment = nil

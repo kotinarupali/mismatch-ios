@@ -1,0 +1,17 @@
+name = "mismatch-cards"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+
+# Static web files are bundled into the worker (avoids assets-upload-session API).
+
+[[rules]]
+type = "Text"
+globs = ["**/*.html", "**/*.css", "**/*.js"]
+fallthrough = true
+
+[durable_objects]
+bindings = [{ name = "CARD_SESSION", class_name = "CardSession" }]
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["CardSession"]

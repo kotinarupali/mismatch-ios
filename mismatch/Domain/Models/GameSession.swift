@@ -16,6 +16,7 @@ struct GameSession: Identifiable, Codable, Equatable, Sendable {
     var forcedSessionOutcome: RoundOutcome?
     var sharedJoinURL: String?
     var joinSessionToken: String?
+    var cardDeliveryBackend: CardDeliveryBackend
 
     init(
         id: UUID = UUID(),
@@ -32,7 +33,8 @@ struct GameSession: Identifiable, Codable, Equatable, Sendable {
         currentMismatchWord: String? = nil,
         forcedSessionOutcome: RoundOutcome? = nil,
         sharedJoinURL: String? = nil,
-        joinSessionToken: String? = nil
+        joinSessionToken: String? = nil,
+        cardDeliveryBackend: CardDeliveryBackend = .local
     ) {
         self.id = id
         self.createdAt = createdAt
@@ -49,6 +51,7 @@ struct GameSession: Identifiable, Codable, Equatable, Sendable {
         self.forcedSessionOutcome = forcedSessionOutcome
         self.sharedJoinURL = sharedJoinURL
         self.joinSessionToken = joinSessionToken
+        self.cardDeliveryBackend = cardDeliveryBackend
     }
 
     var playerCount: Int { players.count }

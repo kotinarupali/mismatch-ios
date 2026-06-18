@@ -10,6 +10,7 @@ final class AppDependencies {
     let timerService: TimerService
     let localCardSessionStore: LocalCardSessionStore
     let localNetworkCardServer: LocalNetworkCardServer
+    let remoteCardSessionClient: RemoteCardSessionClient
     private(set) lazy var lobbyViewModel = LobbyViewModel(dependencies: self)
 
     init() {
@@ -21,6 +22,7 @@ final class AppDependencies {
         timerService = TimerService()
         localCardSessionStore = LocalCardSessionStore()
         localNetworkCardServer = LocalNetworkCardServer(sessionStore: localCardSessionStore)
+        remoteCardSessionClient = RemoteCardSessionClient()
     }
 
     init(
@@ -31,7 +33,8 @@ final class AppDependencies {
         router: AppRouter,
         timerService: TimerService,
         localCardSessionStore: LocalCardSessionStore,
-        localNetworkCardServer: LocalNetworkCardServer
+        localNetworkCardServer: LocalNetworkCardServer,
+        remoteCardSessionClient: RemoteCardSessionClient
     ) {
         self.gameSessionStore = gameSessionStore
         self.wordPackLoader = wordPackLoader
@@ -41,11 +44,22 @@ final class AppDependencies {
         self.timerService = timerService
         self.localCardSessionStore = localCardSessionStore
         self.localNetworkCardServer = localNetworkCardServer
+        self.remoteCardSessionClient = remoteCardSessionClient
+    }
+
+    func stopCardDelivery() {
+        localNetworkCardServer.stop()
+        guard let session = gameSessionStore.currentSession,
+              session.cardDeliveryBackend == .cloud,
+              let token = session.joinSessionToken else { return }
+        Task {
+            await remoteCardSessionClient.invalidate(token: token)
+        }
     }
 
     func repickRoles() {
         timerService.stop()
-        localNetworkCardServer.stop()
+        stopCardDelivery()
         gameSessionStore.resetRoundForPlayAgain()
         lobbyViewModel.reloadFromSession()
         router.replaceWithLobby()
@@ -57,7 +71,7 @@ final class AppDependencies {
 
     func endGame() {
         timerService.stop()
-        localNetworkCardServer.stop()
+        stopCardDelivery()
         gameSessionStore.reset()
         router.popToRoot()
     }

@@ -19,7 +19,7 @@ struct QRGridView: View {
         ) {
             VStack(spacing: 16) {
                 if viewModel.serverFailed {
-                    Text("Could not start local card server. Use pass-the-phone instead.")
+                    Text(viewModel.serverFailureMessage)
                         .font(AppTypography.caption)
                         .foregroundStyle(.red)
 
@@ -80,6 +80,13 @@ struct QRGridView: View {
                 .foregroundStyle(AppColor.secondaryLabel)
                 .multilineTextAlignment(.center)
 
+            requirementsSection
+
+            Text(viewModel.joinInstructions)
+                .font(AppTypography.caption)
+                .foregroundStyle(AppColor.accent)
+                .multilineTextAlignment(.center)
+
             if let image = viewModel.qrImage {
                 Image(uiImage: image)
                     .interpolation(.none)
@@ -98,9 +105,24 @@ struct QRGridView: View {
                     .foregroundStyle(AppColor.secondaryLabel)
                     .multilineTextAlignment(.center)
                     .lineLimit(3)
+                    .textSelection(.enabled)
 
-                SecondaryButton(title: "Copy Link") {
-                    viewModel.copySharedLink()
+                HStack(spacing: 12) {
+                    SecondaryButton(title: "Copy Link") {
+                        viewModel.copySharedLink()
+                    }
+
+                    if let shareURL = URL(string: url) {
+                        ShareLink(item: shareURL) {
+                            Text("Send Link")
+                                .font(AppTypography.body.weight(.semibold))
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .background(AppColor.backgroundElevated)
+                                .foregroundStyle(AppColor.label)
+                                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        }
+                    }
                 }
             }
         }
@@ -112,6 +134,19 @@ struct QRGridView: View {
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .strokeBorder(AppColor.cardBorder, lineWidth: 1)
         }
+    }
+
+    private var requirementsSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Requirements")
+                .font(AppTypography.caption)
+                .foregroundStyle(AppColor.secondaryLabel)
+            Text(viewModel.requirementsText)
+                .font(AppTypography.caption)
+                .foregroundStyle(AppColor.secondaryLabel.opacity(0.9))
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(.top, 4)
     }
 
     private var playerStatusSection: some View {
