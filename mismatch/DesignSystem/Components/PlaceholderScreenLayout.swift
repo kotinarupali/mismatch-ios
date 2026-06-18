@@ -156,6 +156,33 @@ struct SettingsPickerRow<Selection: Hashable, Content: View>: View {
     }
 }
 
+struct HostPlayerChip: View {
+    var body: some View {
+        HStack(spacing: 10) {
+            AvatarView(name: "You", color: .blue, size: 36)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("You")
+                    .font(AppTypography.body)
+                    .foregroundStyle(AppColor.label)
+                Text("Host · playing")
+                    .font(AppTypography.caption)
+                    .foregroundStyle(AppColor.secondaryLabel)
+            }
+            Spacer()
+            Image(systemName: "crown.fill")
+                .foregroundStyle(AppColor.warning)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .background(AppColor.backgroundElevated.opacity(0.9))
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .strokeBorder(AppColor.warning.opacity(0.35), lineWidth: 1)
+        }
+    }
+}
+
 struct PlayerChip: View {
     let name: String
     let color: AvatarColor

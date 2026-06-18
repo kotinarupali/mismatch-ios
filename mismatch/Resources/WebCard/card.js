@@ -18,9 +18,13 @@
     });
 
   function renderPick(data) {
+    const count = data.faceDownCardCount || 4;
     app.innerHTML = '<h2>Pick a card</h2><div class="grid" id="grid"></div>';
     const grid = document.getElementById('grid');
-    for (let i = 0; i < 4; i++) {
+    if (count <= 3) {
+      grid.style.gridTemplateColumns = 'repeat(' + count + ', 1fr)';
+    }
+    for (let i = 0; i < count; i++) {
       const btn = document.createElement('button');
       btn.className = 'card-back';
       btn.textContent = '?';

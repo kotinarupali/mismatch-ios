@@ -16,12 +16,22 @@ struct LobbyView: View {
                     Divider().overlay(AppColor.cardBorder).padding(.horizontal, 16)
                     SettingsToggleRow(icon: "eye.slash.fill", title: "Show role on card", isOn: $viewModel.showRoleOnCard)
                     Divider().overlay(AppColor.cardBorder).padding(.horizontal, 16)
+                    SettingsToggleRow(
+                        icon: "person.2.fill",
+                        title: "Mismatch & Ghost alliance",
+                        isOn: $viewModel.mismatchGhostAlliance
+                    )
+                    Divider().overlay(AppColor.cardBorder).padding(.horizontal, 16)
                     SettingsPickerRow(icon: "qrcode", title: "Distribution", selection: $viewModel.distributionMode) {
                         ForEach(DistributionMode.allCases, id: \.self) { mode in
                             Text(mode.displayName).tag(mode)
                         }
                     }
                 }
+                .onChange(of: viewModel.hostIsPlaying) { viewModel.refreshSession() }
+                .onChange(of: viewModel.mismatchGhostAlliance) { viewModel.refreshSession() }
+                .onChange(of: viewModel.showRoleOnCard) { viewModel.refreshSession() }
+                .onChange(of: viewModel.distributionMode) { viewModel.refreshSession() }
 
                 HStack(spacing: 10) {
                     TextField("Player name", text: $viewModel.newPlayerName)
@@ -47,8 +57,17 @@ struct LobbyView: View {
                     .disabled(!viewModel.canAddPlayer)
                 }
 
-                if viewModel.playerNames.isEmpty {
-                    Text("Add at least 3 players to start.")
+                if viewModel.hostIsPlaying {
+                    HostPlayerChip()
+                }
+
+                if viewModel.playerNames.isEmpty && !viewModel.hostIsPlaying {
+                    Text("Add at least \(viewModel.guestsNeeded) players to start.")
+                        .font(AppTypography.caption)
+                        .foregroundStyle(AppColor.secondaryLabel)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                } else if viewModel.playerNames.count < viewModel.guestsNeeded {
+                    Text("Add \(viewModel.guestsNeeded - viewModel.playerNames.count) more guest\(viewModel.guestsNeeded - viewModel.playerNames.count == 1 ? "" : "s") to reach 3 players.")
                         .font(AppTypography.caption)
                         .foregroundStyle(AppColor.secondaryLabel)
                         .frame(maxWidth: .infinity, alignment: .leading)

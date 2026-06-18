@@ -7,6 +7,7 @@ final class LobbyViewModel {
 
     var hostIsPlaying: Bool
     var showRoleOnCard: Bool
+    var mismatchGhostAlliance: Bool
     var distributionMode: DistributionMode
     var playerNames: [String]
     var newPlayerName: String = ""
@@ -20,10 +21,19 @@ final class LobbyViewModel {
         let settings = dependencies.gameSessionStore.currentSession?.settings ?? .default
         hostIsPlaying = settings.hostIsPlaying
         showRoleOnCard = settings.showRoleOnCard
+        mismatchGhostAlliance = settings.mismatchGhostAlliance
         distributionMode = settings.distributionMode
         playerNames = dependencies.gameSessionStore.currentSession?.players
             .filter { !$0.isHost }
             .map(\.displayName) ?? []
+    }
+
+    var totalPlayerCount: Int {
+        playerNames.count + (hostIsPlaying ? 1 : 0)
+    }
+
+    var guestsNeeded: Int {
+        max(0, minimumPlayers - (hostIsPlaying ? 1 : 0))
     }
 
     var canAddPlayer: Bool {
@@ -31,16 +41,23 @@ final class LobbyViewModel {
     }
 
     var canContinue: Bool {
-        playerNames.count >= minimumPlayers && !isDistributing
+        totalPlayerCount >= minimumPlayers && !isDistributing
     }
 
     var statusMessage: String {
-        "\(playerNames.count) of \(minimumPlayers)+ players"
+        if hostIsPlaying {
+            return "\(totalPlayerCount) players · you + \(playerNames.count) guest\(playerNames.count == 1 ? "" : "s")"
+        }
+        return "\(totalPlayerCount) of \(minimumPlayers)+ players"
     }
 
     var playerColors: [AvatarColor] {
         let start = hostIsPlaying ? 1 : 0
         return playerNames.enumerated().map { AvatarColor.forIndex(start + $0.offset) }
+    }
+
+    func refreshSession() {
+        syncSession()
     }
 
     func addPlayer() {
@@ -117,7 +134,8 @@ final class LobbyViewModel {
     private func syncSession() {
         var settings = dependencies.gameSessionStore.currentSession?.settings ?? .default
         settings.hostIsPlaying = hostIsPlaying
-        settings.ghostEnabled = false
+        settings.ghostEnabled = mismatchGhostAlliance
+        settings.mismatchGhostAlliance = mismatchGhostAlliance
         settings.showRoleOnCard = showRoleOnCard
         settings.distributionMode = distributionMode
         dependencies.gameSessionStore.updateSettings(settings)

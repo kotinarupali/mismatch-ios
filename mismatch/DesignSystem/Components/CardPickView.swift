@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct CardPickView: View {
+    let cardCount: Int
     let showRoleOnCard: Bool
     let assignment: RoleAssignment
     let onComplete: () -> Void
@@ -12,7 +13,11 @@ struct CardPickView: View {
         case revealed
     }
 
-    private let cardCount = 4
+    private var columns: [GridItem] {
+        cardCount <= 3
+            ? Array(repeating: GridItem(.flexible()), count: cardCount)
+            : [GridItem(.flexible()), GridItem(.flexible())]
+    }
 
     var body: some View {
         VStack(spacing: 24) {
@@ -22,7 +27,7 @@ struct CardPickView: View {
                     .font(AppTypography.headline)
                     .foregroundStyle(AppColor.label)
 
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
+                LazyVGrid(columns: columns, spacing: 16) {
                     ForEach(0..<cardCount, id: \.self) { _ in
                         Button {
                             withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) {
@@ -66,7 +71,9 @@ struct CardPickView: View {
                         onComplete()
                     }
                 }
+                .transition(.opacity)
             }
         }
+        .animation(.easeInOut(duration: 0.2), value: phase)
     }
 }

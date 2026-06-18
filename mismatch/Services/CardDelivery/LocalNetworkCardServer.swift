@@ -25,6 +25,7 @@ final class LocalNetworkCardServer {
         tokenStore.clear()
 
         var urls: [UUID: String] = [:]
+        let faceDownCardCount = CardPickRules.faceDownCardCount(playerCount: session.players.count)
 
         for player in session.players where player.assignment != nil {
             let token = UUID().uuidString.replacingOccurrences(of: "-", with: "").lowercased()
@@ -35,7 +36,8 @@ final class LocalNetworkCardServer {
                 role: assignment.role,
                 word: assignment.word,
                 categoryHint: assignment.categoryHint,
-                showRoleOnCard: session.settings.showRoleOnCard
+                showRoleOnCard: session.settings.showRoleOnCard,
+                faceDownCardCount: faceDownCardCount
             ))
         }
 
@@ -139,7 +141,8 @@ final class LocalNetworkCardServer {
 
         var payload: [String: Any] = [
             "role": card.role.rawValue,
-            "showRoleOnCard": card.showRoleOnCard
+            "showRoleOnCard": card.showRoleOnCard,
+            "faceDownCardCount": card.faceDownCardCount
         ]
         if let word = card.word { payload["word"] = word }
         if let hint = card.categoryHint { payload["categoryHint"] = hint }

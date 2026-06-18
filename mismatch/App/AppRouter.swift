@@ -31,4 +31,17 @@ final class AppRouter {
         path = NavigationPath()
         path.append(AppRoute.lobby)
     }
+
+    func popLast(_ count: Int) {
+        guard count > 0 else { return }
+        let removeCount = min(count, path.count)
+        for _ in 0..<removeCount {
+            path.removeLast()
+        }
+    }
+
+    func continueToDiscussion() {
+        popLast(3)
+        path.append(AppRoute.discussion)
+    }
 }

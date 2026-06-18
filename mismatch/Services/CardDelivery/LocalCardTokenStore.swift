@@ -7,6 +7,7 @@ struct LocalCardToken: Sendable {
     let word: String?
     let categoryHint: String?
     let showRoleOnCard: Bool
+    let faceDownCardCount: Int
 }
 
 @MainActor

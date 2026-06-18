@@ -19,6 +19,12 @@ final class MyCardViewModel {
             .assignment
     }
 
+    var faceDownCardCount: Int {
+        CardPickRules.faceDownCardCount(
+            playerCount: dependencies.gameSessionStore.currentSession?.players.count ?? 3
+        )
+    }
+
     func markOpened() {
         guard let hostId = dependencies.gameSessionStore.currentSession?.players
             .first(where: \.isHost)?.id else { return }

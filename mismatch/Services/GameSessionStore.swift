@@ -85,14 +85,29 @@ final class GameSessionStore {
 
         session.players[playerIndex].isEliminated = true
         let eliminated = session.players[playerIndex]
-        let outcome = WinConditionEvaluator.evaluate(eliminatedPlayer: eliminated)
 
         if session.currentRoundIndex < session.rounds.count {
             session.rounds[session.currentRoundIndex].eliminatedPlayerId = playerId
-            session.rounds[session.currentRoundIndex].outcome = outcome
+            session.rounds[session.currentRoundIndex].outcome = SessionWinChecker.checkWinner(
+                players: session.players,
+                settings: session.settings
+            )
         }
 
         session.state = .revealing
+        currentSession = session
+
+        _ = eliminated
+    }
+
+    func continueAfterElimination() {
+        guard var session = currentSession else { return }
+        guard sessionWinner == nil else { return }
+
+        let round = Round(index: session.rounds.count, wordPairId: currentRound?.wordPairId)
+        session.rounds.append(round)
+        session.currentRoundIndex = session.rounds.count - 1
+        session.state = .discussing
         currentSession = session
     }
 
@@ -128,6 +143,19 @@ final class GameSessionStore {
               let round = currentRound,
               let id = round.eliminatedPlayerId else { return nil }
         return session.players.first { $0.id == id }
+    }
+
+    var sessionWinner: RoundOutcome? {
+        guard let session = currentSession else { return nil }
+        return SessionWinChecker.checkWinner(players: session.players, settings: session.settings)
+    }
+
+    var isSessionComplete: Bool {
+        sessionWinner != nil
+    }
+
+    var activePlayerCount: Int {
+        currentSession?.players.filter { !$0.isEliminated }.count ?? 0
     }
 
     var roundOutcome: RoundOutcome? {

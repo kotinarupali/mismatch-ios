@@ -9,8 +9,21 @@ final class ResultsViewModel {
         self.dependencies = dependencies
     }
 
-    var outcomeText: String {
-        dependencies.gameSessionStore.roundOutcome?.displayText ?? "Round complete"
+    var isSessionComplete: Bool {
+        dependencies.gameSessionStore.isSessionComplete
+    }
+
+    var sessionWinnerText: String? {
+        guard let winner = dependencies.gameSessionStore.sessionWinner else { return nil }
+        let alliance = dependencies.gameSessionStore.currentSession?.settings.mismatchGhostAlliance ?? false
+        return winner.displayText(allianceEnabled: alliance)
+    }
+
+    var roundSummary: String {
+        if isSessionComplete, let winner = sessionWinnerText {
+            return winner
+        }
+        return "\(dependencies.gameSessionStore.activePlayerCount) players still in the game"
     }
 
     var eliminatedName: String {
@@ -26,6 +39,11 @@ final class ResultsViewModel {
 
     var eliminatedWord: String {
         dependencies.gameSessionStore.eliminatedPlayer?.assignment?.word ?? "None"
+    }
+
+    func continueTapped() {
+        dependencies.gameSessionStore.continueAfterElimination()
+        dependencies.router.continueToDiscussion()
     }
 
     func playAgainTapped() {

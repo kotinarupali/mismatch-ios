@@ -5,9 +5,9 @@ struct ResultsView: View {
 
     var body: some View {
         PlaceholderScreenLayout(
-            title: "Reveal",
-            subtitle: viewModel.outcomeText,
-            icon: "sparkles",
+            title: viewModel.isSessionComplete ? "Game Over" : "Eliminated",
+            subtitle: viewModel.roundSummary,
+            icon: viewModel.isSessionComplete ? "trophy.fill" : "person.crop.circle.badge.xmark",
             roomStyle: .reveal
         ) {
             VStack(spacing: 16) {
@@ -15,12 +15,26 @@ struct ResultsView: View {
                 OutcomeCard(title: "Role", value: viewModel.eliminatedRole, icon: "theatermasks.fill")
                 OutcomeCard(title: "Word", value: viewModel.eliminatedWord, icon: "text.quote")
 
-                PrimaryButton(title: "Play Again") {
-                    viewModel.playAgainTapped()
-                }
+                if viewModel.isSessionComplete {
+                    if let winner = viewModel.sessionWinnerText {
+                        OutcomeCard(title: "Winner", value: winner, icon: "trophy.fill")
+                    }
 
-                SecondaryButton(title: "New Game") {
-                    viewModel.newGameTapped()
+                    PrimaryButton(title: "Play Again") {
+                        viewModel.playAgainTapped()
+                    }
+
+                    SecondaryButton(title: "New Game") {
+                        viewModel.newGameTapped()
+                    }
+                } else {
+                    PrimaryButton(title: "Continue Discussion") {
+                        viewModel.continueTapped()
+                    }
+
+                    SecondaryButton(title: "End Game") {
+                        viewModel.newGameTapped()
+                    }
                 }
             }
         }

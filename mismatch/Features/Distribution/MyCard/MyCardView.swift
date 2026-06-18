@@ -12,6 +12,7 @@ struct MyCardView: View {
                 VStack {
                     if let assignment = viewModel.assignment {
                         CardPickView(
+                            cardCount: viewModel.faceDownCardCount,
                             showRoleOnCard: viewModel.showRoleOnCard,
                             assignment: assignment,
                             onComplete: {

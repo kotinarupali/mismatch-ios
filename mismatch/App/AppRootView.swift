@@ -22,6 +22,7 @@ struct AppRootView: View {
                         QRGridView(viewModel: QRGridViewModel(dependencies: dependencies))
                     case .discussion:
                         DiscussionView(viewModel: DiscussionViewModel(dependencies: dependencies))
+                            .id(discussionRoundId)
                     case .voting:
                         VotingView(viewModel: VotingViewModel(dependencies: dependencies))
                     case .results:
@@ -30,5 +31,9 @@ struct AppRootView: View {
                 }
         }
         .preferredColorScheme(.dark)
+    }
+
+    private var discussionRoundId: Int {
+        dependencies.gameSessionStore.currentSession?.currentRoundIndex ?? 0
     }
 }

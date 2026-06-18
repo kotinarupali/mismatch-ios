@@ -7,6 +7,7 @@ final class PassThePhoneViewModel {
 
     private var passOrder: [PlayerSlot] = []
     private var currentIndex = 0
+    private(set) var awaitingHandoff = false
 
     init(dependencies: AppDependencies) {
         self.dependencies = dependencies
@@ -21,14 +22,26 @@ final class PassThePhoneViewModel {
 
     var title: String {
         guard currentPlayer != nil else { return "All roles revealed" }
-        return "Pass the phone"
+        return awaitingHandoff ? "Hand off the phone" : "Pass the phone"
     }
 
     var subtitle: String {
         guard let player = currentPlayer else {
             return "Everyone has seen their card."
         }
+        if awaitingHandoff {
+            return "Give the phone to \(player.isHost ? "You" : player.displayName). Only they should tap below."
+        }
         return "Pass to \(player.isHost ? "You" : player.displayName)"
+    }
+
+    var currentPlayerId: UUID? {
+        currentPlayer?.id
+    }
+
+    var currentPlayerDisplayName: String {
+        guard let player = currentPlayer else { return "Player" }
+        return player.isHost ? "You" : player.displayName
     }
 
     var showRoleOnCard: Bool {
@@ -39,9 +52,23 @@ final class PassThePhoneViewModel {
         currentPlayer?.assignment
     }
 
+    var faceDownCardCount: Int {
+        CardPickRules.faceDownCardCount(
+            playerCount: dependencies.gameSessionStore.currentSession?.players.count ?? 3
+        )
+    }
+
+    var canShowCardPick: Bool {
+        currentAssignment != nil && !awaitingHandoff
+    }
+
     private var currentPlayer: PlayerSlot? {
         guard currentIndex < passOrder.count else { return nil }
         return passOrder[currentIndex]
+    }
+
+    func readyToPickTapped() {
+        awaitingHandoff = false
     }
 
     func cardCompleted() {
@@ -52,6 +79,9 @@ final class PassThePhoneViewModel {
         if dependencies.gameSessionStore.allCardsOpened() {
             dependencies.gameSessionStore.startDiscussion()
             dependencies.router.navigate(to: .discussion)
+            return
         }
+
+        awaitingHandoff = true
     }
 }

@@ -43,24 +43,58 @@ struct GameSessionStoreTests {
     }
 }
 
-struct WinConditionEvaluatorTests {
+struct SessionWinCheckerTests {
 
-    @Test func insiderSideWinsWhenMismatchEliminated() {
-        let player = PlayerSlot(
-            displayName: "Sam",
-            avatarColor: .red,
-            assignment: RoleAssignment(role: .mismatch, word: "Calzone")
-        )
-        #expect(WinConditionEvaluator.evaluate(eliminatedPlayer: player) == .insiderSideWins)
+    @Test func gameContinuesAfterSingleInsiderEliminated() {
+        let players = [
+            PlayerSlot(displayName: "A", avatarColor: .red, assignment: RoleAssignment(role: .insider, word: "A"), isEliminated: true),
+            PlayerSlot(displayName: "B", avatarColor: .blue, assignment: RoleAssignment(role: .insider, word: "A")),
+            PlayerSlot(displayName: "C", avatarColor: .green, assignment: RoleAssignment(role: .mismatch, word: "B"))
+        ]
+        let settings = GameSettings.default
+        #expect(SessionWinChecker.checkWinner(players: players, settings: settings) == nil)
     }
 
-    @Test func mismatchWinsWhenInsiderEliminated() {
-        let player = PlayerSlot(
-            displayName: "Sam",
-            avatarColor: .red,
-            assignment: RoleAssignment(role: .insider, word: "Pizza")
-        )
-        #expect(WinConditionEvaluator.evaluate(eliminatedPlayer: player) == .mismatchWins)
+    @Test func insidersWinWhenAllMismatchEliminated() {
+        let players = [
+            PlayerSlot(displayName: "A", avatarColor: .red, assignment: RoleAssignment(role: .insider, word: "A")),
+            PlayerSlot(displayName: "B", avatarColor: .blue, assignment: RoleAssignment(role: .mismatch, word: "B"), isEliminated: true),
+            PlayerSlot(displayName: "C", avatarColor: .green, assignment: RoleAssignment(role: .insider, word: "A"))
+        ]
+        #expect(SessionWinChecker.checkWinner(players: players, settings: .default) == .insiderSideWins)
+    }
+
+    @Test func mismatchWinsWhenAllInsidersEliminated() {
+        let players = [
+            PlayerSlot(displayName: "A", avatarColor: .red, assignment: RoleAssignment(role: .insider, word: "A"), isEliminated: true),
+            PlayerSlot(displayName: "B", avatarColor: .blue, assignment: RoleAssignment(role: .insider, word: "A"), isEliminated: true),
+            PlayerSlot(displayName: "C", avatarColor: .green, assignment: RoleAssignment(role: .mismatch, word: "B"))
+        ]
+        #expect(SessionWinChecker.checkWinner(players: players, settings: .default) == .mismatchWins)
+    }
+
+    @Test func allianceOutsidersWinWhenInsidersEliminated() {
+        var settings = GameSettings.default
+        settings.mismatchGhostAlliance = true
+        let players = [
+            PlayerSlot(displayName: "A", avatarColor: .red, assignment: RoleAssignment(role: .insider, word: "A"), isEliminated: true),
+            PlayerSlot(displayName: "B", avatarColor: .blue, assignment: RoleAssignment(role: .insider, word: "A"), isEliminated: true),
+            PlayerSlot(displayName: "C", avatarColor: .green, assignment: RoleAssignment(role: .mismatch, word: "B")),
+            PlayerSlot(displayName: "D", avatarColor: .orange, assignment: RoleAssignment(role: .ghost), isEliminated: true)
+        ]
+        #expect(SessionWinChecker.checkWinner(players: players, settings: settings) == .outsiderSideWins)
+    }
+
+    @Test func allianceInsidersWinWhenAllOutsidersEliminated() {
+        var settings = GameSettings.default
+        settings.mismatchGhostAlliance = true
+        let players = [
+            PlayerSlot(displayName: "A", avatarColor: .red, assignment: RoleAssignment(role: .insider, word: "A")),
+            PlayerSlot(displayName: "B", avatarColor: .blue, assignment: RoleAssignment(role: .mismatch, word: "B"), isEliminated: true),
+            PlayerSlot(displayName: "C", avatarColor: .green, assignment: RoleAssignment(role: .ghost), isEliminated: true),
+            PlayerSlot(displayName: "D", avatarColor: .orange, assignment: RoleAssignment(role: .insider, word: "A"))
+        ]
+        #expect(SessionWinChecker.checkWinner(players: players, settings: settings) == .insiderSideWins)
     }
 }
 
@@ -121,5 +155,14 @@ struct CardURLBuilderTests {
     @Test func buildsCardURL() {
         let url = CardURLBuilder().cardURL(baseURL: "http://192.168.1.10:8080", token: "abc")
         #expect(url == "http://192.168.1.10:8080/c/abc")
+    }
+}
+
+struct CardPickRulesTests {
+
+    @Test func scalesWithPlayerCount() {
+        #expect(CardPickRules.faceDownCardCount(playerCount: 3) == 3)
+        #expect(CardPickRules.faceDownCardCount(playerCount: 5) == 5)
+        #expect(CardPickRules.faceDownCardCount(playerCount: 8) == 6)
     }
 }
