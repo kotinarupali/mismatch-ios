@@ -15,7 +15,7 @@ struct AppRootView: View {
                 .navigationDestination(for: AppRoute.self) { route in
                     switch route {
                     case .lobby:
-                        LobbyView(viewModel: LobbyViewModel(dependencies: dependencies))
+                        LobbyView(viewModel: dependencies.lobbyViewModel)
                     case .passThePhone:
                         PassThePhoneView(viewModel: PassThePhoneViewModel(dependencies: dependencies))
                     case .qrGrid:

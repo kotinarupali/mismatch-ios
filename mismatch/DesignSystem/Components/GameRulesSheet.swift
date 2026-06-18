@@ -102,7 +102,7 @@ struct GameRulesSheet: View {
 
             Ghost wins if all Insiders are eliminated, no Mismatch remains, and a Ghost is still in the game — or if an eliminated Ghost guesses the secret word correctly.
 
-            With Mismatch & Ghost alliance enabled, outsiders share a team win when Insiders are eliminated.
+            With Mismatch & Ghost alliance enabled, outsiders share a team win — if either Mismatch or Ghost wins, the whole team wins.
             """
         )
     }

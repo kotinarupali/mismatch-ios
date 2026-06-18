@@ -117,8 +117,6 @@ final class ResultsViewModel {
         ghostGuess = ""
         if isCorrect {
             ghostGuessFeedback = nil
-        } else if let insiderWord = dependencies.gameSessionStore.insiderWord {
-            ghostGuessFeedback = "Wrong guess. The insider word was \(insiderWord)."
         } else {
             ghostGuessFeedback = "Wrong guess."
         }

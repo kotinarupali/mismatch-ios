@@ -14,6 +14,8 @@ struct GameSession: Identifiable, Codable, Equatable, Sendable {
     var currentInsiderWord: String?
     var currentMismatchWord: String?
     var forcedSessionOutcome: RoundOutcome?
+    var sharedJoinURL: String?
+    var joinSessionToken: String?
 
     init(
         id: UUID = UUID(),
@@ -28,7 +30,9 @@ struct GameSession: Identifiable, Codable, Equatable, Sendable {
         discussionStartPlayerId: UUID? = nil,
         currentInsiderWord: String? = nil,
         currentMismatchWord: String? = nil,
-        forcedSessionOutcome: RoundOutcome? = nil
+        forcedSessionOutcome: RoundOutcome? = nil,
+        sharedJoinURL: String? = nil,
+        joinSessionToken: String? = nil
     ) {
         self.id = id
         self.createdAt = createdAt
@@ -43,6 +47,8 @@ struct GameSession: Identifiable, Codable, Equatable, Sendable {
         self.currentInsiderWord = currentInsiderWord
         self.currentMismatchWord = currentMismatchWord
         self.forcedSessionOutcome = forcedSessionOutcome
+        self.sharedJoinURL = sharedJoinURL
+        self.joinSessionToken = joinSessionToken
     }
 
     var playerCount: Int { players.count }

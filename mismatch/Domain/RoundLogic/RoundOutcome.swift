@@ -9,8 +9,10 @@ enum RoundOutcome: String, Codable, Sendable {
     func displayText(allianceEnabled: Bool = false) -> String {
         switch self {
         case .insiderSideWins: "Insider side wins"
-        case .mismatchWins: "Mismatch wins"
-        case .ghostWins: "Ghost wins"
+        case .mismatchWins:
+            allianceEnabled ? "Mismatch & Ghost win" : "Mismatch wins"
+        case .ghostWins:
+            allianceEnabled ? "Mismatch & Ghost win" : "Ghost wins"
         case .outsiderSideWins: allianceEnabled ? "Mismatch & Ghost win" : "Outsiders win"
         }
     }
@@ -18,8 +20,10 @@ enum RoundOutcome: String, Codable, Sendable {
     func celebrationHeadline(allianceEnabled: Bool = false) -> String {
         switch self {
         case .insiderSideWins: "Insiders win!"
-        case .mismatchWins: "Mismatch wins!"
-        case .ghostWins: "Ghost wins!"
+        case .mismatchWins:
+            allianceEnabled ? "Mismatch & Ghost win!" : "Mismatch wins!"
+        case .ghostWins:
+            allianceEnabled ? "Mismatch & Ghost win!" : "Ghost wins!"
         case .outsiderSideWins: allianceEnabled ? "Mismatch & Ghost win!" : "Outsiders win!"
         }
     }
@@ -27,8 +31,8 @@ enum RoundOutcome: String, Codable, Sendable {
     func winningRoles(allianceEnabled: Bool = false) -> Set<Role> {
         switch self {
         case .insiderSideWins: [.insider]
-        case .mismatchWins: [.mismatch]
-        case .ghostWins: [.ghost]
+        case .mismatchWins: allianceEnabled ? [.mismatch, .ghost] : [.mismatch]
+        case .ghostWins: allianceEnabled ? [.mismatch, .ghost] : [.ghost]
         case .outsiderSideWins: [.mismatch, .ghost]
         }
     }

@@ -4,47 +4,71 @@ import UIKit
 @MainActor
 @Observable
 final class QRGridViewModel {
-    struct PlayerRow: Identifiable {
-        let id: UUID
-        let displayName: String
-        let cardURL: String?
-        let qrImage: UIImage?
-    }
-
     let dependencies: AppDependencies
 
-    private(set) var playerRows: [PlayerRow] = []
     private(set) var serverFailed = false
-    private(set) var statusMessage = "Scan a QR code to open your role card."
     var showPlayerRolePicker = false
     var playerToReveal: PlayerSlot?
 
+    init(dependencies: AppDependencies) {
+        self.dependencies = dependencies
+        serverFailed = dependencies.localNetworkCardServer.baseURL == nil
+            || dependencies.gameSessionStore.currentSession?.sharedJoinURL == nil
+    }
+
+    var sharedJoinURL: String? {
+        dependencies.gameSessionStore.currentSession?.sharedJoinURL
+    }
+
+    var qrImage: UIImage? {
+        sharedJoinURL.flatMap { QRCodeGenerator.image(from: $0) }
+    }
+
+    var statusMessage: String {
+        let picked = pickedCount
+        let total = totalPickCount
+        if total == 0 { return "Scan to join and pick a card." }
+        return "\(picked) of \(total) players have picked a card"
+    }
+
+    var guestPlayers: [PlayerSlot] {
+        dependencies.gameSessionStore.currentSession?.players.filter { !$0.isHost } ?? []
+    }
+
+    var pickedCount: Int {
+        guestPlayers.filter(\.hasOpenedCard).count + (hostHasPicked ? 1 : 0)
+    }
+
+    var totalPickCount: Int {
+        let session = dependencies.gameSessionStore.currentSession
+        let guestTotal = session?.players.filter { !$0.isHost }.count ?? 0
+        let hostPlaying = session?.settings.hostIsPlaying ?? false
+        return guestTotal + (hostPlaying ? 1 : 0)
+    }
+
     var hostIsPlaying: Bool {
         dependencies.gameSessionStore.currentSession?.settings.hostIsPlaying ?? false
+    }
+
+    var hostHasPicked: Bool {
+        guard hostIsPlaying else { return false }
+        return dependencies.gameSessionStore.currentSession?.players.first(where: \.isHost)?.hasOpenedCard ?? false
+    }
+
+    var canStartDiscussion: Bool {
+        dependencies.gameSessionStore.allCardsOpened()
     }
 
     var playersWithPickedCards: [PlayerSlot] {
         dependencies.gameSessionStore.playersWithPickedCards()
     }
 
-    init(dependencies: AppDependencies) {
-        self.dependencies = dependencies
-        buildRows()
-    }
-
-    func copyLink(for playerId: UUID) {
-        guard let row = playerRows.first(where: { $0.id == playerId }),
-              let url = row.cardURL else { return }
+    func copySharedLink() {
+        guard let url = sharedJoinURL else { return }
         UIPasteboard.general.string = url
     }
 
     func startDiscussionTapped() {
-        if hostIsPlaying {
-            let host = dependencies.gameSessionStore.currentSession?.players.first(where: \.isHost)
-            if host?.hasOpenedCard == false {
-                // Host should open My Card first — still allow start for M7 simplicity
-            }
-        }
         dependencies.gameSessionStore.startDiscussion()
         dependencies.router.navigate(to: .discussion)
     }
@@ -72,29 +96,5 @@ final class QRGridViewModel {
 
     func selectPlayerForRoleCheck(_ player: PlayerSlot) {
         playerToReveal = player
-    }
-
-    private func buildRows() {
-        guard let session = dependencies.gameSessionStore.currentSession else { return }
-
-        if dependencies.localNetworkCardServer.baseURL == nil {
-            serverFailed = true
-            return
-        }
-
-        playerRows = session.players
-            .filter { !$0.isHost }
-            .map { player in
-                let url = player.cardURL
-                let image = url.flatMap { QRCodeGenerator.image(from: $0) }
-                return PlayerRow(
-                    id: player.id,
-                    displayName: player.displayName,
-                    cardURL: url,
-                    qrImage: image
-                )
-            }
-
-        statusMessage = "\(playerRows.count) QR codes ready on local Wi-Fi."
     }
 }

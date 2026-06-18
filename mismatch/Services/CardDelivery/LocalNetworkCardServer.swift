@@ -6,39 +6,32 @@ enum LocalNetworkCardServerError: Error {
     case noLocalAddress
 }
 
+struct SharedCardSessionStartResult: Sendable {
+    let joinURL: String
+    let sessionToken: String
+}
+
 @MainActor
 final class LocalNetworkCardServer {
     private(set) var baseURL: String?
     private(set) var isRunning = false
 
     private var listener: NWListener?
-    private let tokenStore: LocalCardTokenStore
+    private let sessionStore: LocalCardSessionStore
     private let urlBuilder = CardURLBuilder()
+    private weak var gameSessionStore: GameSessionStore?
 
-    init(tokenStore: LocalCardTokenStore) {
-        self.tokenStore = tokenStore
+    init(sessionStore: LocalCardSessionStore) {
+        self.sessionStore = sessionStore
     }
 
-    /// Starts the LAN server and returns card URLs keyed by player slot id.
-    func start(session: GameSession) async throws -> [UUID: String] {
+    /// Starts the LAN server with one shared join URL for all players.
+    func start(session: GameSession, gameSessionStore: GameSessionStore) async throws -> SharedCardSessionStartResult {
         stop()
-        tokenStore.clear()
-
-        var urls: [UUID: String] = [:]
-        let faceDownCardCount = CardPickRules.faceDownCardCount(playerCount: session.players.count)
-
-        for player in session.players where player.assignment != nil {
-            let token = UUID().uuidString.replacingOccurrences(of: "-", with: "").lowercased()
-            guard let assignment = player.assignment else { continue }
-            tokenStore.register(LocalCardToken(
-                token: token,
-                playerSlotId: player.id,
-                role: assignment.role,
-                word: assignment.word,
-                categoryHint: assignment.categoryHint,
-                showRoleOnCard: session.settings.showRoleOnCard,
-                faceDownCardCount: faceDownCardCount
-            ))
+        self.gameSessionStore = gameSessionStore
+        sessionStore.configure(with: session)
+        sessionStore.onClaim = { [weak gameSessionStore] playerId, cardIndex in
+            gameSessionStore?.markCardOpened(playerId: playerId, cardIndex: cardIndex)
         }
 
         let listener = try NWListener(using: .tcp, on: .any)
@@ -58,12 +51,15 @@ final class LocalNetworkCardServer {
                 baseURL = url
                 isRunning = true
 
-                for player in session.players where player.assignment != nil {
-                    if let token = tokenStore.tokenString(forPlayer: player.id) {
-                        urls[player.id] = urlBuilder.cardURL(baseURL: url, token: token)
-                    }
+                guard let token = sessionStore.sessionToken else {
+                    stop()
+                    throw LocalNetworkCardServerError.failedToStart
                 }
-                return urls
+
+                return SharedCardSessionStartResult(
+                    joinURL: urlBuilder.sessionJoinURL(baseURL: url, sessionToken: token),
+                    sessionToken: token
+                )
             }
             try await Task.sleep(for: .milliseconds(50))
         }
@@ -77,7 +73,8 @@ final class LocalNetworkCardServer {
         listener = nil
         isRunning = false
         baseURL = nil
-        tokenStore.clear()
+        gameSessionStore = nil
+        sessionStore.clear()
     }
 
     private func handle(connection: NWConnection) {
@@ -96,62 +93,120 @@ final class LocalNetworkCardServer {
         }
     }
 
-    private func response(for request: String) -> String {
-        let lines = request.split(separator: "\r\n", maxSplits: 1, omittingEmptySubsequences: false)
-        guard let requestLine = lines.first else { return notFound() }
-        let parts = requestLine.split(separator: " ")
-        guard parts.count >= 2 else { return notFound() }
+    private func response(for rawRequest: String) -> String {
+        guard let request = HTTPRequest.parse(rawRequest) else { return notFound() }
 
-        let path = String(parts[1])
-
-        if path.hasPrefix("/c/") {
-            let token = String(path.dropFirst(3))
-            return htmlResponse(token: token)
-        }
-
-        if path.hasPrefix("/api/card/") {
-            let token = String(path.dropFirst("/api/card/".count))
-            return jsonResponse(token: token)
-        }
-
-        if path == "/card.css" {
+        if request.method == "GET", request.path == "/card.css" {
             return textResponse(body: Self.loadResource(name: "card", ext: "css") ?? "", contentType: "text/css")
         }
 
-        if path == "/card.js" {
+        if request.method == "GET", request.path == "/card.js" {
             return textResponse(body: Self.loadResource(name: "card", ext: "js") ?? "", contentType: "application/javascript")
+        }
+
+        if request.method == "GET", request.path.hasPrefix("/join/") {
+            let token = String(request.path.dropFirst("/join/".count))
+            return htmlResponse(sessionToken: token)
+        }
+
+        if request.method == "GET", request.path.hasPrefix("/api/session/") {
+            let token = String(request.path.dropFirst("/api/session/".count))
+            return sessionJSONResponse(sessionToken: token)
+        }
+
+        if request.method == "POST", request.path.hasPrefix("/api/session/") {
+            let token = String(request.path.dropFirst("/api/session/".count).split(separator: "/").first ?? "")
+            return claimJSONResponse(sessionToken: token, body: request.body)
         }
 
         return notFound()
     }
 
-    private func htmlResponse(token: String) -> String {
-        guard tokenStore.token(for: token) != nil else {
-            return htmlPage(body: "<h1>Invalid or expired card</h1>", status: 404)
+    private func htmlResponse(sessionToken: String) -> String {
+        guard sessionStore.sessionToken == sessionToken else {
+            return htmlPage(body: "<h1>Invalid or expired game link</h1>", status: 404)
         }
         let html = (Self.loadResource(name: "index", ext: "html") ?? "")
-            .replacingOccurrences(of: "{{TOKEN}}", with: token)
+            .replacingOccurrences(of: "{{TOKEN}}", with: sessionToken)
         return htmlPage(body: html, status: 200)
     }
 
-    private func jsonResponse(token: String) -> String {
-        guard let card = tokenStore.token(for: token) else {
+    private func sessionJSONResponse(sessionToken: String) -> String {
+        guard sessionStore.sessionToken == sessionToken, let snapshot = sessionStore.snapshot() else {
             return jsonPage(body: #"{"error":"not_found"}"#, status: 404)
         }
 
-        var payload: [String: Any] = [
-            "role": card.role.rawValue,
-            "showRoleOnCard": card.showRoleOnCard,
-            "faceDownCardCount": card.faceDownCardCount
-        ]
-        if let word = card.word { payload["word"] = word }
-        if let hint = card.categoryHint { payload["categoryHint"] = hint }
+        let players = snapshot.players.map { player in
+            [
+                "id": player.id.uuidString,
+                "displayName": player.displayName,
+                "hasOpenedCard": player.hasOpenedCard
+            ] as [String: Any]
+        }
 
+        let claimed = snapshot.claimedCards.map { card in
+            [
+                "cardIndex": card.cardIndex,
+                "playerName": card.playerName
+            ] as [String: Any]
+        }
+
+        let payload: [String: Any] = [
+            "players": players,
+            "claimedCards": claimed,
+            "faceDownCardCount": snapshot.faceDownCardCount,
+            "showRoleOnCard": snapshot.showRoleOnCard
+        ]
+
+        return jsonPage(body: Self.encodeJSON(payload), status: 200)
+    }
+
+    private func claimJSONResponse(sessionToken: String, body: String) -> String {
+        guard sessionStore.sessionToken == sessionToken else {
+            return jsonPage(body: #"{"error":"not_found"}"#, status: 404)
+        }
+
+        guard let data = body.data(using: .utf8),
+              let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let playerIdString = object["playerId"] as? String,
+              let playerId = UUID(uuidString: playerIdString),
+              let cardIndex = object["cardIndex"] as? Int else {
+            return jsonPage(body: #"{"error":"invalid_request"}"#, status: 400)
+        }
+
+        switch sessionStore.claimCard(playerId: playerId, cardIndex: cardIndex) {
+        case .success(let assignment):
+            var payload: [String: Any] = [
+                "role": assignment.role.rawValue,
+                "showRoleOnCard": sessionStore.showRoleOnCard,
+                "faceDownCardCount": sessionStore.faceDownCardCount
+            ]
+            if let word = assignment.word { payload["word"] = word }
+            if let hint = assignment.categoryHint { payload["categoryHint"] = hint }
+            if assignment.role == .ghost, let insiderWord = sessionStore.insiderWord {
+                payload["insiderWord"] = insiderWord
+            }
+            return jsonPage(body: Self.encodeJSON(payload), status: 200)
+
+        case .failure(.cardTaken):
+            return jsonPage(body: #"{"error":"card_taken"}"#, status: 409)
+        case .failure(.alreadyClaimed):
+            return jsonPage(body: #"{"error":"already_claimed"}"#, status: 409)
+        case .failure(.hostMustUseApp):
+            return jsonPage(body: #"{"error":"host_must_use_app"}"#, status: 403)
+        case .failure(.unknownPlayer):
+            return jsonPage(body: #"{"error":"unknown_player"}"#, status: 404)
+        case .failure(.unknownSession):
+            return jsonPage(body: #"{"error":"not_found"}"#, status: 404)
+        }
+    }
+
+    private static func encodeJSON(_ payload: [String: Any]) -> String {
         guard let data = try? JSONSerialization.data(withJSONObject: payload),
               let body = String(data: data, encoding: .utf8) else {
-            return jsonPage(body: #"{"error":"server_error"}"#, status: 500)
+            return #"{"error":"server_error"}"#
         }
-        return jsonPage(body: body, status: 200)
+        return body
     }
 
     private static func loadResource(name: String, ext: String) -> String? {
@@ -175,12 +230,20 @@ final class LocalNetworkCardServer {
     }
 
     private func httpResponse(status: Int, contentType: String, body: String) -> String {
-        let statusText = status == 200 ? "OK" : status == 404 ? "Not Found" : "Error"
+        let statusText = switch status {
+        case 200: "OK"
+        case 400: "Bad Request"
+        case 403: "Forbidden"
+        case 404: "Not Found"
+        case 409: "Conflict"
+        default: "Error"
+        }
         return """
         HTTP/1.1 \(status) \(statusText)\r
         Content-Type: \(contentType)\r
         Content-Length: \(body.utf8.count)\r
         Connection: close\r
+        Cache-Control: no-store\r
         \r
         \(body)
         """
@@ -214,5 +277,27 @@ final class LocalNetworkCardServer {
             address = String(cString: hostname)
         }
         return address
+    }
+}
+
+private struct HTTPRequest {
+    let method: String
+    let path: String
+    let body: String
+
+    static func parse(_ raw: String) -> HTTPRequest? {
+        let parts = raw.split(separator: "\r\n\r\n", maxSplits: 1, omittingEmptySubsequences: false)
+        let headerBlock = String(parts.first ?? "")
+        let body = parts.count > 1 ? String(parts[1]) : ""
+
+        guard let requestLine = headerBlock.split(separator: "\r\n").first else { return nil }
+        let tokens = requestLine.split(separator: " ")
+        guard tokens.count >= 2 else { return nil }
+
+        let method = String(tokens[0])
+        let rawPath = String(tokens[1])
+        let path = rawPath.split(separator: "?", maxSplits: 1).first.map(String.init) ?? rawPath
+
+        return HTTPRequest(method: method, path: path, body: body)
     }
 }

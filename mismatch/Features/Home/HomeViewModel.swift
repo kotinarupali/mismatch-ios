@@ -31,6 +31,7 @@ final class HomeViewModel {
     func hostGameTapped() {
         dependencies.gameSessionStore.reset()
         dependencies.gameSessionStore.createSession()
+        dependencies.prepareLobby()
         dependencies.router.navigate(to: .lobby)
     }
 

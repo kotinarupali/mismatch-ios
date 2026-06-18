@@ -6,6 +6,11 @@ enum CardDeliveryService {
 }
 
 struct CardURLBuilder: Sendable {
+    func sessionJoinURL(baseURL: String, sessionToken: String) -> String {
+        let trimmed = baseURL.hasSuffix("/") ? String(baseURL.dropLast()) : baseURL
+        return "\(trimmed)/join/\(sessionToken)"
+    }
+
     func cardURL(baseURL: String, token: String) -> String {
         let trimmed = baseURL.hasSuffix("/") ? String(baseURL.dropLast()) : baseURL
         return "\(trimmed)/c/\(token)"

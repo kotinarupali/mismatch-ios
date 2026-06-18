@@ -103,49 +103,129 @@ struct LobbyView: View {
     }
 
     private var rulesSection: some View {
-        DisclosureGroup(isExpanded: $rulesExpanded) {
-            SettingsCard {
-                SettingsToggleRow(icon: "person.crop.circle.badge.checkmark", title: "I'm playing", isOn: $viewModel.hostIsPlaying)
-                Divider().overlay(AppColor.cardBorder).padding(.horizontal, 16)
-                    SettingsToggleRow(icon: "eye.slash.fill", title: "Show role on card", isOn: $viewModel.showRoleOnCard)
+        VStack(alignment: .leading, spacing: 0) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    rulesExpanded.toggle()
+                }
+            } label: {
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Rules")
+                            .font(AppTypography.body)
+                            .foregroundStyle(AppColor.label)
+                        if !rulesExpanded {
+                            Text(viewModel.rulesSummary)
+                                .font(AppTypography.caption)
+                                .foregroundStyle(AppColor.secondaryLabel)
+                                .lineLimit(1)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(AppColor.secondaryLabel)
+                        .rotationEffect(.degrees(rulesExpanded ? 90 : 0))
+                }
+                .contentShape(Rectangle())
+                .padding(.vertical, 4)
+            }
+            .buttonStyle(.plain)
+
+            if rulesExpanded {
+                SettingsCard {
+                    SettingsToggleRow(
+                        icon: "person.crop.circle.badge.checkmark",
+                        title: "I'm playing",
+                        isOn: hostIsPlayingBinding
+                    )
                     Divider().overlay(AppColor.cardBorder).padding(.horizontal, 16)
-                    SettingsToggleRow(icon: "figure.wave", title: "Ghost", isOn: ghostEnabledBinding)
+                    SettingsToggleRow(
+                        icon: "eye.slash.fill",
+                        title: "Show role on card",
+                        isOn: showRoleOnCardBinding
+                    )
+                    Divider().overlay(AppColor.cardBorder).padding(.horizontal, 16)
+                    SettingsToggleRow(
+                        icon: "figure.wave",
+                        title: "Ghost",
+                        isOn: ghostEnabledBinding
+                    )
+                    .disabled(!viewModel.canToggleGhost)
+                    .opacity(viewModel.canToggleGhost ? 1 : 0.45)
                     Divider().overlay(AppColor.cardBorder).padding(.horizontal, 16)
                     SettingsToggleRow(
                         icon: "person.2.fill",
                         title: "Mismatch & Ghost alliance",
-                        isOn: $viewModel.mismatchGhostAlliance
+                        isOn: mismatchGhostAllianceBinding
                     )
-                Divider().overlay(AppColor.cardBorder).padding(.horizontal, 16)
-                SettingsToggleRow(icon: "timer", title: "Discussion timer", isOn: $viewModel.discussionTimerEnabled)
-                Divider().overlay(AppColor.cardBorder).padding(.horizontal, 16)
-                SettingsPickerRow(icon: "qrcode", title: "Distribution", selection: $viewModel.distributionMode) {
-                    ForEach(DistributionMode.allCases, id: \.self) { mode in
-                        Text(mode.displayName).tag(mode)
+                    Divider().overlay(AppColor.cardBorder).padding(.horizontal, 16)
+                    SettingsToggleRow(
+                        icon: "timer",
+                        title: "Discussion timer",
+                        isOn: discussionTimerEnabledBinding
+                    )
+                    Divider().overlay(AppColor.cardBorder).padding(.horizontal, 16)
+                    SettingsPickerRow(icon: "qrcode", title: "Distribution", selection: distributionModeBinding) {
+                        ForEach(DistributionMode.allCases, id: \.self) { mode in
+                            Text(mode.displayName).tag(mode)
+                        }
                     }
                 }
+                .padding(.top, 10)
             }
-            .padding(.top, 8)
-            .onChange(of: viewModel.hostIsPlaying) { viewModel.refreshSession() }
-            .onChange(of: viewModel.mismatchGhostAlliance) { viewModel.refreshSession() }
-            .onChange(of: viewModel.discussionTimerEnabled) { viewModel.refreshSession() }
-            .onChange(of: viewModel.showRoleOnCard) { viewModel.refreshSession() }
-            .onChange(of: viewModel.distributionMode) { viewModel.refreshSession() }
-        } label: {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Rules")
-                    .font(AppTypography.body)
-                    .foregroundStyle(AppColor.secondaryLabel)
-                if !rulesExpanded {
-                    Text(viewModel.rulesSummary)
-                        .font(AppTypography.caption)
-                        .foregroundStyle(AppColor.secondaryLabel.opacity(0.8))
-                        .lineLimit(1)
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .tint(AppColor.secondaryLabel)
+    }
+
+    private var hostIsPlayingBinding: Binding<Bool> {
+        Binding(
+            get: { viewModel.hostIsPlaying },
+            set: {
+                viewModel.hostIsPlaying = $0
+                viewModel.refreshSession()
+            }
+        )
+    }
+
+    private var showRoleOnCardBinding: Binding<Bool> {
+        Binding(
+            get: { viewModel.showRoleOnCard },
+            set: {
+                viewModel.showRoleOnCard = $0
+                viewModel.refreshSession()
+            }
+        )
+    }
+
+    private var mismatchGhostAllianceBinding: Binding<Bool> {
+        Binding(
+            get: { viewModel.mismatchGhostAlliance },
+            set: {
+                viewModel.mismatchGhostAlliance = $0
+                viewModel.refreshSession()
+            }
+        )
+    }
+
+    private var discussionTimerEnabledBinding: Binding<Bool> {
+        Binding(
+            get: { viewModel.discussionTimerEnabled },
+            set: {
+                viewModel.discussionTimerEnabled = $0
+                viewModel.refreshSession()
+            }
+        )
+    }
+
+    private var distributionModeBinding: Binding<DistributionMode> {
+        Binding(
+            get: { viewModel.distributionMode },
+            set: {
+                viewModel.distributionMode = $0
+                viewModel.refreshSession()
+            }
+        )
     }
 
     private var ghostEnabledBinding: Binding<Bool> {

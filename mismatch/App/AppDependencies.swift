@@ -8,8 +8,9 @@ final class AppDependencies {
     let wordPairSelector: WordPairSelector
     let router: AppRouter
     let timerService: TimerService
-    let localCardTokenStore: LocalCardTokenStore
+    let localCardSessionStore: LocalCardSessionStore
     let localNetworkCardServer: LocalNetworkCardServer
+    private(set) lazy var lobbyViewModel = LobbyViewModel(dependencies: self)
 
     init() {
         gameSessionStore = GameSessionStore()
@@ -18,8 +19,8 @@ final class AppDependencies {
         wordPairSelector = WordPairSelector(loader: wordPackLoader, usageStore: wordPairUsageStore)
         router = AppRouter()
         timerService = TimerService()
-        localCardTokenStore = LocalCardTokenStore()
-        localNetworkCardServer = LocalNetworkCardServer(tokenStore: localCardTokenStore)
+        localCardSessionStore = LocalCardSessionStore()
+        localNetworkCardServer = LocalNetworkCardServer(sessionStore: localCardSessionStore)
     }
 
     init(
@@ -29,7 +30,7 @@ final class AppDependencies {
         wordPairSelector: WordPairSelector,
         router: AppRouter,
         timerService: TimerService,
-        localCardTokenStore: LocalCardTokenStore,
+        localCardSessionStore: LocalCardSessionStore,
         localNetworkCardServer: LocalNetworkCardServer
     ) {
         self.gameSessionStore = gameSessionStore
@@ -38,7 +39,7 @@ final class AppDependencies {
         self.wordPairSelector = wordPairSelector
         self.router = router
         self.timerService = timerService
-        self.localCardTokenStore = localCardTokenStore
+        self.localCardSessionStore = localCardSessionStore
         self.localNetworkCardServer = localNetworkCardServer
     }
 
@@ -46,7 +47,12 @@ final class AppDependencies {
         timerService.stop()
         localNetworkCardServer.stop()
         gameSessionStore.resetRoundForPlayAgain()
+        lobbyViewModel.reloadFromSession()
         router.replaceWithLobby()
+    }
+
+    func prepareLobby() {
+        lobbyViewModel.reloadFromSession()
     }
 
     func endGame() {

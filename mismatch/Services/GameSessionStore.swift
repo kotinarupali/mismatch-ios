@@ -133,6 +133,13 @@ final class GameSessionStore {
         currentSession = session
     }
 
+    func setSharedJoinURL(_ url: String, sessionToken: String) {
+        guard var session = currentSession else { return }
+        session.sharedJoinURL = url
+        session.joinSessionToken = sessionToken
+        currentSession = session
+    }
+
     func startDiscussion() {
         assignRandomDiscussionStarter()
         updateState(.discussing)
@@ -181,8 +188,9 @@ final class GameSessionStore {
         session.rounds[roundIndex].ghostGuessPending = false
 
         if isCorrect {
-            session.forcedSessionOutcome = .ghostWins
-            session.rounds[roundIndex].outcome = .ghostWins
+            let allianceWin: RoundOutcome = session.settings.mismatchGhostAlliance ? .outsiderSideWins : .ghostWins
+            session.forcedSessionOutcome = allianceWin
+            session.rounds[roundIndex].outcome = allianceWin
         } else {
             session.rounds[roundIndex].outcome = SessionWinChecker.checkWinner(
                 players: session.players,
@@ -246,6 +254,8 @@ final class GameSessionStore {
         session.currentInsiderWord = nil
         session.currentMismatchWord = nil
         session.forcedSessionOutcome = nil
+        session.sharedJoinURL = nil
+        session.joinSessionToken = nil
         session.players = session.players.map { player in
             var updated = player
             updated.assignment = nil

@@ -162,6 +162,20 @@ struct SessionWinCheckerTests {
         ]
         #expect(SessionWinChecker.checkWinner(players: players, settings: settings) == .insiderSideWins)
     }
+
+    @Test func allianceTeamWinsWhenMismatchWinsAlone() {
+        var settings = GameSettings.default
+        settings.mismatchGhostAlliance = true
+        let outcome = RoundOutcome.mismatchWins
+        #expect(outcome.winningRoles(allianceEnabled: true) == [.mismatch, .ghost])
+        #expect(outcome.celebrationHeadline(allianceEnabled: true) == "Mismatch & Ghost win!")
+    }
+
+    @Test func allianceTeamWinsWhenGhostWinsAlone() {
+        let outcome = RoundOutcome.ghostWins
+        #expect(outcome.winningRoles(allianceEnabled: true) == [.mismatch, .ghost])
+        #expect(outcome.celebrationHeadline(allianceEnabled: true) == "Mismatch & Ghost win!")
+    }
 }
 
 struct RoleDistributionTableTests {
@@ -479,6 +493,32 @@ struct GhostGuessTests {
 
         #expect(store.isGhostGuessPending == true)
         #expect(store.isSessionComplete == false)
+    }
+
+    @Test @MainActor func allianceGhostGuessWinCountsAsTeamWin() throws {
+        let store = GameSessionStore()
+        var settings = GameSettings.default
+        settings.ghostEnabled = true
+        settings.mismatchGhostAlliance = true
+        store.createSession(settings: settings)
+        store.setPlayers((1...5).map { index in
+            PlayerSlot(displayName: "P\(index)", avatarColor: AvatarColor.forIndex(index))
+        })
+
+        let pair = WordPair(id: "1", insiderWord: "Apple", mismatchWord: "Apricot", category: "Fruit")
+        try store.distributeRoles(wordPair: pair)
+
+        guard let ghostId = store.currentSession?.players.first(where: { $0.assignment?.role == .ghost })?.id else {
+            Issue.record("Expected ghost player.")
+            return
+        }
+
+        store.eliminate(playerId: ghostId)
+        let isCorrect = store.submitGhostGuess("apple")
+
+        #expect(isCorrect == true)
+        #expect(store.sessionWinner == .outsiderSideWins)
+        #expect(store.sessionWinner?.winningRoles(allianceEnabled: true) == [.mismatch, .ghost])
     }
 
     @Test @MainActor func correctGhostGuessEndsGameImmediately() throws {

@@ -2,11 +2,17 @@ import SwiftUI
 
 struct QRGridView: View {
     @Bindable var viewModel: QRGridViewModel
+    @Bindable private var sessionStore: GameSessionStore
     @State private var showMyCard = false
+
+    init(viewModel: QRGridViewModel) {
+        self.viewModel = viewModel
+        _sessionStore = Bindable(viewModel.dependencies.gameSessionStore)
+    }
 
     var body: some View {
         PlaceholderScreenLayout(
-            title: "QR Grid",
+            title: "Scan to Join",
             subtitle: viewModel.statusMessage,
             icon: "qrcode.viewfinder",
             roomStyle: .distribution
@@ -21,14 +27,9 @@ struct QRGridView: View {
                         viewModel.fallbackToPassThePhone()
                     }
                 } else {
-                    ScrollView {
-                        LazyVGrid(columns: [GridItem(.flexible())], spacing: 16) {
-                            ForEach(viewModel.playerRows) { row in
-                                QRGridCell(row: row, onCopy: { viewModel.copyLink(for: row.id) })
-                            }
-                        }
-                    }
-                    .frame(maxHeight: 400)
+                    sharedQRCodeSection
+
+                    playerStatusSection
 
                     if viewModel.hostIsPlaying {
                         SecondaryButton(title: "View My Card") {
@@ -36,13 +37,16 @@ struct QRGridView: View {
                         }
                     }
 
-                    PrimaryButton(title: "Start Discussion") {
+                    PrimaryButton(
+                        title: "Start Discussion",
+                        isEnabled: viewModel.canStartDiscussion
+                    ) {
                         viewModel.startDiscussionTapped()
                     }
                 }
             }
         }
-        .navigationTitle("QR Codes")
+        .navigationTitle("Join Game")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .toolbarBackground(AppColor.background.opacity(0.9), for: .navigationBar)
@@ -64,42 +68,93 @@ struct QRGridView: View {
             MyCardView(viewModel: MyCardViewModel(dependencies: viewModel.dependencies))
         }
     }
-}
 
-private struct QRGridCell: View {
-    let row: QRGridViewModel.PlayerRow
-    let onCopy: () -> Void
+    private var sharedQRCodeSection: some View {
+        VStack(spacing: 14) {
+            Text("One QR for everyone")
+                .font(AppTypography.headline)
+                .foregroundStyle(AppColor.label)
 
-    var body: some View {
-        HStack(spacing: 16) {
-            VStack(alignment: .leading, spacing: 8) {
-                Text(row.displayName)
-                    .font(AppTypography.headline)
-                if let url = row.cardURL {
-                    Text(url)
-                        .font(AppTypography.caption)
-                        .foregroundStyle(AppColor.secondaryLabel)
-                        .lineLimit(2)
-                    Button("Copy Link", action: onCopy)
-                        .font(AppTypography.caption)
-                }
-            }
-            Spacer()
-            if let image = row.qrImage {
+            Text("Players open the link, tap their name, then pick a card. Taken cards update live for everyone.")
+                .font(AppTypography.caption)
+                .foregroundStyle(AppColor.secondaryLabel)
+                .multilineTextAlignment(.center)
+
+            if let image = viewModel.qrImage {
                 Image(uiImage: image)
                     .interpolation(.none)
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 96, height: 96)
-                    .accessibilityLabel("QR code for \(row.displayName)")
+                    .frame(width: 220, height: 220)
+                    .padding(16)
+                    .background(Color.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                    .accessibilityLabel("Shared game QR code")
+            }
+
+            if let url = viewModel.sharedJoinURL {
+                Text(url)
+                    .font(AppTypography.caption)
+                    .foregroundStyle(AppColor.secondaryLabel)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(3)
+
+                SecondaryButton(title: "Copy Link") {
+                    viewModel.copySharedLink()
+                }
             }
         }
-        .padding()
+        .frame(maxWidth: .infinity)
+        .padding(16)
         .background(AppColor.card)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .strokeBorder(AppColor.cardBorder, lineWidth: 1)
         }
+    }
+
+    private var playerStatusSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Pick progress")
+                .font(AppTypography.headline)
+                .foregroundStyle(AppColor.label)
+
+            if viewModel.hostIsPlaying {
+                pickStatusRow(name: "You (host)", hasPicked: viewModel.hostHasPicked)
+            }
+
+            ForEach(sessionStore.currentSession?.players.filter { !$0.isHost } ?? []) { player in
+                pickStatusRow(name: player.displayName, hasPicked: player.hasOpenedCard)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(16)
+        .background(AppColor.card)
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .strokeBorder(AppColor.cardBorder, lineWidth: 1)
+        }
+    }
+
+    private func pickStatusRow(name: String, hasPicked: Bool) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: hasPicked ? "checkmark.circle.fill" : "circle")
+                .foregroundStyle(hasPicked ? AppColor.success : AppColor.secondaryLabel)
+            Text(name)
+                .font(AppTypography.body)
+                .foregroundStyle(hasPicked ? AppColor.label : AppColor.secondaryLabel)
+            Spacer()
+            Text(hasPicked ? "Picked" : "Waiting")
+                .font(AppTypography.caption)
+                .foregroundStyle(hasPicked ? AppColor.success : AppColor.secondaryLabel)
+        }
+    }
+}
+
+#Preview {
+    NavigationStack {
+        QRGridView(viewModel: QRGridViewModel(dependencies: AppDependencies()))
     }
 }

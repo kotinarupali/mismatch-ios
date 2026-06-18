@@ -37,13 +37,42 @@ final class LobbyViewModel {
         discussionTimerEnabled = settings.discussionTimerEnabled
         distributionMode = settings.distributionMode
 
-        let session = dependencies.gameSessionStore.currentSession
+        seatedPlayers = Self.loadSeatedPlayers(from: dependencies.gameSessionStore.currentSession)
+        reservedHostId = dependencies.gameSessionStore.currentSession?.players.first(where: \.isHost)?.id
+
+        reconcileHostSeat()
+        syncSession()
+    }
+
+    func reloadFromSession() {
+        let settings = dependencies.gameSessionStore.currentSession?.settings ?? .default
+        hostIsPlaying = settings.hostIsPlaying
+        showRoleOnCard = settings.showRoleOnCard
+        ghostEnabled = settings.ghostEnabled
+        mismatchGhostAlliance = settings.mismatchGhostAlliance
+        discussionTimerEnabled = settings.discussionTimerEnabled
+        distributionMode = settings.distributionMode
+        let playerCount = dependencies.gameSessionStore.currentSession?.players.count ?? 0
+        ghostDisabledByUser = playerCount >= RoleDistributionTable.minimumPlayerCountForGhost
+            && !settings.ghostEnabled
+
+        seatedPlayers = Self.loadSeatedPlayers(from: dependencies.gameSessionStore.currentSession)
+        reservedHostId = dependencies.gameSessionStore.currentSession?.players.first(where: \.isHost)?.id
+        newPlayerName = ""
+        isDistributing = false
+        errorMessage = nil
+
+        reconcileHostSeat()
+        syncSession()
+    }
+
+    private static func loadSeatedPlayers(from session: GameSession?) -> [LobbySeatedPlayer] {
         let players = session?.players ?? []
         let order = session?.seatingOrderPlayerIds ?? []
         let lookup = Dictionary(uniqueKeysWithValues: players.map { ($0.id, $0) })
         let ordered = order.compactMap { lookup[$0] } + players.filter { !order.contains($0.id) }
 
-        seatedPlayers = ordered.map { player in
+        return ordered.map { player in
             LobbySeatedPlayer(
                 id: player.id,
                 displayName: player.isHost ? "You" : player.displayName,
@@ -51,10 +80,6 @@ final class LobbyViewModel {
                 avatarColor: player.avatarColor
             )
         }
-        reservedHostId = players.first(where: \.isHost)?.id
-
-        reconcileHostSeat()
-        syncSession()
     }
 
     var totalPlayerCount: Int {
@@ -110,6 +135,10 @@ final class LobbyViewModel {
 
     var showsProjectedRoleCounts: Bool {
         totalPlayerCount >= minimumPlayers
+    }
+
+    var canToggleGhost: Bool {
+        totalPlayerCount >= RoleDistributionTable.minimumPlayerCountForGhost
     }
 
     func refreshSession() {
@@ -220,15 +249,11 @@ final class LobbyViewModel {
         guard let session = dependencies.gameSessionStore.currentSession else { return }
 
         do {
-            let urls = try await dependencies.localNetworkCardServer.start(session: session)
-            for (playerId, url) in urls {
-                let token = url.split(separator: "/").last.map(String.init) ?? ""
-                dependencies.gameSessionStore.updatePlayerCardURL(
-                    playerId: playerId,
-                    token: token,
-                    url: url
-                )
-            }
+            let result = try await dependencies.localNetworkCardServer.start(
+                session: session,
+                gameSessionStore: dependencies.gameSessionStore
+            )
+            dependencies.gameSessionStore.setSharedJoinURL(result.joinURL, sessionToken: result.sessionToken)
             dependencies.router.navigate(to: .qrGrid)
         } catch {
             errorMessage = "QR server unavailable. Switching to pass-the-phone."
