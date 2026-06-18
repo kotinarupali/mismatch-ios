@@ -22,8 +22,20 @@ struct PassThePhoneView: View {
                     onComplete: { viewModel.cardCompleted(cardIndex: $0) }
                 )
                 .id(viewModel.currentPlayerId)
+            } else if viewModel.isMissingRoleAssignments {
+                VStack(spacing: 16) {
+                    Text("Roles weren't dealt to any player.")
+                        .font(AppTypography.body)
+                        .foregroundStyle(AppColor.secondaryLabel)
+                        .multilineTextAlignment(.center)
+
+                    PrimaryButton(title: "Back to Lobby") {
+                        viewModel.returnToLobby()
+                    }
+                }
+                .frame(maxWidth: .infinity)
             } else {
-                Text("Waiting for role assignment…")
+                Text("Everyone has seen their card.")
                     .font(AppTypography.body)
                     .foregroundStyle(AppColor.secondaryLabel)
             }
@@ -33,6 +45,7 @@ struct PassThePhoneView: View {
         .navigationBarBackButtonHidden(true)
         .toolbarBackground(AppColor.background.opacity(0.9), for: .navigationBar)
         .toolbarColorScheme(.dark, for: .navigationBar)
+        .onAppear { viewModel.onAppear() }
         .hostGameMenu(
             onRepick: { viewModel.repickRoles() },
             onEndGame: { viewModel.endGame() },

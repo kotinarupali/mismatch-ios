@@ -13,23 +13,21 @@ final class PassThePhoneViewModel {
 
     init(dependencies: AppDependencies) {
         self.dependencies = dependencies
-        passOrder = dependencies.gameSessionStore.passThePhoneOrder()
-            .filter { $0.assignment != nil && !$0.hasOpenedCard }
-        if passOrder.isEmpty {
-            passOrder = dependencies.gameSessionStore.passThePhoneOrder()
-                .filter { $0.assignment != nil }
-            currentIndex = passOrder.count
-        } else {
-            awaitingHandoff = true
-        }
+        reloadPassState()
     }
 
     var title: String {
+        if isMissingRoleAssignments {
+            return "Roles not ready"
+        }
         guard currentPlayer != nil else { return "All roles revealed" }
         return awaitingHandoff ? "Hand off the phone" : "Pick your card"
     }
 
     var subtitle: String {
+        if isMissingRoleAssignments {
+            return "Go back to the lobby and tap Distribute Roles again."
+        }
         guard let player = currentPlayer else {
             return "Everyone has seen their card."
         }
@@ -83,9 +81,25 @@ final class PassThePhoneViewModel {
         currentAssignment != nil && !awaitingHandoff
     }
 
+    var isMissingRoleAssignments: Bool {
+        guard let session = dependencies.gameSessionStore.currentSession else { return true }
+        guard !allCardsOpened else { return false }
+        return !session.players.contains { $0.assignment != nil }
+    }
+
+    private var allCardsOpened: Bool {
+        dependencies.gameSessionStore.allCardsOpened()
+    }
+
     private var currentPlayer: PlayerSlot? {
         guard currentIndex < passOrder.count else { return nil }
         return passOrder[currentIndex]
+    }
+
+    func onAppear() {
+        if passOrder.isEmpty && !allCardsOpened {
+            reloadPassState()
+        }
     }
 
     func readyToPickTapped() {
@@ -95,9 +109,9 @@ final class PassThePhoneViewModel {
     func cardCompleted(cardIndex: Int) {
         guard let player = currentPlayer else { return }
         dependencies.gameSessionStore.markCardOpened(playerId: player.id, cardIndex: cardIndex)
-        currentIndex += 1
+        reloadPassState()
 
-        if dependencies.gameSessionStore.allCardsOpened() {
+        if allCardsOpened {
             dependencies.gameSessionStore.startDiscussion()
             dependencies.router.navigate(to: .discussion)
             return
@@ -114,12 +128,39 @@ final class PassThePhoneViewModel {
         dependencies.endGame()
     }
 
+    func returnToLobby() {
+        dependencies.repickRoles()
+    }
+
     func checkPlayerRoleTapped() {
         showPlayerRolePicker = true
     }
 
     func selectPlayerForRoleCheck(_ player: PlayerSlot) {
         playerToReveal = player
+    }
+
+    private func reloadPassState() {
+        let store = dependencies.gameSessionStore
+        guard store.currentSession != nil else {
+            passOrder = []
+            currentIndex = 0
+            awaitingHandoff = false
+            return
+        }
+
+        let orderedPlayers = store.passThePhoneOrder()
+        var remaining = orderedPlayers.filter { $0.assignment != nil && !$0.hasOpenedCard }
+
+        if remaining.isEmpty {
+            remaining = (store.currentSession?.players ?? []).filter {
+                $0.assignment != nil && !$0.hasOpenedCard
+            }
+        }
+
+        passOrder = remaining
+        currentIndex = 0
+        awaitingHandoff = !remaining.isEmpty
     }
 
     private func displayName(for player: PlayerSlot) -> String {

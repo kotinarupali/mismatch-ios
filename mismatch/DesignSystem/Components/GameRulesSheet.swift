@@ -113,7 +113,7 @@ struct GameRulesSheet: View {
             icon: "sparkles",
             text: """
             • Need at least 3 players to start.
-            • Ghost is added automatically at 4+ players — turn it off in Rules if you want a simpler game.
+            • Ghost is added automatically at 5+ players — turn it off in Rules if you want a simpler game.
             • The host can check any player's role mid-game from the menu.
             """
         )
@@ -121,7 +121,7 @@ struct GameRulesSheet: View {
 
     private func roleRow(role: Role, detail: String) -> some View {
         HStack(alignment: .top, spacing: 12) {
-            RoleIconBadge(role: role, size: .medium)
+            RoleIconBadge(role: role, size: .large)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(role.displayName)

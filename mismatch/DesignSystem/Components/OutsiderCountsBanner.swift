@@ -15,7 +15,7 @@ struct OutsiderCountsBanner: View {
 
     private func countChip(role: Role, count: Int) -> some View {
         HStack(spacing: 10) {
-            RoleIconBadge(role: role, size: .medium)
+            RoleIconBadge(role: role, size: .large)
             VStack(alignment: .leading, spacing: 2) {
                 Text(role.displayName)
                     .font(AppTypography.caption)

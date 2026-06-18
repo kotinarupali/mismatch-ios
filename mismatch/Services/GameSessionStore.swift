@@ -53,7 +53,9 @@ final class GameSessionStore {
     }
 
     func distributeRoles(wordPair: WordPair) throws {
-        guard var session = currentSession else { return }
+        guard var session = currentSession else {
+            throw GameSessionStoreError.noActiveSession
+        }
         let assigned = try roleAssigner.assign(
             players: session.players,
             wordPair: wordPair,
@@ -61,9 +63,8 @@ final class GameSessionStore {
         )
         session.players = assigned
         session.state = .distributing
-        let seatingIds = session.seatingOrderPlayerIds.isEmpty
-            ? session.players.map(\.id)
-            : session.seatingOrderPlayerIds
+        let seatingIds = normalizedSeatingOrderIds(for: session)
+        session.seatingOrderPlayerIds = seatingIds
         session.passOrderPlayerIds = try randomPassOrder(from: seatingIds)
         let round = Round(index: session.rounds.count, wordPairId: wordPair.id)
         session.rounds.append(round)
@@ -85,12 +86,20 @@ final class GameSessionStore {
 
     func passThePhoneOrder() -> [PlayerSlot] {
         guard let session = currentSession else { return [] }
+        return resolvePlayerOrder(
+            ids: preferredPassOrderIds(in: session),
+            in: session.players
+        )
+    }
+
+    private func preferredPassOrderIds(in session: GameSession) -> [UUID] {
         if !session.passOrderPlayerIds.isEmpty {
-            return session.passOrderPlayerIds.compactMap { id in
-                session.players.first { $0.id == id }
-            }
+            return session.passOrderPlayerIds
         }
-        return session.players
+        if !session.seatingOrderPlayerIds.isEmpty {
+            return session.seatingOrderPlayerIds
+        }
+        return session.players.map(\.id)
     }
 
     func claimedCards() -> [ClaimedCard] {
@@ -233,6 +242,19 @@ final class GameSessionStore {
         let ordered = ids.compactMap { lookup[$0] }
         let remaining = players.filter { !ids.contains($0.id) }
         return ordered + remaining
+    }
+
+    private func normalizedSeatingOrderIds(for session: GameSession) -> [UUID] {
+        resolvePlayerOrder(
+            ids: session.seatingOrderPlayerIds.isEmpty
+                ? session.players.map(\.id)
+                : session.seatingOrderPlayerIds,
+            in: session.players
+        ).map(\.id)
+    }
+
+    private func resolvePlayerOrder(ids: [UUID], in players: [PlayerSlot]) -> [PlayerSlot] {
+        orderedPlayers(from: ids, in: players)
     }
 
     private func randomPassOrder(from seatingIds: [UUID]) throws -> [UUID] {

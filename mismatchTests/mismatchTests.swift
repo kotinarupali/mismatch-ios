@@ -175,9 +175,37 @@ struct RoleDistributionTableTests {
 
     @Test func fourPlayersGhostOn() {
         let counts = RoleDistributionTable.counts(playerCount: 4, ghostEnabled: true)
-        #expect(counts.insider == 2)
+        #expect(counts.insider == 3)
+        #expect(counts.mismatch == 1)
+        #expect(counts.ghost == 0)
+    }
+
+    @Test func fivePlayersGhostOn() {
+        let counts = RoleDistributionTable.counts(playerCount: 5, ghostEnabled: true)
+        #expect(counts.insider == 3)
         #expect(counts.mismatch == 1)
         #expect(counts.ghost == 1)
+    }
+
+    @Test func sevenPlayersGhostOn() {
+        let counts = RoleDistributionTable.counts(playerCount: 7, ghostEnabled: true)
+        #expect(counts.insider == 4)
+        #expect(counts.mismatch == 2)
+        #expect(counts.ghost == 1)
+    }
+
+    @Test func ninePlayersGhostOn() {
+        let counts = RoleDistributionTable.counts(playerCount: 9, ghostEnabled: true)
+        #expect(counts.insider == 5)
+        #expect(counts.mismatch == 3)
+        #expect(counts.ghost == 1)
+    }
+
+    @Test func elevenPlayersGhostOn() {
+        let counts = RoleDistributionTable.counts(playerCount: 11, ghostEnabled: true)
+        #expect(counts.insider == 6)
+        #expect(counts.mismatch == 3)
+        #expect(counts.ghost == 2)
     }
 
     @Test func threePlayersOneMismatch() {
@@ -189,30 +217,38 @@ struct RoleDistributionTableTests {
 
     @Test func sixPlayersGhostOn() {
         let counts = RoleDistributionTable.counts(playerCount: 6, ghostEnabled: true)
-        #expect(counts.mismatch == 2)
-        #expect(counts.ghost == 2)
-        #expect(counts.insider == 2)
-    }
-
-    @Test func twelvePlayersGhostOn() {
-        let counts = RoleDistributionTable.counts(playerCount: 12, ghostEnabled: true)
-        #expect(counts.mismatch == 3)
-        #expect(counts.ghost == 3)
-        #expect(counts.insider == 6)
+        #expect(counts.mismatch == 1)
+        #expect(counts.ghost == 1)
+        #expect(counts.insider == 4)
     }
 
     @Test func eightPlayersGhostOn() {
         let counts = RoleDistributionTable.counts(playerCount: 8, ghostEnabled: true)
         #expect(counts.mismatch == 2)
-        #expect(counts.ghost == 2)
-        #expect(counts.insider == 4)
+        #expect(counts.ghost == 1)
+        #expect(counts.insider == 5)
     }
 
     @Test func tenPlayersGhostOn() {
         let counts = RoleDistributionTable.counts(playerCount: 10, ghostEnabled: true)
         #expect(counts.mismatch == 3)
+        #expect(counts.ghost == 1)
+        #expect(counts.insider == 6)
+    }
+
+    @Test func twelvePlayersGhostOn() {
+        let counts = RoleDistributionTable.counts(playerCount: 12, ghostEnabled: true)
+        #expect(counts.mismatch == 3)
         #expect(counts.ghost == 2)
-        #expect(counts.insider == 5)
+        #expect(counts.insider == 7)
+    }
+
+    @Test func insidersAreAlwaysMajority() {
+        for count in 3...16 {
+            let counts = RoleDistributionTable.counts(playerCount: count, ghostEnabled: true)
+            #expect(counts.total == count)
+            #expect(counts.insider > counts.mismatch + counts.ghost)
+        }
     }
 
     @Test func distributionForMultiplePlayerCounts() {
@@ -237,9 +273,9 @@ struct RoleAssignerTests {
 
         #expect(assigned.count == 8)
         let roles = assigned.compactMap { $0.assignment?.role }
-        #expect(roles.filter { $0 == .insider }.count == 4)
+        #expect(roles.filter { $0 == .insider }.count == 5)
         #expect(roles.filter { $0 == .mismatch }.count == 2)
-        #expect(roles.filter { $0 == .ghost }.count == 2)
+        #expect(roles.filter { $0 == .ghost }.count == 1)
     }
 }
 
@@ -276,6 +312,25 @@ struct GameSettingsTests {
 }
 
 struct PassThePhoneOrderTests {
+
+    @Test @MainActor func passThePhoneViewModelStartsBeforeAllCardsOpened() throws {
+        let dependencies = AppDependencies()
+        dependencies.gameSessionStore.createSession()
+        let players = (1...5).map { index in
+            PlayerSlot(displayName: "P\(index)", avatarColor: AvatarColor.forIndex(index))
+        }
+        dependencies.gameSessionStore.setPlayers(players)
+        dependencies.gameSessionStore.setSeatingOrder(players.map(\.id))
+
+        let pair = WordPair(id: "1", insiderWord: "A", mismatchWord: "B", category: "Test")
+        try dependencies.gameSessionStore.distributeRoles(wordPair: pair)
+
+        let viewModel = PassThePhoneViewModel(dependencies: dependencies)
+        #expect(viewModel.title != "All roles revealed")
+        #expect(viewModel.awaitingHandoff == true)
+        #expect(viewModel.isMissingRoleAssignments == false)
+        #expect(viewModel.canShowCardPick == false)
+    }
 
     @Test @MainActor func distributeRolesRotatesSeatingOrder() throws {
         let store = GameSessionStore()
@@ -370,7 +425,7 @@ struct LobbyViewModelTests {
 
         #expect(viewModel.totalPlayerCount == 10)
         #expect(viewModel.ghostEnabled == true)
-        #expect(viewModel.projectedGhostCount == 2)
+        #expect(viewModel.projectedGhostCount == 1)
     }
 
     @Test @MainActor func keepsGhostOffWhenUserDisablesIt() {

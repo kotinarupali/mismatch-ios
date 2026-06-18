@@ -272,13 +272,26 @@ final class LobbyViewModel {
         settings.distributionMode = distributionMode
         dependencies.gameSessionStore.updateSettings(settings)
 
+        let existingById = Dictionary(
+            uniqueKeysWithValues: (dependencies.gameSessionStore.currentSession?.players ?? []).map { ($0.id, $0) }
+        )
+
         let slots = seatedPlayers.map { entry in
-            PlayerSlot(
+            var slot = PlayerSlot(
                 id: entry.id,
                 displayName: entry.isHost ? "You" : entry.displayName,
                 avatarColor: entry.avatarColor,
                 isHost: entry.isHost
             )
+            if let existing = existingById[entry.id] {
+                slot.assignment = existing.assignment
+                slot.hasOpenedCard = existing.hasOpenedCard
+                slot.pickedCardIndex = existing.pickedCardIndex
+                slot.isEliminated = existing.isEliminated
+                slot.cardToken = existing.cardToken
+                slot.cardURL = existing.cardURL
+            }
+            return slot
         }
 
         dependencies.gameSessionStore.setPlayers(slots)

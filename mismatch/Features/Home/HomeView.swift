@@ -9,7 +9,6 @@ struct HomeView: View {
 
             VStack(spacing: 0) {
                 HStack {
-                    Spacer()
                     Button {
                         viewModel.openGameRules()
                     } label: {
@@ -25,6 +24,8 @@ struct HomeView: View {
                             }
                     }
                     .buttonStyle(.plain)
+
+                    Spacer()
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 16)
@@ -75,10 +76,6 @@ struct HomeView: View {
                 Spacer()
 
                 VStack(spacing: 12) {
-                    SecondaryButton(title: "How to Play") {
-                        viewModel.openGameRules()
-                    }
-
                     PrimaryButton(title: "Host a Game") {
                         viewModel.hostGameTapped()
                     }

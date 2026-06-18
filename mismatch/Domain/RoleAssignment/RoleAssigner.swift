@@ -5,6 +5,10 @@ enum RoleAssignerError: Error {
     case invalidPlayerCount
 }
 
+enum GameSessionStoreError: Error {
+    case noActiveSession
+}
+
 struct RoleAssigner: Sendable {
     func assign(
         players: [PlayerSlot],
