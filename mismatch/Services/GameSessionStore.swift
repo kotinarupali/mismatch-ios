@@ -146,7 +146,6 @@ final class GameSessionStore {
 
         for claim in snapshot.claimedCards {
             guard let index = session.players.firstIndex(where: { $0.id == claim.playerId }) else { continue }
-            guard !session.players[index].hasOpenedCard else { continue }
             session.players[index].hasOpenedCard = true
             session.players[index].pickedCardIndex = claim.cardIndex
         }

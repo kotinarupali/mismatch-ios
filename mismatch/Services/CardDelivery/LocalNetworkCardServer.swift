@@ -133,7 +133,7 @@ final class LocalNetworkCardServer {
         }
     }
 
-    private func hasCompleteRequest(_ raw: String) -> Bool {
+    private static func hasCompleteRequest(_ raw: String) -> Bool {
         guard let split = Self.headerBodySplit(raw) else { return false }
         let headers = split.headers
         let body = split.body

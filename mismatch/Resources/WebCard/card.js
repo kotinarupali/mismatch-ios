@@ -12,17 +12,33 @@
   if (!app) return;
 
   if (!sessionToken || sessionToken === '{{TOKEN}}') {
-    app.innerHTML = '<p class="error">Invalid game link. Scan the host QR code again.</p>';
+    app.innerHTML = screenShell('<p class="error">Invalid game link. Scan the host QR code again.</p>');
     return;
   }
 
   boot();
 
+  function screenShell(content) {
+    return (
+      '<div class="screen">' +
+        '<header class="brand">' +
+          '<div class="brand-mark" aria-hidden="true">M</div>' +
+          '<h1 class="brand-title">Mismatch</h1>' +
+          '<p class="brand-sub">Pick your card</p>' +
+        '</header>' +
+        '<div class="panel">' + content + '</div>' +
+      '</div>'
+    );
+  }
+
   function boot() {
     fetchSession()
       .then(function (session) {
         if (!session.players || session.players.length === 0) {
-          app.innerHTML = '<h1>Waiting for players</h1><p class="sub">No guest players found yet. Ask the host to add players, then refresh.</p>';
+          app.innerHTML = screenShell(
+            '<h2 class="headline">Waiting for players</h2>' +
+            '<p class="sub">No guest players found yet. Ask the host to add players, then refresh.</p>'
+          );
           startPolling(function () { boot(); });
           return;
         }
@@ -44,7 +60,9 @@
         }
       })
       .catch(function () {
-        app.innerHTML = '<p class="error">Could not reach the game server. Check your internet connection and try again.</p>';
+        app.innerHTML = screenShell(
+          '<p class="error">Could not reach the game server. Check your internet connection and try again.</p>'
+        );
       });
   }
 
@@ -66,16 +84,20 @@
 
   function renderWhoAreYou(session) {
     stopPolling();
-    let html = '<h1>Who are you?</h1><p class="sub">Tap your name to pick a card.</p><div class="player-list">';
+    let list = '';
     (session.players || []).forEach(function (player) {
       const picked = player.hasOpenedCard ? ' picked' : '';
-      html += '<button class="player-btn' + picked + '" data-id="' + player.id + '">' +
+      list += '<button type="button" class="player-btn' + picked + '" data-id="' + player.id + '">' +
         escapeHtml(player.displayName) +
         (player.hasOpenedCard ? ' ✓' : '') +
         '</button>';
     });
-    html += '</div>';
-    app.innerHTML = html;
+
+    app.innerHTML = screenShell(
+      '<h2 class="headline">Who are you?</h2>' +
+      '<p class="sub">Tap your name to pick a card.</p>' +
+      '<div class="player-list">' + list + '</div>'
+    );
 
     app.querySelectorAll('.player-btn:not(.picked)').forEach(function (btn) {
       btn.onclick = function () {
@@ -105,15 +127,20 @@
     const count = session.faceDownCardCount || 4;
     const claimed = indexClaims(session.claimedCards || []);
 
-    let html = '<div class="top-bar">' +
-      '<button class="link-btn" id="change-player">Not you?</button>' +
-      '<span class="player-tag">' + escapeHtml(player.displayName) + '</span></div>';
-    html += '<h2>Pick a card</h2>';
+    let sub = '';
     if ((session.claimedCards || []).length > 0) {
-      html += '<p class="sub">Taken cards update live for everyone.</p>';
+      sub = '<p class="sub">Cards already taken are marked with names.</p>';
     }
-    html += '<div class="grid" id="grid"></div>';
-    app.innerHTML = html;
+
+    app.innerHTML = screenShell(
+      '<div class="top-bar">' +
+        '<button type="button" class="link-btn" id="change-player">Not you?</button>' +
+        '<span class="player-tag">' + escapeHtml(player.displayName) + '</span>' +
+      '</div>' +
+      '<h2 class="headline">Pick a card to see your role</h2>' +
+      sub +
+      '<div class="grid" id="grid"></div>'
+    );
 
     document.getElementById('change-player').onclick = function () {
       assignment = null;
@@ -131,12 +158,16 @@
       if (claim) {
         const taken = document.createElement('div');
         taken.className = 'card-taken';
-        taken.innerHTML = '<span class="check">✓</span><span class="name">' + escapeHtml(claim.playerName) + '</span>';
+        taken.innerHTML =
+          '<span class="card-taken-icon" aria-hidden="true">✓</span>' +
+          '<span class="name">' + escapeHtml(claim.playerName) + '</span>';
         grid.appendChild(taken);
       } else {
         const btn = document.createElement('button');
+        btn.type = 'button';
         btn.className = 'card-back';
-        btn.textContent = '?';
+        btn.innerHTML = '<span class="card-back-icon">?</span>';
+        btn.setAttribute('aria-label', 'Face-down card');
         btn.onclick = function () { claimCard(i, btn); };
         grid.appendChild(btn);
       }
@@ -159,7 +190,7 @@
     if (button) {
       button.disabled = true;
       button.classList.add('claiming');
-      button.textContent = '…';
+      button.querySelector('.card-back-icon').textContent = '…';
     }
 
     fetch('/api/session/' + encodeURIComponent(sessionToken), {
@@ -212,30 +243,31 @@
 
   function renderReveal(data) {
     stopPolling();
-    let html = '<div class="revealed">';
+    let body = '<div class="revealed">';
+
     if (data.showRoleOnCard) {
-      html += '<div class="badge ' + data.role + '">' + capitalize(data.role) + '</div>';
+      body += '<div class="badge ' + data.role + '">' + capitalize(data.role) + '</div>';
     }
 
     if (data.role === 'ghost' && !ghostBluffMode) {
-      html += '<p>No word — bluff from context</p>';
+      body += '<p class="reveal-copy">No word — bluff from context</p>';
       if (data.categoryHint) {
-        html += '<p class="hint">Hint: ' + escapeHtml(data.categoryHint) + '</p>';
+        body += '<p class="hint">Hint: ' + escapeHtml(data.categoryHint) + '</p>';
       }
       if (data.insiderWord) {
-        html += '<button class="secondary-btn" id="ghost-repick">Pick again</button>';
+        body += '<button type="button" class="secondary-btn" id="ghost-repick">Pick again</button>';
       }
     } else if (data.role === 'ghost' && ghostBluffMode && data.insiderWord) {
-      html += '<p class="hint">Insider word</p>';
-      html += '<div class="secret shown">' + escapeHtml(data.insiderWord) + '</div>';
-      html += '<p class="hint">Memorize this, then bluff during discussion.</p>';
+      body += '<p class="hint">Insider word</p>';
+      body += '<div class="secret shown">' + escapeHtml(data.insiderWord) + '</div>';
+      body += '<p class="hint">Memorize this, then bluff during discussion.</p>';
     } else if (data.word) {
-      html += '<p>Press and hold to reveal</p>';
-      html += '<div class="secret" id="secret">••••••</div>';
+      body += '<p class="reveal-copy">Press and hold to reveal</p>';
+      body += '<div class="secret" id="secret">••••••</div>';
     }
 
-    html += '</div>';
-    app.innerHTML = html;
+    body += '</div>';
+    app.innerHTML = screenShell(body);
 
     const repick = document.getElementById('ghost-repick');
     if (repick) {
@@ -247,10 +279,11 @@
 
     const secret = document.getElementById('secret');
     if (secret && data.word) {
-      secret.addEventListener('touchstart', show);
+      secret.addEventListener('touchstart', show, { passive: true });
       secret.addEventListener('touchend', hide);
       secret.addEventListener('mousedown', show);
       secret.addEventListener('mouseup', hide);
+      secret.addEventListener('mouseleave', hide);
       function show() { secret.textContent = data.word; secret.classList.add('shown'); }
       function hide() { secret.textContent = '••••••'; secret.classList.remove('shown'); }
     }
@@ -285,6 +318,8 @@
   }
 
   function showError() {
-    app.innerHTML = '<p class="error">Something went wrong. Refresh and try again.</p>';
+    app.innerHTML = screenShell(
+      '<p class="error">Something went wrong. Refresh and try again.</p>'
+    );
   }
 })();

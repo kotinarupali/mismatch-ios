@@ -235,8 +235,6 @@ final class LobbyViewModel {
             switch distributionMode {
             case .passThePhone:
                 dependencies.router.navigate(to: .passThePhone)
-            case .localQR:
-                await startLocalQRDistribution()
             case .cloudQR:
                 await startCloudQRDistribution()
             }
@@ -244,25 +242,6 @@ final class LobbyViewModel {
             errorMessage = "No word pairs available."
         } catch {
             errorMessage = "Could not distribute roles."
-        }
-    }
-
-    private func startLocalQRDistribution() async {
-        guard let session = dependencies.gameSessionStore.currentSession else { return }
-
-        do {
-            let result = try await dependencies.localNetworkCardServer.start(
-                session: session,
-                gameSessionStore: dependencies.gameSessionStore
-            )
-            dependencies.gameSessionStore.setSharedJoinURL(
-                result.joinURL,
-                sessionToken: result.sessionToken,
-                backend: .local
-            )
-            dependencies.router.navigate(to: .qrGrid)
-        } catch {
-            fallbackFromQRDistribution(message: "Local QR server unavailable. Switching to pass-the-phone.")
         }
     }
 
@@ -293,7 +272,7 @@ final class LobbyViewModel {
 
     private static func resolvedDistributionMode(_ mode: DistributionMode) -> DistributionMode {
         if mode == .cloudQR, !CloudCardConfig.isConfigured {
-            return .localQR
+            return .passThePhone
         }
         return mode
     }

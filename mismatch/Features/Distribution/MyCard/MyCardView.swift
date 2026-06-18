@@ -2,7 +2,13 @@ import SwiftUI
 
 struct MyCardView: View {
     @Bindable var viewModel: MyCardViewModel
+    @Bindable private var sessionStore: GameSessionStore
     @Environment(\.dismiss) private var dismiss
+
+    init(viewModel: MyCardViewModel) {
+        self.viewModel = viewModel
+        _sessionStore = Bindable(viewModel.dependencies.gameSessionStore)
+    }
 
     var body: some View {
         NavigationStack {
@@ -16,8 +22,9 @@ struct MyCardView: View {
                             showRoleOnCard: viewModel.showRoleOnCard,
                             assignment: assignment,
                             insiderWord: viewModel.insiderWord,
-                            onComplete: { _ in
-                                viewModel.markOpened()
+                            claimedCards: sessionStore.claimedCards(),
+                            onComplete: { cardIndex in
+                                viewModel.markOpened(cardIndex: cardIndex)
                                 dismiss()
                             }
                         )
@@ -36,6 +43,12 @@ struct MyCardView: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Close") { dismiss() }
                 }
+            }
+            .onAppear {
+                viewModel.startCloudClaimRefresh()
+            }
+            .onDisappear {
+                viewModel.stopCloudClaimRefresh()
             }
         }
         .preferredColorScheme(.dark)

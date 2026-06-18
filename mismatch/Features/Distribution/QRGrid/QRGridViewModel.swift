@@ -19,26 +19,12 @@ final class QRGridViewModel {
         startCloudSyncIfNeeded()
     }
 
-    deinit {
-        pollTask?.cancel()
-    }
-
-    var isCloudMode: Bool {
-        dependencies.gameSessionStore.currentSession?.cardDeliveryBackend == .cloud
-    }
-
     var requirementsText: String {
-        if isCloudMode {
-            return "• Any internet connection (cellular or Wi‑Fi)\n• Open the link in Safari — not a QR preview pane\n• Host phone stays online until everyone has picked"
-        }
-        return "• Shared network: home Wi‑Fi or host Personal Hotspot (Settings → Personal Hotspot)\n• Allow Local Network on the host iPhone when prompted\n• Open the link in Safari — not a QR preview pane"
+        "• Any internet connection (cellular or Wi‑Fi)\n• Open the link in Safari — not a QR preview pane\n• Host phone stays online until everyone has picked"
     }
 
     var serverFailureMessage: String {
-        if isCloudMode {
-            return "Could not start cloud card session. Use pass-the-phone instead."
-        }
-        return "Could not start local card server. Use pass-the-phone instead."
+        "Could not start cloud card session. Use pass-the-phone instead."
     }
 
     var sharedJoinURL: String? {
@@ -89,10 +75,7 @@ final class QRGridViewModel {
     }
 
     var joinInstructions: String {
-        if isCloudMode {
-            return "Scan the QR or tap Send Link. Open in Safari — not a camera preview pane."
-        }
-        return "If scanning shows a blank page, tap Copy Link and paste it into Safari. Camera previews often fail for local links."
+        "Scan the QR or tap Send Link. Open in Safari — not a camera preview pane."
     }
 
     func openJoinLinkInSafari() {
@@ -140,15 +123,11 @@ final class QRGridViewModel {
     }
 
     private static func computeServerFailed(dependencies: AppDependencies) -> Bool {
-        guard let session = dependencies.gameSessionStore.currentSession else { return true }
-        guard session.sharedJoinURL != nil else { return true }
-        if session.cardDeliveryBackend == .cloud { return false }
-        return dependencies.localNetworkCardServer.baseURL == nil
+        dependencies.gameSessionStore.currentSession?.sharedJoinURL == nil
     }
 
     private func startCloudSyncIfNeeded() {
-        guard isCloudMode,
-              let token = dependencies.gameSessionStore.currentSession?.joinSessionToken else { return }
+        guard let token = dependencies.gameSessionStore.currentSession?.joinSessionToken else { return }
 
         pollTask = Task { [weak self] in
             while !Task.isCancelled {

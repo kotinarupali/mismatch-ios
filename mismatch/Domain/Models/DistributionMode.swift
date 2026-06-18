@@ -1,15 +1,13 @@
 import Foundation
 
-enum DistributionMode: String, Codable, CaseIterable, Sendable {
+enum DistributionMode: String, Sendable {
     case passThePhone
-    case localQR
     case cloudQR
 
     var displayName: String {
         switch self {
         case .passThePhone: "Pass the Phone"
-        case .localQR: "Local QR"
-        case .cloudQR: "Cloud QR"
+        case .cloudQR: "QR Cards"
         }
     }
 
@@ -17,8 +15,6 @@ enum DistributionMode: String, Codable, CaseIterable, Sendable {
         switch self {
         case .passThePhone:
             "Best anywhere — no internet needed. Pass one device around the circle."
-        case .localQR:
-            "Each player uses their own phone on the same Wi‑Fi or host hotspot."
         case .cloudQR:
             "Each player uses their own phone over the internet — great for picnics and outdoors."
         }
@@ -29,10 +25,29 @@ enum DistributionMode: String, Codable, CaseIterable, Sendable {
     }
 
     static var lobbyOptions: [DistributionMode] {
-        var modes: [DistributionMode] = [.passThePhone, .localQR]
         if CloudCardConfig.isConfigured {
-            modes.append(.cloudQR)
+            return [.passThePhone, .cloudQR]
         }
-        return modes
+        return [.passThePhone]
+    }
+}
+
+extension DistributionMode: Codable {
+    init(from decoder: Decoder) throws {
+        let raw = try decoder.singleValueContainer().decode(String.self)
+        switch raw {
+        case "cloudQR", "localQR":
+            self = .cloudQR
+        case "passThePhone":
+            self = .passThePhone
+        default:
+            self = .passThePhone
+        }
+    }
+}
+
+extension DistributionMode: CaseIterable {
+    static var allCases: [DistributionMode] {
+        lobbyOptions
     }
 }

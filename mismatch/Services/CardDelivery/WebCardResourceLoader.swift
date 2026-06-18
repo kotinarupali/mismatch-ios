@@ -56,7 +56,7 @@ enum WebCardResourceLoader {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mismatch</title>
-    <style>body{font-family:-apple-system,sans-serif;margin:0;padding:24px;background:#111;color:#fff;min-height:100vh}main{max-width:420px;margin:0 auto}.loading{opacity:.85;text-align:center}</style>
+    <style>body{margin:0;min-height:100vh;background:#141a2e;color:#fff;font-family:-apple-system,sans-serif}.loading{opacity:.85;text-align:center;padding:48px 16px}</style>
     <link rel="stylesheet" href="/card.css">
     </head><body>
     <main id="app"><p class="loading">Loading game…</p></main>
@@ -65,7 +65,7 @@ enum WebCardResourceLoader {
     </body></html>
     """
 
-    private static let fallbackCSS = "body{font-family:sans-serif;background:#111;color:#fff;padding:24px}"
+    private static let fallbackCSS = "body{font-family:-apple-system,sans-serif;margin:0;background:#141a2e;color:#fff;min-height:100vh}"
 
     private static let fallbackJS = """
     document.getElementById('app').innerHTML='<p>Web assets failed to load. Reinstall the app or use pass-the-phone.</p>';
