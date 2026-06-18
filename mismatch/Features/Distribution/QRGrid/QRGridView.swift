@@ -54,7 +54,7 @@ struct QRGridView: View {
         .hostGameMenu(
             gameSessionStore: sessionStore,
             onRepick: { viewModel.repickRoles() },
-            onEndGame: { viewModel.endGame() },
+            onEndSession: { viewModel.endSessionTapped() },
             onCheckPlayerRole: { viewModel.checkPlayerRoleTapped() }
         )
         .sheet(isPresented: $viewModel.showPlayerRolePicker) {

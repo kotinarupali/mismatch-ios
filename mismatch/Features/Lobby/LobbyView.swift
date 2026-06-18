@@ -2,6 +2,7 @@ import SwiftUI
 
 struct LobbyView: View {
     @Bindable var viewModel: LobbyViewModel
+    let dependencies: AppDependencies
     @State private var rulesExpanded = false
 
     var body: some View {
@@ -58,7 +59,7 @@ struct LobbyView: View {
                             Text("Seating order")
                                 .font(AppTypography.body)
                                 .foregroundStyle(AppColor.label)
-                            Text("Arrange players as they sit in the circle.")
+                            Text("Arrange players as they sit in the circle. Tap + to link a saved profile.")
                                 .font(AppTypography.caption)
                                 .foregroundStyle(AppColor.secondaryLabel)
                         }
@@ -74,7 +75,8 @@ struct LobbyView: View {
                                     onEdit: { viewModel.updatePlayer(id: player.id, name: $0) },
                                     onDelete: { viewModel.removePlayer(id: player.id) },
                                     onMoveUp: { viewModel.moveSeatedPlayerUp(at: index) },
-                                    onMoveDown: { viewModel.moveSeatedPlayerDown(at: index) }
+                                    onMoveDown: { viewModel.moveSeatedPlayerDown(at: index) },
+                                    onLinkProfile: { viewModel.openProfilePicker(for: player.id) }
                                 )
                             }
                         }
@@ -101,6 +103,13 @@ struct LobbyView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(AppColor.background.opacity(0.9), for: .navigationBar)
         .toolbarColorScheme(.dark, for: .navigationBar)
+        .sheet(isPresented: $viewModel.showProfilePicker) {
+            ProfilePickerSheet(
+                dependencies: dependencies,
+                linkedProfileId: viewModel.linkedProfileIdForPicker,
+                onSelect: { viewModel.completeProfileSelection($0) }
+            )
+        }
     }
 
     private var rulesSection: some View {
@@ -167,6 +176,20 @@ struct LobbyView: View {
                         title: "Discussion timer",
                         isOn: discussionTimerEnabledBinding
                     )
+
+                    if viewModel.discussionTimerEnabled {
+                        Divider().overlay(AppColor.cardBorder).padding(.horizontal, 16)
+                        SettingsPickerRow(
+                            icon: "clock.fill",
+                            title: "Duration",
+                            selection: timerMinutesBinding
+                        ) {
+                            ForEach(HostPreferences.allowedTimerMinutes, id: \.self) { minutes in
+                                Text(minutes == 1 ? "1 minute" : "\(minutes) minutes").tag(minutes)
+                            }
+                        }
+                    }
+
                     Divider().overlay(AppColor.cardBorder).padding(.horizontal, 16)
                     SettingsPickerRow(icon: "qrcode", title: "Distribution", selection: distributionModeBinding) {
                         ForEach(DistributionMode.lobbyOptions, id: \.self) { mode in
@@ -241,6 +264,16 @@ struct LobbyView: View {
         )
     }
 
+    private var timerMinutesBinding: Binding<Int> {
+        Binding(
+            get: { viewModel.timerMinutes },
+            set: {
+                viewModel.timerMinutes = $0
+                viewModel.refreshSession()
+            }
+        )
+    }
+
     private var distributionModeBinding: Binding<DistributionMode> {
         Binding(
             get: { viewModel.distributionMode },
@@ -271,6 +304,9 @@ struct LobbyView: View {
 
 #Preview {
     NavigationStack {
-        LobbyView(viewModel: LobbyViewModel(dependencies: AppDependencies()))
+        LobbyView(
+            viewModel: LobbyViewModel(dependencies: AppDependencies()),
+            dependencies: AppDependencies()
+        )
     }
 }

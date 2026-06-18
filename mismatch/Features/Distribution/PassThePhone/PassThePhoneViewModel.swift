@@ -132,8 +132,12 @@ final class PassThePhoneViewModel {
         dependencies.repickRoles()
     }
 
+    func endSessionTapped() {
+        dependencies.showSessionSummary()
+    }
+
     func endGame() {
-        dependencies.endGame()
+        endSessionTapped()
     }
 
     var gameSessionStore: GameSessionStore {

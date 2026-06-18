@@ -4,13 +4,13 @@ extension View {
     func hostGameMenu(
         gameSessionStore: GameSessionStore? = nil,
         onRepick: @escaping () -> Void,
-        onEndGame: @escaping () -> Void,
+        onEndSession: @escaping () -> Void,
         onCheckPlayerRole: (() -> Void)? = nil
     ) -> some View {
         modifier(HostGameMenuModifier(
             gameSessionStore: gameSessionStore,
             onRepick: onRepick,
-            onEndGame: onEndGame,
+            onEndSession: onEndSession,
             onCheckPlayerRole: onCheckPlayerRole
         ))
     }
@@ -18,14 +18,12 @@ extension View {
 
 private struct HostGameMenuModifier: ViewModifier {
     @State private var showRepickConfirm = false
-    @State private var showEndGameConfirm = false
+    @State private var showEndSessionConfirm = false
     @State private var showScoresDashboard = false
-    @State private var showPartyPersonas = false
-    @State private var personaCards: [PlayerPersonaCard] = []
 
     let gameSessionStore: GameSessionStore?
     let onRepick: () -> Void
-    let onEndGame: () -> Void
+    let onEndSession: () -> Void
     let onCheckPlayerRole: (() -> Void)?
 
     func body(content: Content) -> some View {
@@ -56,27 +54,20 @@ private struct HostGameMenuModifier: ViewModifier {
                         }
 
                         Button(role: .destructive) {
-                            showEndGameConfirm = true
+                            showEndSessionConfirm = true
                         } label: {
-                            Label("End Game", systemImage: "xmark.circle")
+                            Label("End Game Night", systemImage: "xmark.circle")
                         }
                     } label: {
                         Image(systemName: "ellipsis.circle")
                             .foregroundStyle(AppColor.label)
+                            .accessibilityLabel("Game options")
                     }
                 }
             }
             .sheet(isPresented: $showScoresDashboard) {
                 if let gameSessionStore {
                     ScoresDashboardSheet(store: gameSessionStore)
-                }
-            }
-            .sheet(isPresented: $showPartyPersonas) {
-                GameNightPersonasSheet(
-                    cards: personaCards,
-                    gamesPlayedCount: gameSessionStore?.gamesPlayedCount ?? 0
-                ) {
-                    onEndGame()
                 }
             }
             .confirmDialog(
@@ -88,13 +79,12 @@ private struct HostGameMenuModifier: ViewModifier {
                 onRepick()
             }
             .confirmDialog(
-                isPresented: $showEndGameConfirm,
-                title: "End game?",
-                message: "Wrap up with party personas, then return home.",
-                confirmTitle: "End Game"
+                isPresented: $showEndSessionConfirm,
+                title: "End game night?",
+                message: "Wrap up with tonight's leaderboard. You can play again with the same group or start fresh.",
+                confirmTitle: "End Game Night"
             ) {
-                personaCards = gameSessionStore?.playerPersonaCards() ?? []
-                showPartyPersonas = true
+                onEndSession()
             }
     }
 }

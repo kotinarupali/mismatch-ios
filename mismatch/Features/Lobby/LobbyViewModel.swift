@@ -5,6 +5,7 @@ struct LobbySeatedPlayer: Identifiable, Equatable {
     var displayName: String
     var isHost: Bool
     var avatarColor: AvatarColor
+    var profileId: UUID?
 }
 
 @MainActor
@@ -17,12 +18,15 @@ final class LobbyViewModel {
     var ghostEnabled: Bool
     var mismatchGhostAlliance: Bool
     var discussionTimerEnabled: Bool
+    var timerMinutes: Int
     var distributionMode: DistributionMode
     var cloudGuestVotingEnabled: Bool
     var seatedPlayers: [LobbySeatedPlayer]
     var newPlayerName: String = ""
     var isDistributing = false
     var errorMessage: String?
+    var showProfilePicker = false
+    var profilePickerPlayerId: UUID?
     private var ghostDisabledByUser = false
     private var reservedHostId: UUID?
 
@@ -36,6 +40,7 @@ final class LobbyViewModel {
         ghostEnabled = settings.ghostEnabled
         mismatchGhostAlliance = settings.mismatchGhostAlliance
         discussionTimerEnabled = settings.discussionTimerEnabled
+        timerMinutes = Self.resolvedTimerMinutes(from: settings)
         distributionMode = Self.resolvedDistributionMode(settings.distributionMode)
         cloudGuestVotingEnabled = settings.cloudGuestVotingEnabled
 
@@ -53,6 +58,7 @@ final class LobbyViewModel {
         ghostEnabled = settings.ghostEnabled
         mismatchGhostAlliance = settings.mismatchGhostAlliance
         discussionTimerEnabled = settings.discussionTimerEnabled
+        timerMinutes = Self.resolvedTimerMinutes(from: settings)
         distributionMode = Self.resolvedDistributionMode(settings.distributionMode)
         cloudGuestVotingEnabled = settings.cloudGuestVotingEnabled
         let playerCount = dependencies.gameSessionStore.currentSession?.players.count ?? 0
@@ -80,9 +86,51 @@ final class LobbyViewModel {
                 id: player.id,
                 displayName: player.isHost ? "You" : player.displayName,
                 isHost: player.isHost,
-                avatarColor: player.avatarColor
+                avatarColor: player.avatarColor,
+                profileId: player.profileId
             )
         }
+    }
+
+    func openProfilePicker(for playerId: UUID) {
+        profilePickerPlayerId = playerId
+        showProfilePicker = true
+    }
+
+    func linkProfile(_ profile: PlayerProfile, to playerId: UUID) {
+        guard let index = seatedPlayers.firstIndex(where: { $0.id == playerId }) else { return }
+        seatedPlayers[index].profileId = profile.id
+        seatedPlayers[index].avatarColor = profile.avatarColor
+        if !seatedPlayers[index].isHost {
+            seatedPlayers[index].displayName = profile.name
+        }
+        syncSession()
+    }
+
+    func unlinkProfile(from playerId: UUID) {
+        guard let index = seatedPlayers.firstIndex(where: { $0.id == playerId }) else { return }
+        seatedPlayers[index].profileId = nil
+        syncSession()
+    }
+
+    func dismissProfilePicker() {
+        showProfilePicker = false
+        profilePickerPlayerId = nil
+    }
+
+    func completeProfileSelection(_ profile: PlayerProfile?) {
+        guard let playerId = profilePickerPlayerId else { return }
+        if let profile {
+            linkProfile(profile, to: playerId)
+        } else {
+            unlinkProfile(from: playerId)
+        }
+        dismissProfilePicker()
+    }
+
+    var linkedProfileIdForPicker: UUID? {
+        guard let playerId = profilePickerPlayerId else { return nil }
+        return seatedPlayers.first(where: { $0.id == playerId })?.profileId
     }
 
     var totalPlayerCount: Int {
@@ -124,7 +172,7 @@ final class LobbyViewModel {
         if ghostEnabled { parts.append("Ghost") }
         if mismatchGhostAlliance { parts.append("Alliance") }
         if showRoleOnCard { parts.append("Roles on card") }
-        if discussionTimerEnabled { parts.append("Timer") }
+        if discussionTimerEnabled { parts.append("\(timerMinutes) min timer") }
         if distributionMode == .cloudQR, cloudGuestVotingEnabled { parts.append("Guest voting") }
         return parts.joined(separator: " · ")
     }
@@ -295,6 +343,13 @@ final class LobbyViewModel {
         return mode
     }
 
+    private static func resolvedTimerMinutes(from settings: GameSettings) -> Int {
+        let minutes = max(1, settings.timerSeconds / 60)
+        return HostPreferences.allowedTimerMinutes.contains(minutes)
+            ? minutes
+            : HostPreferences.default.timerMinutes
+    }
+
     private func reconcileHostSeat() {
         if hostIsPlaying {
             if seatedPlayers.contains(where: \.isHost) { return }
@@ -323,6 +378,7 @@ final class LobbyViewModel {
         settings.ghostEnabled = ghostEnabled
         settings.mismatchGhostAlliance = mismatchGhostAlliance
         settings.discussionTimerEnabled = discussionTimerEnabled
+        settings.timerSeconds = timerMinutes * 60
         settings.showRoleOnCard = showRoleOnCard
         settings.distributionMode = distributionMode
         settings.cloudGuestVotingEnabled = distributionMode == .cloudQR && cloudGuestVotingEnabled
@@ -337,7 +393,8 @@ final class LobbyViewModel {
                 id: entry.id,
                 displayName: entry.isHost ? "You" : entry.displayName,
                 avatarColor: entry.avatarColor,
-                isHost: entry.isHost
+                isHost: entry.isHost,
+                profileId: entry.profileId
             )
             if let existing = existingById[entry.id] {
                 slot.assignment = existing.assignment
@@ -346,6 +403,7 @@ final class LobbyViewModel {
                 slot.isEliminated = existing.isEliminated
                 slot.cardToken = existing.cardToken
                 slot.cardURL = existing.cardURL
+                slot.sessionScore = existing.sessionScore
             }
             return slot
         }

@@ -62,7 +62,7 @@ The **audit vulnerabilities** message is dev-only tooling — safe to ignore for
 | `GET` | `/api/session/{token}` | Public snapshot for polling |
 | `POST` | `/api/session/{token}` | Claim a card `{ playerId, cardIndex }` |
 | `POST` | `/api/session/{token}/vote` | Guest submits vote `{ voterId, targetPlayerId }` |
-| `POST` | `/api/sessions/{token}/voting` | Host opens/closes voting `{ hostKey, action, eliminatedPlayerIds }` |
+| `POST` | `/api/sessions/{token}/voting` | Host controls voting `{ hostKey, action: open \| close \| revote, eliminatedPlayerIds, revoteExcludedPlayerIds? }` |
 | `POST` | `/api/sessions/{token}/delete` | Host ends session |
 | `GET` | `/join/{token}` | Player web page |
 

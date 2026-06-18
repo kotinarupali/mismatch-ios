@@ -284,6 +284,7 @@ final class GameSessionStore {
         session.cardDeliveryBackend = .local
         session.sessionEndScoreEvents = []
         session.sessionWinBonusesApplied = false
+        session.profileStatsApplied = false
         session.players = session.players.map { player in
             var updated = player
             updated.assignment = nil
@@ -396,7 +397,7 @@ final class GameSessionStore {
         return session.rounds.flatMap(\.scoreEvents) + session.sessionEndScoreEvents
     }
 
-    func sessionScoreboard(roundPoints: [UUID: Int]? = nil) -> [SessionScoreRow] {
+    func sessionScoreboard(roundPoints: [UUID: Int]? = nil, showsRoundPoints: Bool = true) -> [SessionScoreRow] {
         guard let session = currentSession else { return [] }
         let roundLookup = roundPoints ?? ScoringEngine.pointsByPlayer(from: currentRoundScoreEvents)
         let rows = session.players.map { player in
@@ -405,7 +406,7 @@ final class GameSessionStore {
                 displayName: player.isHost ? "You" : player.displayName,
                 avatarColor: player.avatarColor,
                 sessionScore: player.sessionScore,
-                roundPoints: roundLookup[player.id] ?? 0,
+                roundPoints: showsRoundPoints ? (roundLookup[player.id] ?? 0) : 0,
                 isHost: player.isHost,
                 rank: 0
             )
@@ -417,17 +418,20 @@ final class GameSessionStore {
             return lhs.displayName.localizedCaseInsensitiveCompare(rhs.displayName) == .orderedAscending
         }
 
-        return rows.enumerated().map { index, row in
-            SessionScoreRow(
-                id: row.id,
-                displayName: row.displayName,
-                avatarColor: row.avatarColor,
-                sessionScore: row.sessionScore,
-                roundPoints: row.roundPoints,
-                isHost: row.isHost,
-                rank: index + 1
-            )
-        }
+        // Shared rank (competition ranking): tied scores share rank; next rank skips (1, 1, 3).
+        return SessionScoreboardRanker.assignSharedRanks(to: rows)
+    }
+
+    func markSessionEnded() {
+        guard var session = currentSession else { return }
+        session.state = .ended
+        currentSession = session
+    }
+
+    func markProfileStatsApplied() {
+        guard var session = currentSession else { return }
+        session.profileStatsApplied = true
+        currentSession = session
     }
 
     private func finishScoringForCurrentRound(ghostGuessCorrect: Bool?) {

@@ -36,6 +36,7 @@ struct SessionScoreboardView: View {
                 .font(.system(size: 16, weight: .bold, design: .rounded))
                 .foregroundStyle(isLeader ? AppColor.warning : AppColor.secondaryLabel)
                 .frame(width: 24, alignment: .center)
+                .accessibilityHidden(true)
 
             AvatarView(name: row.displayName, color: row.avatarColor, size: 40)
 
@@ -61,12 +62,24 @@ struct SessionScoreboardView: View {
             Text("\(row.sessionScore)")
                 .font(.system(size: 22, weight: .bold, design: .rounded))
                 .foregroundStyle(isLeader ? AppColor.warning : AppColor.label)
-                .accessibilityLabel("\(row.sessionScore) total points")
+                .accessibilityHidden(true)
         }
         .padding(.vertical, 8)
         .padding(.horizontal, 10)
         .background(isLeader ? AppColor.warning.opacity(0.12) : AppColor.backgroundElevated.opacity(0.85))
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .accessibilityLabel(scoreRowAccessibilityLabel(for: row, isLeader: isLeader))
+    }
+
+    private func scoreRowAccessibilityLabel(for row: SessionScoreRow, isLeader: Bool) -> String {
+        var label = "Rank \(row.rank), \(row.displayName), \(row.sessionScore) total points"
+        if isLeader {
+            label += ", leading"
+        }
+        if showsRoundPoints, row.roundPoints > 0 {
+            label += ", plus \(row.roundPoints) this round"
+        }
+        return label
     }
 }
 

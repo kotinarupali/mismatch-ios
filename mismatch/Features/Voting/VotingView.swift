@@ -33,7 +33,7 @@ struct VotingView: View {
         .hostGameMenu(
             gameSessionStore: viewModel.gameSessionStore,
             onRepick: { viewModel.repickRoles() },
-            onEndGame: { viewModel.endGame() }
+            onEndSession: { viewModel.endSessionTapped() }
         )
         .confirmDialog(
             isPresented: $viewModel.showConfirmDialog,

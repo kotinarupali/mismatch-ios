@@ -52,7 +52,7 @@ struct PassThePhoneView: View {
         .hostGameMenu(
             gameSessionStore: viewModel.gameSessionStore,
             onRepick: { viewModel.repickRoles() },
-            onEndGame: { viewModel.endGame() },
+            onEndSession: { viewModel.endSessionTapped() },
             onCheckPlayerRole: { viewModel.checkPlayerRoleTapped() }
         )
         .sheet(isPresented: $viewModel.showPlayerRolePicker) {

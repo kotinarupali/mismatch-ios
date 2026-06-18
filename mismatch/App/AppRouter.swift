@@ -7,6 +7,8 @@ enum AppRoute: Hashable {
     case discussion
     case voting
     case results
+    case sessionSummary
+    case profiles
 }
 
 @MainActor
@@ -15,6 +17,16 @@ final class AppRouter {
     var path = NavigationPath()
 
     func navigate(to route: AppRoute) {
+        path.append(route)
+    }
+
+    func replaceWithSessionSummary() {
+        path = NavigationPath()
+        path.append(AppRoute.sessionSummary)
+    }
+
+    func replaceWithDistribution(_ route: AppRoute) {
+        path = NavigationPath()
         path.append(route)
     }
 

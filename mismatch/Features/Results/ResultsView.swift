@@ -54,9 +54,7 @@ struct ResultsView: View {
                             viewModel.submitGhostGuessTapped()
                         }
                     } else if viewModel.isSessionComplete {
-                        PrimaryButton(title: "Play Again") {
-                            viewModel.playAgainTapped()
-                        }
+                        EmptyView()
                     } else {
                         PrimaryButton(title: "Continue Discussion") {
                             viewModel.continueTapped()
@@ -73,8 +71,9 @@ struct ResultsView: View {
         .hostGameMenu(
             gameSessionStore: viewModel.gameSessionStore,
             onRepick: { viewModel.playAgainTapped() },
-            onEndGame: { viewModel.exitTapped() }
+            onEndSession: { viewModel.endSessionTapped() }
         )
+        .onAppear { viewModel.onAppear() }
     }
 
     private var ghostGuessSection: some View {

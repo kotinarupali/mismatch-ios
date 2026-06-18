@@ -223,9 +223,13 @@
     }
 
     const targets = (session.voteTargets || []).filter(function (target) {
-      return !target.isEliminated && target.id !== selectedPlayerId;
+      const excluded = session.revoteExcludedPlayerIds || [];
+      return !target.isEliminated
+        && target.id !== selectedPlayerId
+        && excluded.indexOf(target.id) === -1;
     });
 
+    const isRevote = (session.revoteExcludedPlayerIds || []).length > 0;
     let list = '';
     targets.forEach(function (target) {
       const selected = myVoteTargetId === target.id ? ' selected' : '';
@@ -238,14 +242,16 @@
 
     let status = myVoteTargetId
       ? '<p class="sub success-copy">Vote submitted. You can change it until the host closes voting.</p>'
-      : '<p class="sub">Tap who you think should be eliminated.</p>';
+      : isRevote
+        ? '<p class="sub">There was a tie — vote again. Players who tied can\'t be chosen.</p>'
+        : '<p class="sub">Tap who you think should be eliminated.</p>';
 
     app.innerHTML = screenShell(
       '<div class="top-bar">' +
         '<button type="button" class="link-btn" id="view-card">View my card</button>' +
         '<span class="player-tag">' + escapeHtml(player.displayName) + '</span>' +
       '</div>' +
-      '<h2 class="headline">Cast your vote</h2>' +
+      '<h2 class="headline">' + (isRevote ? 'Revote' : 'Cast your vote') + '</h2>' +
       status +
       '<div class="player-list vote-list">' + list + '</div>',
       'Vote on your phone'

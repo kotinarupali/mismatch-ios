@@ -40,6 +40,11 @@ struct DiscussionView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
 
+                if viewModel.showsRevotePrompt, let tiedNames = viewModel.tiedPlayerNamesLabel,
+                   let tie = viewModel.guestVoteTie {
+                    revotePromptCard(tiedNames: tiedNames, voteCount: tie.voteCount)
+                }
+
                 PrimaryButton(
                     title: "Confirm Vote",
                     isEnabled: viewModel.canConfirmVote
@@ -57,7 +62,7 @@ struct DiscussionView: View {
         .hostGameMenu(
             gameSessionStore: viewModel.gameSessionStore,
             onRepick: { viewModel.repickRoles() },
-            onEndGame: { viewModel.endGame() },
+            onEndSession: { viewModel.endSessionTapped() },
             onCheckPlayerRole: { viewModel.checkPlayerRoleTapped() }
         )
         .sheet(isPresented: $viewModel.showPlayerRolePicker) {
@@ -78,6 +83,44 @@ struct DiscussionView: View {
         }
         .onAppear { viewModel.onAppear() }
         .onDisappear { viewModel.onDisappear() }
+    }
+
+    @ViewBuilder
+    private func revotePromptCard(tiedNames: String, voteCount: Int) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 10) {
+                Image(systemName: "arrow.triangle.2.circlepath")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(AppColor.warning)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Tie vote")
+                        .font(AppTypography.headline)
+                        .foregroundStyle(AppColor.label)
+                    Text("\(tiedNames) each have \(voteCount) vote\(voteCount == 1 ? "" : "s").")
+                        .font(AppTypography.caption)
+                        .foregroundStyle(AppColor.secondaryLabel)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+
+            SecondaryButton(title: viewModel.isStartingRevote ? "Starting revote…" : "Start Revote") {
+                viewModel.startRevoteTapped()
+            }
+            .disabled(viewModel.isStartingRevote)
+
+            Text("Guests vote again on their phones. Tied players can't be chosen. Or pick someone below to break the tie.")
+                .font(AppTypography.caption)
+                .foregroundStyle(AppColor.secondaryLabel)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(14)
+        .background(AppColor.card)
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .strokeBorder(AppColor.warning.opacity(0.45), lineWidth: 1)
+        }
     }
 
     @ViewBuilder

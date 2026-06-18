@@ -21,6 +21,7 @@ struct GameSession: Identifiable, Codable, Equatable, Sendable {
     var sessionEndScoreEvents: [ScoreEvent]
     var sessionWinBonusesApplied: Bool
     var gamesPlayedCount: Int
+    var profileStatsApplied: Bool
 
     init(
         id: UUID = UUID(),
@@ -42,7 +43,8 @@ struct GameSession: Identifiable, Codable, Equatable, Sendable {
         cardDeliveryBackend: CardDeliveryBackend = .local,
         sessionEndScoreEvents: [ScoreEvent] = [],
         sessionWinBonusesApplied: Bool = false,
-        gamesPlayedCount: Int = 0
+        gamesPlayedCount: Int = 0,
+        profileStatsApplied: Bool = false
     ) {
         self.id = id
         self.createdAt = createdAt
@@ -64,6 +66,7 @@ struct GameSession: Identifiable, Codable, Equatable, Sendable {
         self.sessionEndScoreEvents = sessionEndScoreEvents
         self.sessionWinBonusesApplied = sessionWinBonusesApplied
         self.gamesPlayedCount = gamesPlayedCount
+        self.profileStatsApplied = profileStatsApplied
     }
 
     var playerCount: Int { players.count }

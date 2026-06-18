@@ -24,6 +24,7 @@ interface SessionState extends SessionInit {
   votingOpen: boolean;
   votingRound: number;
   eliminatedPlayerIds: string[];
+  revoteExcludedPlayerIds: string[];
   votes: Record<string, string>;
 }
 
@@ -71,6 +72,7 @@ export class CardSession implements DurableObject {
       votingOpen: false,
       votingRound: 0,
       eliminatedPlayerIds: [],
+      revoteExcludedPlayerIds: [],
       votes: {},
     };
     return json({ ok: true, revision: 0, hostKey });
@@ -121,6 +123,7 @@ export class CardSession implements DurableObject {
       votingEnabled: this.session.votingEnabled,
       votingOpen: this.session.votingOpen,
       votingRound: this.session.votingRound,
+      revoteExcludedPlayerIds: this.session.revoteExcludedPlayerIds,
       voteTargets,
       voteTallies,
     });
@@ -215,6 +218,9 @@ export class CardSession implements DurableObject {
     if (this.session.eliminatedPlayerIds.includes(targetPlayerId)) {
       return json({ error: "target_eliminated" }, 400);
     }
+    if (this.session.revoteExcludedPlayerIds.includes(targetPlayerId)) {
+      return json({ error: "target_excluded_from_revote" }, 400);
+    }
 
     this.session.votes[voterId] = targetPlayerId;
     this.session.revision += 1;
@@ -231,6 +237,7 @@ export class CardSession implements DurableObject {
       hostKey?: string;
       action?: string;
       eliminatedPlayerIds?: string[];
+      revoteExcludedPlayerIds?: string[];
     };
 
     if (!body.hostKey || body.hostKey !== this.session.hostKey) {
@@ -248,10 +255,33 @@ export class CardSession implements DurableObject {
         return json({ error: "voting_disabled" }, 403);
       }
       this.session.votes = {};
+      this.session.revoteExcludedPlayerIds = [];
       this.session.votingRound += 1;
       this.session.votingOpen = true;
       this.session.revision += 1;
       return json({ ok: true, votingRound: this.session.votingRound, revision: this.session.revision });
+    }
+
+    if (body.action === "revote") {
+      if (!this.session.votingEnabled) {
+        return json({ error: "voting_disabled" }, 403);
+      }
+      const excluded = Array.isArray(body.revoteExcludedPlayerIds)
+        ? body.revoteExcludedPlayerIds.filter((id) =>
+            this.session!.players.some((player) => player.id === id)
+          )
+        : [];
+      this.session.votes = {};
+      this.session.revoteExcludedPlayerIds = excluded;
+      this.session.votingRound += 1;
+      this.session.votingOpen = true;
+      this.session.revision += 1;
+      return json({
+        ok: true,
+        votingRound: this.session.votingRound,
+        revision: this.session.revision,
+        revoteExcludedPlayerIds: this.session.revoteExcludedPlayerIds,
+      });
     }
 
     if (body.action === "close") {

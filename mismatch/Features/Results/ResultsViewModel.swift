@@ -201,6 +201,10 @@ final class ResultsViewModel {
         sessionOutcome == .insiderSideWins
     }
 
+    func onAppear() {
+        presentSessionSummaryIfGameEnded()
+    }
+
     func submitGhostGuessTapped() {
         guard canSubmitGhostGuess else { return }
         let isCorrect = dependencies.gameSessionStore.submitGhostGuess(ghostGuess)
@@ -210,6 +214,7 @@ final class ResultsViewModel {
         } else {
             ghostGuessFeedback = "Wrong guess."
         }
+        presentSessionSummaryIfGameEnded()
     }
 
     func continueTapped() {
@@ -222,6 +227,15 @@ final class ResultsViewModel {
     }
 
     func exitTapped() {
-        dependencies.endGame()
+        dependencies.showSessionSummary()
+    }
+
+    func endSessionTapped() {
+        dependencies.showSessionSummary()
+    }
+
+    private func presentSessionSummaryIfGameEnded() {
+        guard isSessionComplete, !shouldPromptGhostGuess else { return }
+        dependencies.showSessionSummary()
     }
 }

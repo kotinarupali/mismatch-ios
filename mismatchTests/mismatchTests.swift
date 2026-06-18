@@ -359,6 +359,34 @@ struct GameSettingsTests {
     }
 }
 
+struct HostPreferencesTests {
+
+    @Test func appliesTimerToGameSettings() {
+        let preferences = HostPreferences(discussionTimerEnabled: true, timerMinutes: 5)
+        let settings = preferences.applying(to: .default)
+
+        #expect(settings.discussionTimerEnabled == true)
+        #expect(settings.timerSeconds == 300)
+    }
+
+    @Test func normalizesInvalidTimerMinutes() {
+        let preferences = HostPreferences(discussionTimerEnabled: true, timerMinutes: 7).normalized()
+        #expect(preferences.timerMinutes == HostPreferences.default.timerMinutes)
+    }
+
+    @Test @MainActor func savedPreferencesApplyToNewSession() {
+        let defaults = UserDefaults(suiteName: UUID().uuidString)!
+        let preferencesStore = HostPreferencesStore(defaults: defaults)
+        preferencesStore.save(HostPreferences(discussionTimerEnabled: true, timerMinutes: 2))
+
+        let sessionStore = GameSessionStore()
+        sessionStore.createSession(settings: preferencesStore.load().applying(to: .default))
+
+        #expect(sessionStore.currentSession?.settings.discussionTimerEnabled == true)
+        #expect(sessionStore.currentSession?.settings.timerSeconds == 120)
+    }
+}
+
 struct PassThePhoneOrderTests {
 
     @Test @MainActor func passThePhoneViewModelStartsBeforeAllCardsOpened() throws {
@@ -688,6 +716,64 @@ struct CloudCardDistributionTests {
     }
 }
 
+struct GuestVoteTieDetectorTests {
+    @Test func detectsTieAmongTopVoteGetters() {
+        let alice = UUID()
+        let bob = UUID()
+        let charlie = UUID()
+        let active: Set<UUID> = [alice, bob, charlie]
+
+        let tie = GuestVoteTieDetector.detect(
+            tallies: [alice: 3, bob: 3, charlie: 1],
+            activePlayerIds: active
+        )
+
+        #expect(tie?.voteCount == 3)
+        #expect(Set(tie?.tiedPlayerIds ?? []) == [alice, bob])
+    }
+
+    @Test func ignoresEliminatedPlayersAndZeroVotes() {
+        let alice = UUID()
+        let bob = UUID()
+        let eliminated = UUID()
+        let active: Set<UUID> = [alice, bob]
+
+        let tie = GuestVoteTieDetector.detect(
+            tallies: [alice: 2, bob: 1, eliminated: 2],
+            activePlayerIds: active
+        )
+
+        #expect(tie == nil)
+    }
+
+    @Test func returnsNilWhenOnlyOnePlayerLeads() {
+        let alice = UUID()
+        let bob = UUID()
+        let active: Set<UUID> = [alice, bob]
+
+        let tie = GuestVoteTieDetector.detect(
+            tallies: [alice: 4, bob: 2],
+            activePlayerIds: active
+        )
+
+        #expect(tie == nil)
+    }
+}
+
+struct SessionScoreboardRankerTests {
+    @Test func assignsSharedCompetitionRanks() {
+        let rows = [
+            SessionScoreRow(id: UUID(), displayName: "A", avatarColor: .blue, sessionScore: 8, roundPoints: 0, isHost: false, rank: 0),
+            SessionScoreRow(id: UUID(), displayName: "B", avatarColor: .green, sessionScore: 8, roundPoints: 0, isHost: false, rank: 0),
+            SessionScoreRow(id: UUID(), displayName: "C", avatarColor: .orange, sessionScore: 3, roundPoints: 0, isHost: false, rank: 0)
+        ]
+
+        let ranked = SessionScoreboardRanker.assignSharedRanks(to: rows)
+
+        #expect(ranked.map(\.rank) == [1, 1, 3])
+    }
+}
+
 struct ScoringEngineTests {
 
     @Test func survivorEarnsOnePointPerRound() {
@@ -922,5 +1008,55 @@ struct ScoringEngineTests {
         let cards = PersonaEngine.buildCards(from: session)
 
         #expect(cards.first?.title == "Grave Robber")
+    }
+}
+
+struct ProfileRepositoryTests {
+    @Test func createFetchAndDeleteProfile() throws {
+        let dependencies = try AppDependencies.makeForTesting()
+        let repository = dependencies.profileRepository
+
+        let created = try repository.create(name: "Alex", avatarColor: .orange)
+        #expect(created.name == "Alex")
+        #expect(created.stats.totalPoints == 0)
+
+        let fetched = try repository.fetch(id: created.id)
+        #expect(fetched?.name == "Alex")
+
+        let all = try repository.fetchAll()
+        #expect(all.count == 1)
+
+        try repository.delete(id: created.id)
+        #expect(try repository.fetch(id: created.id) == nil)
+    }
+
+    @Test func applySessionStatsUpdatesLinkedProfile() throws {
+        let dependencies = try AppDependencies.makeForTesting()
+        let repository = dependencies.profileRepository
+        let profile = try repository.create(name: "Jordan", avatarColor: .green)
+
+        let insiderId = UUID()
+        var session = GameSession(gamesPlayedCount: 1, profileStatsApplied: false)
+        session.players = [
+            PlayerSlot(
+                id: insiderId,
+                displayName: "Jordan",
+                avatarColor: .green,
+                assignment: RoleAssignment(role: .insider, word: "A"),
+                sessionScore: 4,
+                profileId: profile.id
+            )
+        ]
+        session.sessionEndScoreEvents = [
+            ScoreEvent(playerId: insiderId, reason: .insiderWinBonus)
+        ]
+
+        try repository.applySessionStats(from: session, winnerPlayerIds: [insiderId])
+
+        let updated = try repository.fetch(id: profile.id)
+        #expect(updated?.stats.totalPoints == 4)
+        #expect(updated?.stats.gamesPlayed == 1)
+        #expect(updated?.stats.winsAsInsider == 1)
+        #expect(updated?.stats.currentStreak == 1)
     }
 }

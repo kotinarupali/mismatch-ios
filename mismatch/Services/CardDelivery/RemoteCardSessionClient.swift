@@ -66,6 +66,7 @@ enum RemoteVotingAction: String, Encodable {
     case open
     case close
     case sync
+    case revote
 }
 
 @MainActor
@@ -133,7 +134,8 @@ final class RemoteCardSessionClient {
         token: String,
         hostKey: String,
         action: RemoteVotingAction,
-        eliminatedPlayerIds: [UUID]
+        eliminatedPlayerIds: [UUID],
+        revoteExcludedPlayerIds: [UUID] = []
     ) async throws {
         guard let baseURL = CloudCardConfig.baseURL else {
             throw RemoteCardSessionError.notConfigured
@@ -147,7 +149,8 @@ final class RemoteCardSessionClient {
             VotingControlPayload(
                 hostKey: hostKey,
                 action: action.rawValue,
-                eliminatedPlayerIds: eliminatedPlayerIds.map(\.uuidString)
+                eliminatedPlayerIds: eliminatedPlayerIds.map(\.uuidString),
+                revoteExcludedPlayerIds: revoteExcludedPlayerIds.map(\.uuidString)
             )
         )
 
@@ -218,4 +221,5 @@ private struct VotingControlPayload: Encodable {
     let hostKey: String
     let action: String
     let eliminatedPlayerIds: [String]
+    let revoteExcludedPlayerIds: [String]
 }

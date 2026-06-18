@@ -109,9 +109,13 @@ final class QRGridViewModel {
         dependencies.repickRoles()
     }
 
-    func endGame() {
+    func endSessionTapped() {
         stopCloudSync()
-        dependencies.endGame()
+        dependencies.showSessionSummary()
+    }
+
+    func endGame() {
+        endSessionTapped()
     }
 
     func checkPlayerRoleTapped() {
