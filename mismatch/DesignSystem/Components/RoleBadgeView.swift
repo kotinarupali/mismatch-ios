@@ -25,20 +25,26 @@ struct RoleIconBadge: View {
         case small
         case medium
         case large
+        case extraLarge
+        case hero
 
         var dimension: CGFloat {
             switch self {
-            case .small: 28
-            case .medium: 44
-            case .large: 56
+            case .small: 34
+            case .medium: 52
+            case .large: 68
+            case .extraLarge: 80
+            case .hero: 96
             }
         }
 
         var iconScale: CGFloat {
             switch self {
-            case .small: 0.58
-            case .medium: 0.64
-            case .large: 0.68
+            case .small: 0.62
+            case .medium: 0.68
+            case .large: 0.72
+            case .extraLarge: 0.76
+            case .hero: 0.8
             }
         }
     }
@@ -49,15 +55,56 @@ struct RoleIconBadge: View {
     var body: some View {
         ZStack {
             Circle()
-                .fill(role.badgeColor)
+                .fill(roleGradient)
             Circle()
-                .strokeBorder(.white.opacity(0.35), lineWidth: 1)
+                .strokeBorder(.white.opacity(0.4), lineWidth: 1.5)
 
             roleIcon
                 .scaleEffect(size.iconScale)
         }
         .frame(width: size.dimension, height: size.dimension)
+        .shadow(color: roleShadowColor.opacity(0.45), radius: 6, y: 3)
         .accessibilityLabel(role.displayName)
+    }
+
+    private var roleGradient: LinearGradient {
+        switch role {
+        case .insider:
+            LinearGradient(
+                colors: [
+                    Color(red: 0.28, green: 0.95, blue: 0.68),
+                    Color(red: 0.10, green: 0.72, blue: 0.48)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        case .mismatch:
+            LinearGradient(
+                colors: [
+                    Color(red: 1.0, green: 0.78, blue: 0.28),
+                    Color(red: 0.98, green: 0.42, blue: 0.18)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        case .ghost:
+            LinearGradient(
+                colors: [
+                    Color(red: 0.78, green: 0.58, blue: 1.0),
+                    Color(red: 0.48, green: 0.32, blue: 0.88)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        }
+    }
+
+    private var roleShadowColor: Color {
+        switch role {
+        case .insider: Color(red: 0.12, green: 0.72, blue: 0.48)
+        case .mismatch: Color(red: 0.98, green: 0.42, blue: 0.18)
+        case .ghost: Color(red: 0.48, green: 0.32, blue: 0.88)
+        }
     }
 
     @ViewBuilder
@@ -66,15 +113,15 @@ struct RoleIconBadge: View {
         case .insider:
             InsiderGlyph()
                 .foregroundStyle(.white)
-                .frame(width: size.dimension * 0.68, height: size.dimension * 0.68)
+                .frame(width: size.dimension * 0.86, height: size.dimension * 0.86)
         case .mismatch:
             MismatchGlyph()
                 .foregroundStyle(.white)
-                .frame(width: size.dimension * 0.72, height: size.dimension * 0.72)
+                .frame(width: size.dimension * 0.88, height: size.dimension * 0.88)
         case .ghost:
             GhostGlyph()
                 .foregroundStyle(.white)
-                .frame(width: size.dimension * 0.62, height: size.dimension * 0.72)
+                .frame(width: size.dimension * 0.68, height: size.dimension * 0.78)
         }
     }
 }
@@ -82,50 +129,60 @@ struct RoleIconBadge: View {
 /// The correct card — one upright word card with a check (pairs with Mismatch's crossed wrong cards).
 private struct InsiderGlyph: View {
     var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 3, style: .continuous)
-                .fill(.white)
-                .frame(width: 15, height: 19)
-                .shadow(color: .black.opacity(0.15), radius: 0.5, y: 0.5)
+        GeometryReader { geo in
+            let s = min(geo.size.width, geo.size.height)
 
-            VStack(spacing: 2.5) {
-                Capsule()
-                    .fill(Color(red: 0.12, green: 0.52, blue: 0.28).opacity(0.45))
-                    .frame(width: 8, height: 1.5)
-                Capsule()
-                    .fill(Color(red: 0.12, green: 0.52, blue: 0.28).opacity(0.35))
-                    .frame(width: 6, height: 1.5)
+            ZStack {
+                RoundedRectangle(cornerRadius: s * 0.08, style: .continuous)
+                    .fill(.white)
+                    .frame(width: s * 0.58, height: s * 0.74)
+                    .shadow(color: .black.opacity(0.15), radius: 0.5, y: 0.5)
 
-                Image(systemName: "checkmark")
-                    .font(.system(size: 9, weight: .black))
-                    .foregroundStyle(Color(red: 0.08, green: 0.48, blue: 0.24))
-                    .padding(.top, 1)
+                VStack(spacing: s * 0.05) {
+                    Capsule()
+                        .fill(Color(red: 0.12, green: 0.52, blue: 0.28).opacity(0.45))
+                        .frame(width: s * 0.32, height: s * 0.06)
+                    Capsule()
+                        .fill(Color(red: 0.12, green: 0.52, blue: 0.28).opacity(0.35))
+                        .frame(width: s * 0.24, height: s * 0.06)
+
+                    Image(systemName: "checkmark")
+                        .font(.system(size: s * 0.22, weight: .black))
+                        .foregroundStyle(Color(red: 0.08, green: 0.48, blue: 0.24))
+                        .padding(.top, s * 0.02)
+                }
+                .offset(y: s * 0.02)
             }
-            .offset(y: 0.5)
+            .frame(width: geo.size.width, height: geo.size.height)
         }
     }
 }
 
-/// Two crossed lines — the "wrong word" vibe.
+/// Two crossed cards — the "wrong word" vibe.
 private struct MismatchGlyph: View {
     var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 3, style: .continuous)
-                .fill(.white.opacity(0.95))
-                .frame(width: 16, height: 11)
-                .rotationEffect(.degrees(-18))
-                .offset(x: -3, y: -2)
+        GeometryReader { geo in
+            let s = min(geo.size.width, geo.size.height)
 
-            RoundedRectangle(cornerRadius: 3, style: .continuous)
-                .fill(.white.opacity(0.55))
-                .frame(width: 16, height: 11)
-                .rotationEffect(.degrees(14))
-                .offset(x: 4, y: 3)
+            ZStack {
+                RoundedRectangle(cornerRadius: s * 0.08, style: .continuous)
+                    .fill(.white.opacity(0.95))
+                    .frame(width: s * 0.78, height: s * 0.5)
+                    .rotationEffect(.degrees(-18))
+                    .offset(x: -s * 0.14, y: -s * 0.1)
 
-            Image(systemName: "xmark")
-                .font(.system(size: 9, weight: .black))
-                .foregroundStyle(Color.orange)
-                .offset(x: 1, y: 1)
+                RoundedRectangle(cornerRadius: s * 0.08, style: .continuous)
+                    .fill(.white.opacity(0.55))
+                    .frame(width: s * 0.78, height: s * 0.5)
+                    .rotationEffect(.degrees(14))
+                    .offset(x: s * 0.18, y: s * 0.12)
+
+                Image(systemName: "xmark")
+                    .font(.system(size: s * 0.32, weight: .black))
+                    .foregroundStyle(Color.orange)
+                    .offset(x: s * 0.04, y: s * 0.04)
+            }
+            .frame(width: geo.size.width, height: geo.size.height)
         }
     }
 }

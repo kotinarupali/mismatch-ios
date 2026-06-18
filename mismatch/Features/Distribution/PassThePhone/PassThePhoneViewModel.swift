@@ -68,6 +68,10 @@ final class PassThePhoneViewModel {
         dependencies.gameSessionStore.claimedCards()
     }
 
+    var insiderWord: String? {
+        dependencies.gameSessionStore.insiderWord
+    }
+
     var playersWithPickedCards: [PlayerSlot] {
         dependencies.gameSessionStore.playersWithPickedCards()
     }

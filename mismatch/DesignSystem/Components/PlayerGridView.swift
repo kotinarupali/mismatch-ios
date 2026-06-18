@@ -39,13 +39,17 @@ struct PlayerGridView: View {
         let isEliminated = player.isEliminated
         let isSelected = selectedPlayerId == player.id && !isEliminated
         let isDiscussionStarter = discussionStarterId == player.id && !isEliminated
-        let eliminatedOutsiderRole = outsiderRole(for: player)
+        let eliminatedRole = roleBadge(for: player)
 
         Button {
             guard !isEliminated else { return }
             onSelect(player.id)
         } label: {
-            VStack(spacing: style == .tile ? 12 : 10) {
+            VStack(spacing: style == .tile ? 10 : 10) {
+                if isDiscussionStarter {
+                    discussionStarterBadge
+                }
+
                 AvatarView(
                     name: player.isHost ? "You" : player.displayName,
                     color: player.avatarColor,
@@ -54,29 +58,13 @@ struct PlayerGridView: View {
                 .overlay {
                     if isSelected {
                         Circle()
-                            .strokeBorder(AppColor.accentSecondary, lineWidth: 3)
-                            .frame(width: avatarSize + 8, height: avatarSize + 8)
-                    } else if isDiscussionStarter {
-                        Circle()
-                            .strokeBorder(AppColor.warning, lineWidth: 3)
-                            .frame(width: avatarSize + 8, height: avatarSize + 8)
+                            .strokeBorder(AppColor.accent, lineWidth: 3.5)
+                            .frame(width: avatarSize + 10, height: avatarSize + 10)
                     }
                 }
                 .overlay {
-                    if isEliminated, let role = eliminatedOutsiderRole {
-                        RoleIconBadge(role: role, size: style == .tile ? .large : .medium)
-                    }
-                }
-                .overlay(alignment: .bottomTrailing) {
-                    if isDiscussionStarter {
-                        Image(systemName: "mic.fill")
-                            .font(.system(size: 11, weight: .bold))
-                            .foregroundStyle(.white)
-                            .frame(width: 22, height: 22)
-                            .background(AppColor.warning)
-                            .clipShape(Circle())
-                            .offset(x: 4, y: 4)
-                            .accessibilityHidden(true)
+                    if isEliminated, let role = eliminatedRole {
+                        RoleIconBadge(role: role, size: eliminatedBadgeSize(for: role))
                     }
                 }
 
@@ -93,11 +81,24 @@ struct PlayerGridView: View {
             .background(cellBackground(isEliminated: isEliminated, isSelected: isSelected))
             .clipShape(RoundedRectangle(cornerRadius: style == .tile ? 18 : 16, style: .continuous))
             .overlay {
-                if isEliminated {
+                if isSelected {
+                    RoundedRectangle(cornerRadius: style == .tile ? 18 : 16, style: .continuous)
+                        .strokeBorder(AppColor.accent.opacity(0.95), lineWidth: 2.5)
+                } else if isDiscussionStarter {
+                    RoundedRectangle(cornerRadius: style == .tile ? 18 : 16, style: .continuous)
+                        .strokeBorder(AppColor.warning.opacity(0.85), lineWidth: 2)
+                } else if isEliminated {
                     RoundedRectangle(cornerRadius: style == .tile ? 18 : 16, style: .continuous)
                         .strokeBorder(AppColor.cardBorder.opacity(0.8), lineWidth: 1)
                 }
             }
+            .shadow(
+                color: isSelected ? AppColor.accent.opacity(0.35) : .clear,
+                radius: isSelected ? 10 : 0,
+                y: isSelected ? 3 : 0
+            )
+            .scaleEffect(isSelected && style == .tile ? 1.02 : 1)
+            .animation(.easeOut(duration: 0.18), value: isSelected)
             .opacity(isEliminated ? 0.55 : 1)
             .grayscale(isEliminated ? 0.9 : 0)
         }
@@ -107,13 +108,35 @@ struct PlayerGridView: View {
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
-    private func outsiderRole(for player: PlayerSlot) -> Role? {
+    private var discussionStarterBadge: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "mic.fill")
+                .font(.system(size: 18, weight: .bold))
+            Text("Starts")
+                .font(AppTypography.headline)
+                .fontWeight(.bold)
+        }
+        .foregroundStyle(.white)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 8)
+        .background(AppColor.warning)
+        .clipShape(Capsule())
+        .accessibilityHidden(true)
+    }
+
+    private func roleBadge(for player: PlayerSlot) -> Role? {
         guard player.isEliminated, showEliminatedRoleBadges, let role = player.assignment?.role else {
             return nil
         }
-        switch role {
-        case .mismatch, .ghost: return role
-        case .insider: return nil
+        return role
+    }
+
+    private func eliminatedBadgeSize(for role: Role) -> RoleIconBadge.Size {
+        switch style {
+        case .tile:
+            role == .insider ? .hero : .extraLarge
+        case .compact:
+            role == .insider ? .extraLarge : .large
         }
     }
 
@@ -122,19 +145,30 @@ struct PlayerGridView: View {
         return isSelected ? AppColor.label : AppColor.secondaryLabel
     }
 
-    private func cellBackground(isEliminated: Bool, isSelected: Bool) -> Color {
-        if isEliminated { return AppColor.card.opacity(0.45) }
-        if style == .tile { return isSelected ? AppColor.card : AppColor.card.opacity(0.65) }
-        return isSelected ? AppColor.card : Color.clear
+    private func cellBackground(isEliminated: Bool, isSelected: Bool) -> some View {
+        Group {
+            if isEliminated {
+                AppColor.card.opacity(0.45)
+            } else if isSelected {
+                ZStack {
+                    AppColor.cardSelected
+                    AppColor.accent.opacity(0.12)
+                }
+            } else if style == .tile {
+                AppColor.card.opacity(0.5)
+            } else {
+                Color.clear
+            }
+        }
     }
 
     private func accessibilityLabel(for player: PlayerSlot) -> String {
         let name = player.isHost ? "You" : player.displayName
-        if player.isEliminated, let role = outsiderRole(for: player) {
+        if player.isEliminated, let role = roleBadge(for: player) {
             return "\(name), eliminated, \(role.displayName)"
         }
         if discussionStarterId == player.id, !player.isEliminated {
-            return "\(name), starts discussion"
+            return "\(name), starts discussion, first in circle"
         }
         return name
     }

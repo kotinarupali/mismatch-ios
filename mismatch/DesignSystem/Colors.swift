@@ -4,6 +4,7 @@ enum AppColor {
     static let background = Color(red: 0.06, green: 0.07, blue: 0.14)
     static let backgroundElevated = Color(red: 0.10, green: 0.11, blue: 0.20)
     static let card = Color(red: 0.14, green: 0.15, blue: 0.26)
+    static let cardSelected = Color(red: 0.20, green: 0.14, blue: 0.38)
     static let cardBorder = Color.white.opacity(0.08)
     static let label = Color.white
     static let secondaryLabel = Color.white.opacity(0.62)

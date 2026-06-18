@@ -14,4 +14,22 @@ enum RoundOutcome: String, Codable, Sendable {
         case .outsiderSideWins: allianceEnabled ? "Mismatch & Ghost win" : "Outsiders win"
         }
     }
+
+    func celebrationHeadline(allianceEnabled: Bool = false) -> String {
+        switch self {
+        case .insiderSideWins: "Insiders win!"
+        case .mismatchWins: "Mismatch wins!"
+        case .ghostWins: "Ghost wins!"
+        case .outsiderSideWins: allianceEnabled ? "Mismatch & Ghost win!" : "Outsiders win!"
+        }
+    }
+
+    func winningRoles(allianceEnabled: Bool = false) -> Set<Role> {
+        switch self {
+        case .insiderSideWins: [.insider]
+        case .mismatchWins: [.mismatch]
+        case .ghostWins: [.ghost]
+        case .outsiderSideWins: [.mismatch, .ghost]
+        }
+    }
 }

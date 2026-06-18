@@ -15,6 +15,7 @@ struct MyCardView: View {
                             cardCount: viewModel.faceDownCardCount,
                             showRoleOnCard: viewModel.showRoleOnCard,
                             assignment: assignment,
+                            insiderWord: viewModel.insiderWord,
                             onComplete: { _ in
                                 viewModel.markOpened()
                                 dismiss()

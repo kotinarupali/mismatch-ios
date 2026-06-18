@@ -25,6 +25,10 @@ final class MyCardViewModel {
         )
     }
 
+    var insiderWord: String? {
+        dependencies.gameSessionStore.insiderWord
+    }
+
     func markOpened() {
         guard let hostId = dependencies.gameSessionStore.currentSession?.players
             .first(where: \.isHost)?.id else { return }

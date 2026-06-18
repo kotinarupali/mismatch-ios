@@ -9,12 +9,14 @@ struct CardPickView: View {
     let cardCount: Int
     let showRoleOnCard: Bool
     let assignment: RoleAssignment
+    var insiderWord: String? = nil
     var claimedCards: [ClaimedCard] = []
     var nextPlayerName: String? = nil
     let onComplete: (Int) -> Void
 
     @State private var phase: Phase = .pick
     @State private var selectedCardIndex: Int?
+    @State private var isGhostBluffReveal = false
 
     private enum Phase {
         case pick
@@ -32,7 +34,11 @@ struct CardPickView: View {
     }
 
     private var canGhostRepick: Bool {
-        assignment.role == .ghost && availableCardCount > 1
+        assignment.role == .ghost && availableCardCount > 1 && !isGhostBluffReveal
+    }
+
+    private var showsGhostTruthReveal: Bool {
+        assignment.role == .ghost && !isGhostBluffReveal
     }
 
     var body: some View {
@@ -82,36 +88,17 @@ struct CardPickView: View {
 
     private var revealedPhase: some View {
         VStack(spacing: 20) {
-            if showRoleOnCard {
-                RoleBadgeView(role: assignment.role)
-            }
-
-            if assignment.role == .ghost {
-                Text("No word — bluff from context")
-                    .font(AppTypography.body)
-                    .foregroundStyle(AppColor.secondaryLabel)
-                if let hint = assignment.categoryHint {
-                    Text("Hint: \(hint)")
-                        .font(AppTypography.caption)
-                        .foregroundStyle(AppColor.secondaryLabel)
-                }
-            } else if let word = assignment.word {
-                Text(word)
-                    .font(AppTypography.title)
-                    .foregroundStyle(AppColor.label)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 20)
-                    .padding(.horizontal, 16)
-                    .background(AppColor.backgroundElevated)
-                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .strokeBorder(AppColor.cardBorder, lineWidth: 1)
-                    }
+            if showsGhostTruthReveal {
+                ghostTruthReveal
+            } else if assignment.role == .ghost {
+                ghostBluffReveal
+            } else {
+                standardRoleReveal
             }
 
             if canGhostRepick {
                 SecondaryButton(title: "Pick again") {
+                    isGhostBluffReveal = true
                     selectedCardIndex = nil
                     withAnimation {
                         phase = .pick
@@ -128,6 +115,72 @@ struct CardPickView: View {
             }
         }
         .transition(.opacity)
+    }
+
+    private var ghostTruthReveal: some View {
+        Group {
+            if showRoleOnCard {
+                RoleBadgeView(role: assignment.role)
+            }
+
+            Text("No word — bluff from context")
+                .font(AppTypography.body)
+                .foregroundStyle(AppColor.secondaryLabel)
+
+            if let hint = assignment.categoryHint {
+                Text("Hint: \(hint)")
+                    .font(AppTypography.caption)
+                    .foregroundStyle(AppColor.secondaryLabel)
+            }
+        }
+    }
+
+    private var ghostBluffReveal: some View {
+        VStack(spacing: 12) {
+            Text("Insider word")
+                .font(AppTypography.caption)
+                .foregroundStyle(AppColor.secondaryLabel)
+
+            Text(insiderWord ?? "Unknown")
+                .font(AppTypography.title)
+                .foregroundStyle(AppColor.label)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 20)
+                .padding(.horizontal, 16)
+                .background(AppColor.backgroundElevated)
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .strokeBorder(AppColor.cardBorder, lineWidth: 1)
+                }
+
+            Text("Same word the insiders have — memorize it for later.")
+                .font(AppTypography.caption)
+                .foregroundStyle(AppColor.secondaryLabel)
+                .multilineTextAlignment(.center)
+        }
+    }
+
+    @ViewBuilder
+    private var standardRoleReveal: some View {
+        if showRoleOnCard {
+            RoleBadgeView(role: assignment.role)
+        }
+
+        if let word = assignment.word {
+            Text(word)
+                .font(AppTypography.title)
+                .foregroundStyle(AppColor.label)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 20)
+                .padding(.horizontal, 16)
+                .background(AppColor.backgroundElevated)
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .strokeBorder(AppColor.cardBorder, lineWidth: 1)
+                }
+        }
     }
 
     private var nextButtonTitle: String {

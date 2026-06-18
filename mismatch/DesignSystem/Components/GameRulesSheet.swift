@@ -60,7 +60,7 @@ struct GameRulesSheet: View {
             )
             roleRow(
                 role: .ghost,
-                detail: "Gets no word (optional role). Bluff from the conversation and survive."
+                detail: "Gets no word (optional role). Pick again to memorize the insider word, then guess it when eliminated to steal the win."
             )
         }
     }
@@ -100,7 +100,7 @@ struct GameRulesSheet: View {
 
             Mismatch wins if all Insiders are eliminated while a Mismatch is still in the game.
 
-            Ghost wins if all Insiders are eliminated, no Mismatch remains, and a Ghost is still in the game.
+            Ghost wins if all Insiders are eliminated, no Mismatch remains, and a Ghost is still in the game — or if an eliminated Ghost guesses the secret word correctly.
 
             With Mismatch & Ghost alliance enabled, outsiders share a team win when Insiders are eliminated.
             """
@@ -121,7 +121,7 @@ struct GameRulesSheet: View {
 
     private func roleRow(role: Role, detail: String) -> some View {
         HStack(alignment: .top, spacing: 12) {
-            RoleIconBadge(role: role, size: .large)
+            RoleIconBadge(role: role, size: .extraLarge)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(role.displayName)

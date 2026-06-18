@@ -11,35 +11,7 @@ struct DiscussionView: View {
             roomStyle: .discussion
         ) {
             VStack(spacing: 20) {
-                OutsiderCountsBanner(
-                    mismatchCount: viewModel.remainingMismatchCount,
-                    ghostCount: viewModel.remainingGhostCount,
-                    countSuffix: "left"
-                )
-
-                if let starterName = viewModel.discussionStarterName {
-                    HStack(spacing: 10) {
-                        Image(systemName: "mic.fill")
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundStyle(.white)
-                            .frame(width: 28, height: 28)
-                            .background(AppColor.warning)
-                            .clipShape(Circle())
-
-                        Text("\(starterName) starts the discussion")
-                            .font(AppTypography.headline)
-                            .foregroundStyle(AppColor.label)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    .padding(.vertical, 12)
-                    .padding(.horizontal, 14)
-                    .background(AppColor.card)
-                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .strokeBorder(AppColor.cardBorder, lineWidth: 1)
-                    }
-                }
+                discussionStatusBar
 
                 if viewModel.timerEnabled {
                     TimerView(
@@ -49,7 +21,7 @@ struct DiscussionView: View {
                 }
 
                 PlayerGridView(
-                    players: viewModel.allPlayers,
+                    players: viewModel.displayPlayers,
                     selectedPlayerId: viewModel.selectedPlayerId,
                     style: .tile,
                     showEliminatedRoleBadges: true,
@@ -94,6 +66,49 @@ struct DiscussionView: View {
         }
         .onAppear { viewModel.onAppear() }
         .onDisappear { viewModel.onDisappear() }
+    }
+
+    @ViewBuilder
+    private var discussionStatusBar: some View {
+        HStack(alignment: .center, spacing: 12) {
+            if let starterName = viewModel.discussionStarterName {
+                HStack(spacing: 10) {
+                    Image(systemName: "mic.fill")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(.white)
+                        .frame(width: 36, height: 36)
+                        .background(AppColor.warning)
+                        .clipShape(Circle())
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("\(starterName) starts")
+                            .font(AppTypography.headline)
+                            .foregroundStyle(AppColor.label)
+                            .lineLimit(1)
+                        Text("Go clockwise")
+                            .font(AppTypography.caption)
+                            .foregroundStyle(AppColor.secondaryLabel)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            OutsiderCountsBanner(
+                mismatchCount: viewModel.remainingMismatchCount,
+                ghostCount: viewModel.remainingGhostCount,
+                countSuffix: "left",
+                style: .compact,
+                showsGhostCount: viewModel.ghostEnabled
+            )
+        }
+        .padding(.vertical, 10)
+        .padding(.horizontal, 12)
+        .background(AppColor.card)
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .strokeBorder(AppColor.cardBorder, lineWidth: 1)
+        }
     }
 }
 

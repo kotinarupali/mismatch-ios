@@ -17,6 +17,7 @@ struct PassThePhoneView: View {
                     cardCount: viewModel.faceDownCardCount,
                     showRoleOnCard: viewModel.showRoleOnCard,
                     assignment: assignment,
+                    insiderWord: viewModel.insiderWord,
                     claimedCards: viewModel.claimedCards,
                     nextPlayerName: viewModel.nextPlayerDisplayName,
                     onComplete: { viewModel.cardCompleted(cardIndex: $0) }

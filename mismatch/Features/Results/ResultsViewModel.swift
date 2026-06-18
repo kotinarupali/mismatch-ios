@@ -5,12 +5,19 @@ import Foundation
 final class ResultsViewModel {
     private let dependencies: AppDependencies
 
+    var ghostGuess = ""
+    var ghostGuessFeedback: String?
+
     init(dependencies: AppDependencies) {
         self.dependencies = dependencies
     }
 
     var isSessionComplete: Bool {
         dependencies.gameSessionStore.isSessionComplete
+    }
+
+    var shouldPromptGhostGuess: Bool {
+        dependencies.gameSessionStore.isGhostGuessPending
     }
 
     var sessionWinnerText: String? {
@@ -20,8 +27,11 @@ final class ResultsViewModel {
     }
 
     var roundSummary: String {
-        if isSessionComplete, let winner = sessionWinnerText {
-            return winner
+        if shouldPromptGhostGuess {
+            return "One last chance to steal the win."
+        }
+        if isSessionComplete {
+            return "Final results"
         }
         return "\(dependencies.gameSessionStore.activePlayerCount) players still in the game"
     }
@@ -38,11 +48,59 @@ final class ResultsViewModel {
     }
 
     var eliminatedWord: String {
-        dependencies.gameSessionStore.eliminatedPlayer?.assignment?.word ?? "None"
+        guard let player = dependencies.gameSessionStore.eliminatedPlayer else {
+            return "Unknown"
+        }
+        if player.assignment?.role == .ghost {
+            return dependencies.gameSessionStore.insiderWord ?? "Unknown"
+        }
+        return player.assignment?.word ?? "None"
     }
 
     var shouldShowEliminatedWord: Bool {
-        isSessionComplete
+        !shouldShowFinalResults && isSessionComplete && !shouldPromptGhostGuess
+    }
+
+    var shouldShowFinalResults: Bool {
+        isSessionComplete && !shouldPromptGhostGuess
+    }
+
+    var finalInsiderWord: String {
+        dependencies.gameSessionStore.insiderWord ?? "Unknown"
+    }
+
+    var finalMismatchWord: String {
+        dependencies.gameSessionStore.mismatchWord ?? "Unknown"
+    }
+
+    var finalPlayerReveals: [PlayerRoleReveal] {
+        dependencies.gameSessionStore.finalPlayerReveals()
+    }
+
+    var canSubmitGhostGuess: Bool {
+        !ghostGuess.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    var winningRoles: Set<Role> {
+        guard let outcome = sessionOutcome else { return [] }
+        let alliance = dependencies.gameSessionStore.currentSession?.settings.mismatchGhostAlliance ?? false
+        return outcome.winningRoles(allianceEnabled: alliance)
+    }
+
+    var winningRolesOrdered: [Role] {
+        Role.allCases.filter { winningRoles.contains($0) }
+    }
+
+    var winnerHeadline: String? {
+        guard let outcome = sessionOutcome else { return nil }
+        let alliance = dependencies.gameSessionStore.currentSession?.settings.mismatchGhostAlliance ?? false
+        return outcome.celebrationHeadline(allianceEnabled: alliance)
+    }
+
+    var winnerPlayerNames: [String] {
+        finalPlayerReveals
+            .filter { winningRoles.contains($0.role) }
+            .map(\.displayName)
     }
 
     var sessionOutcome: RoundOutcome? {
@@ -51,6 +109,19 @@ final class ResultsViewModel {
 
     var insidersWon: Bool {
         sessionOutcome == .insiderSideWins
+    }
+
+    func submitGhostGuessTapped() {
+        guard canSubmitGhostGuess else { return }
+        let isCorrect = dependencies.gameSessionStore.submitGhostGuess(ghostGuess)
+        ghostGuess = ""
+        if isCorrect {
+            ghostGuessFeedback = nil
+        } else if let insiderWord = dependencies.gameSessionStore.insiderWord {
+            ghostGuessFeedback = "Wrong guess. The insider word was \(insiderWord)."
+        } else {
+            ghostGuessFeedback = "Wrong guess."
+        }
     }
 
     func continueTapped() {

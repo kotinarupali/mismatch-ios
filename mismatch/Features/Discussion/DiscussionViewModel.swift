@@ -22,8 +22,20 @@ final class DiscussionViewModel {
         dependencies.gameSessionStore.currentSession?.settings.discussionTimerEnabled ?? false
     }
 
+    var ghostEnabled: Bool {
+        dependencies.gameSessionStore.currentSession?.settings.ghostEnabled ?? false
+    }
+
     var allPlayers: [PlayerSlot] {
         dependencies.gameSessionStore.seatingOrderPlayers()
+    }
+
+    var displayPlayers: [PlayerSlot] {
+        guard let starterId = discussionStarterId,
+              let startIndex = allPlayers.firstIndex(where: { $0.id == starterId }) else {
+            return allPlayers
+        }
+        return Array(allPlayers[startIndex...] + allPlayers[..<startIndex])
     }
 
     var discussionStarterId: UUID? {

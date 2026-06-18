@@ -1,17 +1,16 @@
 import SwiftUI
 
 struct PartyOutcomeAnimation: View {
-    let insidersWon: Bool
-
-    @State private var animate = false
+    var insidersWon: Bool = true
+    var celebrationOnly: Bool = false
 
     var body: some View {
         GeometryReader { geo in
             ZStack {
-                if insidersWon {
-                    insiderWinCelebration(in: geo.size)
+                if celebrationOnly || insidersWon {
+                    winCelebration(in: geo.size)
                 } else {
-                    insiderLossMood(in: geo.size)
+                    lossDrama(in: geo.size)
                 }
             }
             .frame(width: geo.size.width, height: geo.size.height)
@@ -19,324 +18,211 @@ struct PartyOutcomeAnimation: View {
         .ignoresSafeArea()
         .allowsHitTesting(false)
         .onAppear {
-            if insidersWon {
+            if celebrationOnly || insidersWon {
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
             } else {
                 UINotificationFeedbackGenerator().notificationOccurred(.error)
             }
-            withAnimation(.easeInOut(duration: 0.55).repeatForever(autoreverses: true)) {
-                animate = true
-            }
         }
     }
 
     @ViewBuilder
-    private func insiderWinCelebration(in size: CGSize) -> some View {
-        ZStack {
-            RadialGradient(
-                colors: [
-                    AppColor.success.opacity(animate ? 0.28 : 0.14),
-                    AppColor.warning.opacity(animate ? 0.16 : 0.08),
-                    .clear
-                ],
-                center: .center,
-                startRadius: 24,
-                endRadius: size.width * 0.72
-            )
-
-            VStack(spacing: 22) {
-                HStack(alignment: .bottom, spacing: 18) {
-                    CartoonPandaView(mood: .dancing, size: 92, phase: 0, animate: animate)
-                    CartoonPandaView(mood: .dancing, size: 108, phase: 0.35, animate: animate)
-                    CartoonPandaView(mood: .dancing, size: 92, phase: 0.7, animate: animate)
-                }
-
-                Text("Panda party!")
-                    .font(AppTypography.display)
-                    .foregroundStyle(AppColor.label)
-                    .shadow(color: AppColor.warning.opacity(0.35), radius: 8, y: 2)
-                    .scaleEffect(animate ? 1.05 : 0.96)
-            }
-            .padding(.top, size.height * 0.1)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        }
+    private func winCelebration(in size: CGSize) -> some View {
+        ConfettiBurstView()
     }
 
     @ViewBuilder
-    private func insiderLossMood(in size: CGSize) -> some View {
+    private func lossDrama(in size: CGSize) -> some View {
         TimelineView(.animation) { timeline in
             let time = timeline.date.timeIntervalSinceReferenceDate
 
             ZStack {
-                RadialGradient(
-                    colors: [
-                        Color(red: 0.14, green: 0.16, blue: 0.28).opacity(0.5),
-                        Color(red: 0.08, green: 0.1, blue: 0.18).opacity(0.3),
-                        .clear
-                    ],
-                    center: .top,
-                    startRadius: 12,
-                    endRadius: size.width * 0.8
-                )
-
-                softRain(time: time, in: size)
-
-                VStack(spacing: 26) {
-                    HStack(alignment: .bottom, spacing: 28) {
-                        CartoonPandaView(mood: .crying, size: 96, phase: 0, animate: animate, time: time)
-                        CartoonPandaView(mood: .crying, size: 112, phase: 0.5, animate: animate, time: time)
-                    }
-
-                    Text("Sniff…")
-                        .font(AppTypography.display)
-                        .foregroundStyle(AppColor.secondaryLabel)
-                        .opacity(animate ? 1 : 0.75)
-                        .offset(y: animate ? 0 : 4)
+                ForEach(LossFloater.all) { floater in
+                    lossSymbol(floater, time: time, in: size)
                 }
-                .padding(.top, size.height * 0.1)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             }
         }
     }
 
     @ViewBuilder
-    private func softRain(time: TimeInterval, in size: CGSize) -> some View {
-        ForEach(0..<10, id: \.self) { index in
-            let phase = Double(index) * 0.19
-            let progress = (time * 0.28 + phase).truncatingRemainder(dividingBy: 1)
-            Capsule()
-                .fill(Color.white.opacity(0.06))
-                .frame(width: 2, height: 14)
-                .position(
-                    x: size.width * (0.1 + Double(index) * 0.085),
-                    y: progress * size.height
-                )
+    private func lossSymbol(_ floater: LossFloater, time: TimeInterval, in size: CGSize) -> some View {
+        let progress = (time * floater.speed + floater.phase).truncatingRemainder(dividingBy: 1)
+        let x = size.width * floater.xRatio + sin(time * 1.6 + floater.phase) * 18
+        let y = size.height * (1.08 - progress * 1.15)
+        let spin = Angle.degrees(time * floater.spin + floater.phase * 40)
+
+        Group {
+            switch floater.kind {
+            case .mismatch:
+                LossMismatchMark()
+                    .frame(width: floater.scale, height: floater.scale)
+            case .ghost:
+                LossGhostMark()
+                    .frame(width: floater.scale * 0.85, height: floater.scale)
+            case .question:
+                Text("?")
+                    .font(.system(size: floater.scale, weight: .black, design: .rounded))
+                    .foregroundStyle(AppColor.accentSecondary.opacity(0.55))
+            }
         }
+        .rotationEffect(spin)
+        .opacity(0.35 + (1 - progress) * 0.45)
+        .position(x: x, y: y)
     }
 }
 
-private struct CartoonPandaView: View {
-    enum Mood {
-        case dancing
-        case crying
-    }
+// MARK: - Confetti
 
-    let mood: Mood
-    var size: CGFloat
-    var phase: Double
-    var animate: Bool
-    var time: TimeInterval = 0
-
-    private var bounce: CGFloat { animate ? 1 : 0 }
-    private var sway: Double { sin((time + phase) * 4.2) * (mood == .dancing ? 8 : 3) }
-
+private struct ConfettiBurstView: View {
     var body: some View {
-        let lift = mood == .dancing ? -10 * bounce : 2 * bounce
-        let squash = mood == .dancing ? 1 + 0.06 * bounce : 1 - 0.04 * bounce
+        TimelineView(.animation) { timeline in
+            let time = timeline.date.timeIntervalSinceReferenceDate
 
-        VStack(spacing: size * 0.04) {
-            if mood == .dancing {
-                dancingArms
-            }
+            Canvas { context, size in
+                for piece in ConfettiPiece.all {
+                    let fall = (time * piece.speed + piece.phase).truncatingRemainder(dividingBy: 1.15)
+                    let y = fall * (size.height + 60) - 30
+                    let sway = sin(time * 2.4 + piece.phase) * 22
+                    let x = piece.xRatio * size.width + sway
+                    let spin = piece.rotation + time * piece.spinSpeed
 
-            ZStack {
-                pandaHead
-                if mood == .crying {
-                    cryingTears
+                    var transform = CGAffineTransform.identity
+                        .translatedBy(x: x, y: y)
+                        .rotated(by: spin)
+                    transform = transform.translatedBy(x: -piece.width / 2, y: -piece.height / 2)
+
+                    let rect = CGRect(x: 0, y: 0, width: piece.width, height: piece.height)
+                    let path: Path = piece.isCircle
+                        ? Path(ellipseIn: rect)
+                        : Path(roundedRect: rect, cornerRadius: 1.5)
+
+                    context.fill(
+                        path.applying(transform),
+                        with: .color(piece.color.opacity(0.88))
+                    )
                 }
             }
-
-            if mood == .dancing {
-                dancingLegs
-            } else {
-                cryingArms
-            }
         }
-        .offset(y: lift)
-        .scaleEffect(x: 1, y: squash)
-        .rotationEffect(.degrees(sway))
-        .animation(.easeInOut(duration: 0.55).delay(phase * 0.12), value: animate)
-    }
-
-    private var pandaHead: some View {
-        ZStack {
-            Circle()
-                .fill(Color.white)
-                .frame(width: size, height: size)
-                .shadow(color: .black.opacity(0.12), radius: 6, y: 4)
-
-            HStack(spacing: size * 0.28) {
-                pandaEar
-                pandaEar
-            }
-            .offset(y: -size * 0.42)
-
-            HStack(spacing: size * 0.22) {
-                eyePatch(mood: mood)
-                eyePatch(mood: mood)
-            }
-            .offset(y: -size * 0.04)
-
-            Ellipse()
-                .fill(Color.black.opacity(0.85))
-                .frame(width: size * 0.16, height: size * 0.11)
-                .offset(y: size * 0.18)
-
-            mouth
-                .offset(y: size * 0.28)
-        }
-    }
-
-    private var pandaEar: some View {
-        Circle()
-            .fill(Color.black.opacity(0.88))
-            .frame(width: size * 0.24, height: size * 0.24)
-    }
-
-    @ViewBuilder
-    private func eyePatch(mood: Mood) -> some View {
-        ZStack {
-            Circle()
-                .fill(Color.black.opacity(0.88))
-                .frame(width: size * 0.26, height: size * 0.26)
-
-            switch mood {
-            case .dancing:
-                Circle()
-                    .fill(Color.white)
-                    .frame(width: size * 0.09, height: size * 0.09)
-                    .offset(x: size * 0.03, y: -size * 0.02)
-                Circle()
-                    .fill(Color.black)
-                    .frame(width: size * 0.045, height: size * 0.045)
-                    .offset(x: size * 0.04, y: -size * 0.015)
-            case .crying:
-                Capsule()
-                    .fill(Color.white.opacity(0.9))
-                    .frame(width: size * 0.08, height: size * 0.05)
-                    .offset(y: size * 0.02)
-                sadBrow
-            }
-        }
-    }
-
-    private var sadBrow: some View {
-        Capsule()
-            .fill(Color.black.opacity(0.75))
-            .frame(width: size * 0.12, height: size * 0.025)
-            .rotationEffect(.degrees(18))
-            .offset(x: -size * 0.02, y: -size * 0.1)
-    }
-
-    @ViewBuilder
-    private var mouth: some View {
-        switch mood {
-        case .dancing:
-            Arc(startAngle: .degrees(200), endAngle: .degrees(-20), clockwise: false)
-                .stroke(Color.black.opacity(0.75), lineWidth: size * 0.035)
-                .frame(width: size * 0.28, height: size * 0.16)
-        case .crying:
-            Arc(startAngle: .degrees(20), endAngle: .degrees(160), clockwise: false)
-                .stroke(Color.black.opacity(0.75), lineWidth: size * 0.035)
-                .frame(width: size * 0.22, height: size * 0.12)
-        }
-    }
-
-    private var dancingArms: some View {
-        HStack(spacing: size * 0.72) {
-            danceArm(left: true)
-            danceArm(left: false)
-        }
-        .offset(y: size * 0.08)
-    }
-
-    private func danceArm(left: Bool) -> some View {
-        let angle = Double(left ? -1 : 1) * (animate ? 38 : 12)
-        return Capsule()
-            .fill(Color.black.opacity(0.88))
-            .frame(width: size * 0.11, height: size * 0.34)
-            .rotationEffect(.degrees(angle))
-            .offset(y: animate ? -size * 0.08 : 0)
-    }
-
-    private var dancingLegs: some View {
-        HStack(spacing: size * 0.18) {
-            danceLeg(left: true)
-            danceLeg(left: false)
-        }
-        .offset(y: -size * 0.06)
-    }
-
-    private func danceLeg(left: Bool) -> some View {
-        let angle = Double(left ? -1 : 1) * (animate ? 14 : -8)
-        return Capsule()
-            .fill(Color.black.opacity(0.88))
-            .frame(width: size * 0.12, height: size * 0.28)
-            .rotationEffect(.degrees(angle))
-    }
-
-    private var cryingArms: some View {
-        HStack(spacing: size * 0.52) {
-            Capsule()
-                .fill(Color.black.opacity(0.88))
-                .frame(width: size * 0.1, height: size * 0.26)
-                .rotationEffect(.degrees(animate ? 24 : 32))
-            Capsule()
-                .fill(Color.black.opacity(0.88))
-                .frame(width: size * 0.1, height: size * 0.26)
-                .rotationEffect(.degrees(animate ? -24 : -32))
-        }
-        .offset(y: -size * 0.08)
-    }
-
-    private var cryingTears: some View {
-        HStack(spacing: size * 0.34) {
-            fallingTear(phase: phase)
-            fallingTear(phase: phase + 0.35)
-        }
-        .offset(y: size * 0.12)
-    }
-
-    private func fallingTear(phase: Double) -> some View {
-        let progress = (time * 1.1 + phase).truncatingRemainder(dividingBy: 1)
-        return Teardrop()
-            .fill(Color.cyan.opacity(0.8))
-            .frame(width: size * 0.08, height: size * 0.11)
-            .offset(y: progress * size * 0.42)
-            .opacity(progress > 0.82 ? 0 : 0.9)
     }
 }
 
-private struct Arc: Shape {
-    var startAngle: Angle
-    var endAngle: Angle
-    var clockwise: Bool
+private struct ConfettiPiece {
+    let xRatio: CGFloat
+    let speed: Double
+    let phase: Double
+    let width: CGFloat
+    let height: CGFloat
+    let color: Color
+    let rotation: Double
+    let spinSpeed: Double
+    let isCircle: Bool
 
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.addArc(
-            center: CGPoint(x: rect.midX, y: rect.midY),
-            radius: min(rect.width, rect.height) / 2,
-            startAngle: startAngle,
-            endAngle: endAngle,
-            clockwise: clockwise
-        )
-        return path
+    static let all: [ConfettiPiece] = {
+        let palette: [Color] = [
+            AppColor.accent,
+            AppColor.accentSecondary,
+            AppColor.success,
+            AppColor.warning,
+            .white,
+            Color(red: 0.45, green: 0.75, blue: 1.0),
+            Color(red: 1.0, green: 0.92, blue: 0.35)
+        ]
+
+        return (0..<54).map { index in
+            let seed = Double(index)
+            return ConfettiPiece(
+                xRatio: CGFloat((seed * 0.137).truncatingRemainder(dividingBy: 1)),
+                speed: 0.14 + (seed * 0.031).truncatingRemainder(dividingBy: 0.12),
+                phase: (seed * 0.19).truncatingRemainder(dividingBy: 1),
+                width: index.isMultiple(of: 3) ? 7 : 5,
+                height: index.isMultiple(of: 4) ? 12 : 9,
+                color: palette[index % palette.count],
+                rotation: seed * 0.8,
+                spinSpeed: 1.6 + (seed * 0.07).truncatingRemainder(dividingBy: 2),
+                isCircle: index.isMultiple(of: 5)
+            )
+        }
+    }()
+}
+
+// MARK: - Loss floaters
+
+private struct LossFloater: Identifiable {
+    enum Kind {
+        case mismatch
+        case ghost
+        case question
+    }
+
+    let id: Int
+    let kind: Kind
+    let xRatio: CGFloat
+    let speed: Double
+    let phase: Double
+    let scale: CGFloat
+    let spin: Double
+
+    static let all: [LossFloater] = [
+        LossFloater(id: 0, kind: .mismatch, xRatio: 0.14, speed: 0.07, phase: 0.0, scale: 28, spin: 18),
+        LossFloater(id: 1, kind: .ghost, xRatio: 0.32, speed: 0.05, phase: 0.22, scale: 32, spin: -12),
+        LossFloater(id: 2, kind: .question, xRatio: 0.52, speed: 0.08, phase: 0.45, scale: 34, spin: 0),
+        LossFloater(id: 3, kind: .mismatch, xRatio: 0.72, speed: 0.06, phase: 0.62, scale: 24, spin: 22),
+        LossFloater(id: 4, kind: .ghost, xRatio: 0.86, speed: 0.09, phase: 0.15, scale: 30, spin: -16),
+        LossFloater(id: 5, kind: .question, xRatio: 0.24, speed: 0.07, phase: 0.78, scale: 28, spin: 0),
+        LossFloater(id: 6, kind: .mismatch, xRatio: 0.64, speed: 0.05, phase: 0.33, scale: 26, spin: 14),
+        LossFloater(id: 7, kind: .ghost, xRatio: 0.44, speed: 0.08, phase: 0.88, scale: 36, spin: -10),
+        LossFloater(id: 8, kind: .question, xRatio: 0.78, speed: 0.06, phase: 0.52, scale: 30, spin: 0)
+    ]
+}
+
+private struct LossMismatchMark: View {
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 3, style: .continuous)
+                .fill(Color.orange.opacity(0.85))
+                .frame(width: 18, height: 12)
+                .rotationEffect(.degrees(-16))
+                .offset(x: -3, y: -2)
+            RoundedRectangle(cornerRadius: 3, style: .continuous)
+                .fill(Color.orange.opacity(0.45))
+                .frame(width: 18, height: 12)
+                .rotationEffect(.degrees(12))
+                .offset(x: 3, y: 2)
+            Image(systemName: "xmark")
+                .font(.system(size: 10, weight: .black))
+                .foregroundStyle(.white.opacity(0.9))
+        }
     }
 }
 
-private struct Teardrop: Shape {
+private struct LossGhostMark: View {
+    var body: some View {
+        ZStack {
+            LossGhostShape()
+                .fill(Color(red: 0.55, green: 0.45, blue: 0.85).opacity(0.75))
+            HStack(spacing: 4) {
+                Circle().fill(Color.white.opacity(0.5)).frame(width: 3, height: 4)
+                Circle().fill(Color.white.opacity(0.5)).frame(width: 3, height: 4)
+            }
+            .offset(y: -2)
+        }
+    }
+}
+
+private struct LossGhostShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
-        path.move(to: CGPoint(x: rect.midX, y: rect.minY))
-        path.addQuadCurve(
-            to: CGPoint(x: rect.midX, y: rect.maxY),
-            control: CGPoint(x: rect.maxX, y: rect.midY)
-        )
-        path.addQuadCurve(
-            to: CGPoint(x: rect.midX, y: rect.minY),
-            control: CGPoint(x: rect.minX, y: rect.midY)
-        )
+        let w = rect.width
+        let h = rect.height
+        path.addEllipse(in: CGRect(x: w * 0.12, y: rect.minY, width: w * 0.76, height: h * 0.62))
+        path.move(to: CGPoint(x: w * 0.12, y: h * 0.52))
+        path.addLine(to: CGPoint(x: w * 0.12, y: h * 0.92))
+        path.addQuadCurve(to: CGPoint(x: w * 0.32, y: h * 0.74), control: CGPoint(x: w * 0.12, y: h * 0.8))
+        path.addQuadCurve(to: CGPoint(x: w * 0.52, y: h * 0.92), control: CGPoint(x: w * 0.4, y: h))
+        path.addQuadCurve(to: CGPoint(x: w * 0.72, y: h * 0.74), control: CGPoint(x: w * 0.64, y: h))
+        path.addQuadCurve(to: CGPoint(x: w * 0.88, y: h * 0.92), control: CGPoint(x: w * 0.8, y: h * 0.8))
+        path.addLine(to: CGPoint(x: w * 0.88, y: h * 0.52))
+        path.closeSubpath()
         return path
     }
 }

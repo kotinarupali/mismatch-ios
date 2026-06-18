@@ -445,3 +445,97 @@ struct LobbyViewModelTests {
         #expect(viewModel.projectedGhostCount == 0)
     }
 }
+
+struct WordGuessMatcherTests {
+
+    @Test func matchesIgnoringCaseAndWhitespace() {
+        #expect(WordGuessMatcher.matches("  Apple ", secret: "apple"))
+        #expect(WordGuessMatcher.matches("PARIS", secret: "paris"))
+        #expect(WordGuessMatcher.matches("New  York", secret: "new york"))
+        #expect(WordGuessMatcher.matches("wrong", secret: "apple") == false)
+    }
+}
+
+struct GhostGuessTests {
+
+    @Test @MainActor func eliminatingGhostPromptsGuessBeforeGameEnds() throws {
+        let store = GameSessionStore()
+        var settings = GameSettings.default
+        settings.ghostEnabled = true
+        store.createSession(settings: settings)
+        store.setPlayers((1...5).map { index in
+            PlayerSlot(displayName: "P\(index)", avatarColor: AvatarColor.forIndex(index))
+        })
+
+        let pair = WordPair(id: "1", insiderWord: "Apple", mismatchWord: "Apricot", category: "Fruit")
+        try store.distributeRoles(wordPair: pair)
+
+        guard let ghostId = store.currentSession?.players.first(where: { $0.assignment?.role == .ghost })?.id else {
+            Issue.record("Expected ghost player.")
+            return
+        }
+
+        store.eliminate(playerId: ghostId)
+
+        #expect(store.isGhostGuessPending == true)
+        #expect(store.isSessionComplete == false)
+    }
+
+    @Test @MainActor func correctGhostGuessEndsGameImmediately() throws {
+        let store = GameSessionStore()
+        var settings = GameSettings.default
+        settings.ghostEnabled = true
+        store.createSession(settings: settings)
+        store.setPlayers((1...5).map { index in
+            PlayerSlot(displayName: "P\(index)", avatarColor: AvatarColor.forIndex(index))
+        })
+
+        let pair = WordPair(id: "1", insiderWord: "Apple", mismatchWord: "Apricot", category: "Fruit")
+        try store.distributeRoles(wordPair: pair)
+
+        guard let ghostId = store.currentSession?.players.first(where: { $0.assignment?.role == .ghost })?.id else {
+            Issue.record("Expected ghost player.")
+            return
+        }
+
+        store.eliminate(playerId: ghostId)
+        let isCorrect = store.submitGhostGuess("apple")
+
+        #expect(isCorrect == true)
+        #expect(store.isGhostGuessPending == false)
+        #expect(store.sessionWinner == .ghostWins)
+        #expect(store.isSessionComplete == true)
+    }
+
+    @Test @MainActor func wrongGhostGuessResumesNormalWinCheck() throws {
+        let store = GameSessionStore()
+        var settings = GameSettings.default
+        settings.ghostEnabled = true
+        store.createSession(settings: settings)
+        store.setPlayers((1...5).map { index in
+            PlayerSlot(displayName: "P\(index)", avatarColor: AvatarColor.forIndex(index))
+        })
+
+        let pair = WordPair(id: "1", insiderWord: "Apple", mismatchWord: "Apricot", category: "Fruit")
+        try store.distributeRoles(wordPair: pair)
+
+        guard let mismatchId = store.currentSession?.players.first(where: { $0.assignment?.role == .mismatch })?.id else {
+            Issue.record("Expected mismatch player.")
+            return
+        }
+        store.eliminate(playerId: mismatchId)
+        store.continueAfterElimination()
+
+        guard let ghostId = store.currentSession?.players.first(where: { $0.assignment?.role == .ghost })?.id else {
+            Issue.record("Expected ghost player.")
+            return
+        }
+
+        store.eliminate(playerId: ghostId)
+        let isCorrect = store.submitGhostGuess("Banana")
+
+        #expect(isCorrect == false)
+        #expect(store.sessionWinner == .insiderSideWins)
+        #expect(store.isSessionComplete == true)
+    }
+}

@@ -63,6 +63,9 @@ final class GameSessionStore {
         )
         session.players = assigned
         session.state = .distributing
+        session.currentInsiderWord = wordPair.insiderWord
+        session.currentMismatchWord = wordPair.mismatchWord
+        session.forcedSessionOutcome = nil
         let seatingIds = normalizedSeatingOrderIds(for: session)
         session.seatingOrderPlayerIds = seatingIds
         session.passOrderPlayerIds = try randomPassOrder(from: seatingIds)
@@ -144,16 +147,80 @@ final class GameSessionStore {
 
         if session.currentRoundIndex < session.rounds.count {
             session.rounds[session.currentRoundIndex].eliminatedPlayerId = playerId
-            session.rounds[session.currentRoundIndex].outcome = SessionWinChecker.checkWinner(
+            if eliminated.assignment?.role == .ghost {
+                if session.currentInsiderWord == nil {
+                    session.currentInsiderWord = Self.resolveInsiderWord(in: session)
+                }
+                session.rounds[session.currentRoundIndex].ghostGuessPending = true
+                session.rounds[session.currentRoundIndex].ghostGuessSubmitted = false
+                session.rounds[session.currentRoundIndex].outcome = nil
+            } else {
+                session.rounds[session.currentRoundIndex].outcome = SessionWinChecker.checkWinner(
+                    players: session.players,
+                    settings: session.settings
+                )
+            }
+        }
+
+        session.state = .revealing
+        currentSession = session
+    }
+
+    @discardableResult
+    func submitGhostGuess(_ guess: String) -> Bool {
+        guard var session = currentSession,
+              session.currentRoundIndex < session.rounds.count else { return false }
+
+        let roundIndex = session.currentRoundIndex
+        guard session.rounds[roundIndex].ghostGuessPending,
+              !session.rounds[roundIndex].ghostGuessSubmitted,
+              let insiderWord = Self.resolveInsiderWord(in: session) else { return false }
+
+        let isCorrect = WordGuessMatcher.matches(guess, secret: insiderWord)
+        session.rounds[roundIndex].ghostGuessSubmitted = true
+        session.rounds[roundIndex].ghostGuessPending = false
+
+        if isCorrect {
+            session.forcedSessionOutcome = .ghostWins
+            session.rounds[roundIndex].outcome = .ghostWins
+        } else {
+            session.rounds[roundIndex].outcome = SessionWinChecker.checkWinner(
                 players: session.players,
                 settings: session.settings
             )
         }
 
-        session.state = .revealing
         currentSession = session
+        return isCorrect
+    }
 
-        _ = eliminated
+    var isGhostGuessPending: Bool {
+        guard let round = currentRound else { return false }
+        return round.ghostGuessPending && !round.ghostGuessSubmitted
+    }
+
+    var insiderWord: String? {
+        guard let session = currentSession else { return nil }
+        return Self.resolveInsiderWord(in: session)
+    }
+
+    var mismatchWord: String? {
+        guard let session = currentSession else { return nil }
+        return Self.resolveMismatchWord(in: session)
+    }
+
+    func finalPlayerReveals() -> [PlayerRoleReveal] {
+        guard let session = currentSession else { return [] }
+        return seatingOrderPlayers().compactMap { player in
+            guard let role = player.assignment?.role else { return nil }
+            return PlayerRoleReveal(
+                id: player.id,
+                displayName: player.isHost ? "You" : player.displayName,
+                avatarColor: player.avatarColor,
+                role: role,
+                isEliminated: player.isEliminated
+            )
+        }
     }
 
     func continueAfterElimination() {
@@ -176,6 +243,9 @@ final class GameSessionStore {
         session.currentRoundIndex = 0
         session.passOrderPlayerIds = []
         session.discussionStartPlayerId = nil
+        session.currentInsiderWord = nil
+        session.currentMismatchWord = nil
+        session.forcedSessionOutcome = nil
         session.players = session.players.map { player in
             var updated = player
             updated.assignment = nil
@@ -208,6 +278,12 @@ final class GameSessionStore {
 
     var sessionWinner: RoundOutcome? {
         guard let session = currentSession else { return nil }
+        if isGhostGuessPending {
+            return nil
+        }
+        if let forced = session.forcedSessionOutcome {
+            return forced
+        }
         return SessionWinChecker.checkWinner(players: session.players, settings: session.settings)
     }
 
@@ -261,5 +337,41 @@ final class GameSessionStore {
         guard seatingIds.count > 1 else { return seatingIds }
         let startIndex = try CryptoRandom.randomInt(in: 0..<seatingIds.count)
         return Array(seatingIds[startIndex...] + seatingIds[..<startIndex])
+    }
+
+    private static func resolveInsiderWord(in session: GameSession) -> String? {
+        if let stored = session.currentInsiderWord?.trimmingCharacters(in: .whitespacesAndNewlines),
+           !stored.isEmpty {
+            return stored
+        }
+
+        if let word = session.players
+            .compactMap(\.assignment)
+            .first(where: { $0.role == .insider })?
+            .word?
+            .trimmingCharacters(in: .whitespacesAndNewlines),
+           !word.isEmpty {
+            return word
+        }
+
+        return nil
+    }
+
+    private static func resolveMismatchWord(in session: GameSession) -> String? {
+        if let stored = session.currentMismatchWord?.trimmingCharacters(in: .whitespacesAndNewlines),
+           !stored.isEmpty {
+            return stored
+        }
+
+        if let word = session.players
+            .compactMap(\.assignment)
+            .first(where: { $0.role == .mismatch })?
+            .word?
+            .trimmingCharacters(in: .whitespacesAndNewlines),
+           !word.isEmpty {
+            return word
+        }
+
+        return nil
     }
 }

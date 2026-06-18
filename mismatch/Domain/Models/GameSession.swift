@@ -11,6 +11,9 @@ struct GameSession: Identifiable, Codable, Equatable, Sendable {
     var seatingOrderPlayerIds: [UUID]
     var passOrderPlayerIds: [UUID]
     var discussionStartPlayerId: UUID?
+    var currentInsiderWord: String?
+    var currentMismatchWord: String?
+    var forcedSessionOutcome: RoundOutcome?
 
     init(
         id: UUID = UUID(),
@@ -22,7 +25,10 @@ struct GameSession: Identifiable, Codable, Equatable, Sendable {
         currentRoundIndex: Int = 0,
         seatingOrderPlayerIds: [UUID] = [],
         passOrderPlayerIds: [UUID] = [],
-        discussionStartPlayerId: UUID? = nil
+        discussionStartPlayerId: UUID? = nil,
+        currentInsiderWord: String? = nil,
+        currentMismatchWord: String? = nil,
+        forcedSessionOutcome: RoundOutcome? = nil
     ) {
         self.id = id
         self.createdAt = createdAt
@@ -34,6 +40,9 @@ struct GameSession: Identifiable, Codable, Equatable, Sendable {
         self.seatingOrderPlayerIds = seatingOrderPlayerIds
         self.passOrderPlayerIds = passOrderPlayerIds
         self.discussionStartPlayerId = discussionStartPlayerId
+        self.currentInsiderWord = currentInsiderWord
+        self.currentMismatchWord = currentMismatchWord
+        self.forcedSessionOutcome = forcedSessionOutcome
     }
 
     var playerCount: Int { players.count }
