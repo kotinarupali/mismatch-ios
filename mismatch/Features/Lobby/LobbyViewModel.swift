@@ -7,6 +7,7 @@ final class LobbyViewModel {
 
     var hostIsPlaying: Bool
     var showRoleOnCard: Bool
+    var ghostEnabled: Bool
     var mismatchGhostAlliance: Bool
     var discussionTimerEnabled: Bool
     var distributionMode: DistributionMode
@@ -22,6 +23,7 @@ final class LobbyViewModel {
         let settings = dependencies.gameSessionStore.currentSession?.settings ?? .default
         hostIsPlaying = settings.hostIsPlaying
         showRoleOnCard = settings.showRoleOnCard
+        ghostEnabled = settings.ghostEnabled
         mismatchGhostAlliance = settings.mismatchGhostAlliance
         discussionTimerEnabled = settings.discussionTimerEnabled
         distributionMode = settings.distributionMode
@@ -51,6 +53,34 @@ final class LobbyViewModel {
             return "\(totalPlayerCount) players · you + \(playerNames.count) guest\(playerNames.count == 1 ? "" : "s")"
         }
         return "\(totalPlayerCount) of \(minimumPlayers)+ players"
+    }
+
+    var rulesSummary: String {
+        var parts = [distributionMode.displayName]
+        if hostIsPlaying { parts.append("You're playing") }
+        if ghostEnabled { parts.append("Ghost") }
+        if mismatchGhostAlliance { parts.append("Alliance") }
+        if showRoleOnCard { parts.append("Roles on card") }
+        if discussionTimerEnabled { parts.append("Timer") }
+        return parts.joined(separator: " · ")
+    }
+
+    var projectedMismatchCount: Int {
+        RoleDistributionTable.counts(
+            playerCount: totalPlayerCount,
+            ghostEnabled: ghostEnabled
+        ).mismatch
+    }
+
+    var projectedGhostCount: Int {
+        RoleDistributionTable.counts(
+            playerCount: totalPlayerCount,
+            ghostEnabled: ghostEnabled
+        ).ghost
+    }
+
+    var showsProjectedRoleCounts: Bool {
+        totalPlayerCount >= minimumPlayers
     }
 
     var playerColors: [AvatarColor] {
@@ -153,7 +183,7 @@ final class LobbyViewModel {
     private func syncSession() {
         var settings = dependencies.gameSessionStore.currentSession?.settings ?? .default
         settings.hostIsPlaying = hostIsPlaying
-        settings.ghostEnabled = mismatchGhostAlliance
+        settings.ghostEnabled = ghostEnabled
         settings.mismatchGhostAlliance = mismatchGhostAlliance
         settings.discussionTimerEnabled = discussionTimerEnabled
         settings.showRoleOnCard = showRoleOnCard

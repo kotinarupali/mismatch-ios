@@ -41,6 +41,18 @@ final class ResultsViewModel {
         dependencies.gameSessionStore.eliminatedPlayer?.assignment?.word ?? "None"
     }
 
+    var shouldShowEliminatedWord: Bool {
+        isSessionComplete
+    }
+
+    var sessionOutcome: RoundOutcome? {
+        dependencies.gameSessionStore.sessionWinner
+    }
+
+    var insidersWon: Bool {
+        sessionOutcome == .insiderSideWins
+    }
+
     func continueTapped() {
         dependencies.gameSessionStore.continueAfterElimination()
         dependencies.router.continueToDiscussion()
@@ -50,7 +62,7 @@ final class ResultsViewModel {
         dependencies.repickRoles()
     }
 
-    func newGameTapped() {
+    func exitTapped() {
         dependencies.endGame()
     }
 }

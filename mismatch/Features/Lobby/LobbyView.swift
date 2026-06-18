@@ -2,6 +2,7 @@ import SwiftUI
 
 struct LobbyView: View {
     @Bindable var viewModel: LobbyViewModel
+    @State private var rulesExpanded = false
 
     var body: some View {
         PlaceholderScreenLayout(
@@ -11,31 +12,6 @@ struct LobbyView: View {
             roomStyle: .lobby
         ) {
             VStack(spacing: 20) {
-                SettingsCard {
-                    SettingsToggleRow(icon: "person.crop.circle.badge.checkmark", title: "I'm playing", isOn: $viewModel.hostIsPlaying)
-                    Divider().overlay(AppColor.cardBorder).padding(.horizontal, 16)
-                    SettingsToggleRow(icon: "eye.slash.fill", title: "Show role on card", isOn: $viewModel.showRoleOnCard)
-                    Divider().overlay(AppColor.cardBorder).padding(.horizontal, 16)
-                    SettingsToggleRow(
-                        icon: "person.2.fill",
-                        title: "Mismatch & Ghost alliance",
-                        isOn: $viewModel.mismatchGhostAlliance
-                    )
-                    Divider().overlay(AppColor.cardBorder).padding(.horizontal, 16)
-                    SettingsToggleRow(icon: "timer", title: "Discussion timer", isOn: $viewModel.discussionTimerEnabled)
-                    Divider().overlay(AppColor.cardBorder).padding(.horizontal, 16)
-                    SettingsPickerRow(icon: "qrcode", title: "Distribution", selection: $viewModel.distributionMode) {
-                        ForEach(DistributionMode.allCases, id: \.self) { mode in
-                            Text(mode.displayName).tag(mode)
-                        }
-                    }
-                }
-                .onChange(of: viewModel.hostIsPlaying) { viewModel.refreshSession() }
-                .onChange(of: viewModel.mismatchGhostAlliance) { viewModel.refreshSession() }
-                .onChange(of: viewModel.discussionTimerEnabled) { viewModel.refreshSession() }
-                .onChange(of: viewModel.showRoleOnCard) { viewModel.refreshSession() }
-                .onChange(of: viewModel.distributionMode) { viewModel.refreshSession() }
-
                 HStack(spacing: 10) {
                     TextField("Player name", text: $viewModel.newPlayerName)
                         .textFieldStyle(.plain)
@@ -84,6 +60,14 @@ struct LobbyView: View {
                     }
                 }
 
+                if viewModel.showsProjectedRoleCounts {
+                    OutsiderCountsBanner(
+                        mismatchCount: viewModel.projectedMismatchCount,
+                        ghostCount: viewModel.projectedGhostCount,
+                        countSuffix: "in game"
+                    )
+                }
+
                 PrimaryButton(
                     title: viewModel.isDistributing ? "Dealing roles…" : "Distribute Roles",
                     isEnabled: viewModel.canContinue
@@ -96,12 +80,61 @@ struct LobbyView: View {
                         .font(AppTypography.caption)
                         .foregroundStyle(AppColor.accentSecondary)
                 }
+
+                rulesSection
             }
         }
         .navigationTitle("Lobby")
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(AppColor.background.opacity(0.9), for: .navigationBar)
         .toolbarColorScheme(.dark, for: .navigationBar)
+    }
+
+    private var rulesSection: some View {
+        DisclosureGroup(isExpanded: $rulesExpanded) {
+            SettingsCard {
+                SettingsToggleRow(icon: "person.crop.circle.badge.checkmark", title: "I'm playing", isOn: $viewModel.hostIsPlaying)
+                Divider().overlay(AppColor.cardBorder).padding(.horizontal, 16)
+                    SettingsToggleRow(icon: "eye.slash.fill", title: "Show role on card", isOn: $viewModel.showRoleOnCard)
+                    Divider().overlay(AppColor.cardBorder).padding(.horizontal, 16)
+                    SettingsToggleRow(icon: "figure.wave", title: "Ghost", isOn: $viewModel.ghostEnabled)
+                    Divider().overlay(AppColor.cardBorder).padding(.horizontal, 16)
+                    SettingsToggleRow(
+                        icon: "person.2.fill",
+                        title: "Mismatch & Ghost alliance",
+                        isOn: $viewModel.mismatchGhostAlliance
+                    )
+                Divider().overlay(AppColor.cardBorder).padding(.horizontal, 16)
+                SettingsToggleRow(icon: "timer", title: "Discussion timer", isOn: $viewModel.discussionTimerEnabled)
+                Divider().overlay(AppColor.cardBorder).padding(.horizontal, 16)
+                SettingsPickerRow(icon: "qrcode", title: "Distribution", selection: $viewModel.distributionMode) {
+                    ForEach(DistributionMode.allCases, id: \.self) { mode in
+                        Text(mode.displayName).tag(mode)
+                    }
+                }
+            }
+            .padding(.top, 8)
+            .onChange(of: viewModel.hostIsPlaying) { viewModel.refreshSession() }
+            .onChange(of: viewModel.ghostEnabled) { viewModel.refreshSession() }
+            .onChange(of: viewModel.mismatchGhostAlliance) { viewModel.refreshSession() }
+            .onChange(of: viewModel.discussionTimerEnabled) { viewModel.refreshSession() }
+            .onChange(of: viewModel.showRoleOnCard) { viewModel.refreshSession() }
+            .onChange(of: viewModel.distributionMode) { viewModel.refreshSession() }
+        } label: {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Rules")
+                    .font(AppTypography.body)
+                    .foregroundStyle(AppColor.secondaryLabel)
+                if !rulesExpanded {
+                    Text(viewModel.rulesSummary)
+                        .font(AppTypography.caption)
+                        .foregroundStyle(AppColor.secondaryLabel.opacity(0.8))
+                        .lineLimit(1)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .tint(AppColor.secondaryLabel)
     }
 }
 

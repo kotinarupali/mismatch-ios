@@ -110,10 +110,6 @@ struct CardPickView: View {
                     }
             }
 
-            if let nextPlayerName {
-                passToBanner(name: nextPlayerName)
-            }
-
             if canGhostRepick {
                 SecondaryButton(title: "Pick again") {
                     selectedCardIndex = nil
@@ -123,13 +119,28 @@ struct CardPickView: View {
                 }
             }
 
-            PrimaryButton(title: nextPlayerName == nil ? "Hide & Finish" : "Hide & Next") {
-                if let selectedCardIndex {
-                    onComplete(selectedCardIndex)
-                }
+            if let nextPlayerName {
+                passToBanner(name: nextPlayerName)
+            }
+
+            PrimaryButton(title: nextButtonTitle) {
+                finishPick()
             }
         }
         .transition(.opacity)
+    }
+
+    private var nextButtonTitle: String {
+        if let nextPlayerName {
+            return "Pass to \(nextPlayerName)"
+        }
+        return "Finish"
+    }
+
+    private func finishPick() {
+        if let selectedCardIndex {
+            onComplete(selectedCardIndex)
+        }
     }
 
     private var faceDownCard: some View {

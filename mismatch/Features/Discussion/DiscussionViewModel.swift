@@ -22,25 +22,45 @@ final class DiscussionViewModel {
         dependencies.gameSessionStore.currentSession?.settings.discussionTimerEnabled ?? false
     }
 
+    var allPlayers: [PlayerSlot] {
+        dependencies.gameSessionStore.currentSession?.players ?? []
+    }
+
     var activePlayers: [PlayerSlot] {
-        dependencies.gameSessionStore.currentSession?.players
-            .filter { !$0.isEliminated } ?? []
+        allPlayers.filter { !$0.isEliminated }
     }
 
     var playersWithPickedCards: [PlayerSlot] {
         dependencies.gameSessionStore.playersWithPickedCards()
     }
 
+    var remainingMismatchCount: Int {
+        dependencies.gameSessionStore.remainingOutsiderCounts().mismatch
+    }
+
+    var remainingGhostCount: Int {
+        dependencies.gameSessionStore.remainingOutsiderCounts().ghost
+    }
+
     var selectedPlayerName: String {
         guard let id = selectedPlayerId,
-              let player = activePlayers.first(where: { $0.id == id }) else {
+              let player = allPlayers.first(where: { $0.id == id }) else {
             return "this player"
         }
         return player.isHost ? "You" : player.displayName
     }
 
+    var canConfirmVote: Bool {
+        guard let id = selectedPlayerId else { return false }
+        return activePlayers.contains { $0.id == id }
+    }
+
     func onAppear() {
         dependencies.gameSessionStore.updateState(.discussing)
+        if let id = selectedPlayerId,
+           allPlayers.first(where: { $0.id == id })?.isEliminated == true {
+            selectedPlayerId = nil
+        }
         guard timerEnabled else { return }
         let duration = dependencies.gameSessionStore.currentSession?.settings.timerSeconds ?? 180
         dependencies.timerService.start(durationSeconds: duration) { [weak self] in
@@ -53,11 +73,13 @@ final class DiscussionViewModel {
     }
 
     func selectPlayer(_ id: UUID) {
+        guard allPlayers.first(where: { $0.id == id && !$0.isEliminated }) != nil else { return }
         selectedPlayerId = id
     }
 
     func confirmVoteTapped() {
-        guard selectedPlayerId != nil else { return }
+        guard let id = selectedPlayerId,
+              allPlayers.first(where: { $0.id == id && !$0.isEliminated }) != nil else { return }
         showConfirmDialog = true
     }
 

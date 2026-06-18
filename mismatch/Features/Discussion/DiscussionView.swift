@@ -11,6 +11,12 @@ struct DiscussionView: View {
             roomStyle: .discussion
         ) {
             VStack(spacing: 20) {
+                OutsiderCountsBanner(
+                    mismatchCount: viewModel.remainingMismatchCount,
+                    ghostCount: viewModel.remainingGhostCount,
+                    countSuffix: "left"
+                )
+
                 if viewModel.timerEnabled {
                     TimerView(
                         timeLabel: viewModel.timerService.formattedTime,
@@ -19,14 +25,16 @@ struct DiscussionView: View {
                 }
 
                 PlayerGridView(
-                    players: viewModel.activePlayers,
+                    players: viewModel.allPlayers,
                     selectedPlayerId: viewModel.selectedPlayerId,
+                    style: .tile,
+                    showEliminatedRoleBadges: true,
                     onSelect: { viewModel.selectPlayer($0) }
                 )
 
                 PrimaryButton(
                     title: "Confirm Vote",
-                    isEnabled: viewModel.selectedPlayerId != nil
+                    isEnabled: viewModel.canConfirmVote
                 ) {
                     viewModel.confirmVoteTapped()
                 }

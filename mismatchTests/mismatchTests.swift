@@ -107,11 +107,39 @@ struct RoleDistributionTableTests {
         #expect(counts.ghost == 0)
     }
 
-    @Test func eightPlayersGhostOn() {
-        let counts = RoleDistributionTable.counts(playerCount: 8, ghostEnabled: true)
+    @Test func fourPlayersGhostOn() {
+        let counts = RoleDistributionTable.counts(playerCount: 4, ghostEnabled: true)
+        #expect(counts.insider == 2)
         #expect(counts.mismatch == 1)
         #expect(counts.ghost == 1)
+    }
+
+    @Test func threePlayersOneMismatch() {
+        let counts = RoleDistributionTable.counts(playerCount: 3, ghostEnabled: false)
+        #expect(counts.insider == 2)
+        #expect(counts.mismatch == 1)
+        #expect(counts.ghost == 0)
+    }
+
+    @Test func sixPlayersGhostOn() {
+        let counts = RoleDistributionTable.counts(playerCount: 6, ghostEnabled: true)
+        #expect(counts.mismatch == 2)
+        #expect(counts.ghost == 2)
+        #expect(counts.insider == 2)
+    }
+
+    @Test func twelvePlayersGhostOn() {
+        let counts = RoleDistributionTable.counts(playerCount: 12, ghostEnabled: true)
+        #expect(counts.mismatch == 3)
+        #expect(counts.ghost == 3)
         #expect(counts.insider == 6)
+    }
+
+    @Test func eightPlayersGhostOn() {
+        let counts = RoleDistributionTable.counts(playerCount: 8, ghostEnabled: true)
+        #expect(counts.mismatch == 2)
+        #expect(counts.ghost == 2)
+        #expect(counts.insider == 4)
     }
 
     @Test func distributionForMultiplePlayerCounts() {
@@ -136,9 +164,9 @@ struct RoleAssignerTests {
 
         #expect(assigned.count == 8)
         let roles = assigned.compactMap { $0.assignment?.role }
-        #expect(roles.filter { $0 == .insider }.count == 6)
-        #expect(roles.filter { $0 == .mismatch }.count == 1)
-        #expect(roles.filter { $0 == .ghost }.count == 1)
+        #expect(roles.filter { $0 == .insider }.count == 4)
+        #expect(roles.filter { $0 == .mismatch }.count == 2)
+        #expect(roles.filter { $0 == .ghost }.count == 2)
     }
 }
 
@@ -176,21 +204,36 @@ struct GameSettingsTests {
 
 struct PassThePhoneOrderTests {
 
-    @Test @MainActor func distributeRolesSetsRandomPassOrder() throws {
+    @Test @MainActor func distributeRolesRotatesFixedPassOrder() throws {
         let store = GameSessionStore()
         store.createSession()
-        let players = (1...5).map { index in
-            PlayerSlot(displayName: "P\(index)", avatarColor: AvatarColor.forIndex(index))
-        }
+        let host = PlayerSlot(displayName: "Host", avatarColor: .blue, isHost: true)
+        let players = [
+            host,
+            PlayerSlot(displayName: "P2", avatarColor: AvatarColor.forIndex(1)),
+            PlayerSlot(displayName: "P3", avatarColor: AvatarColor.forIndex(2)),
+            PlayerSlot(displayName: "P4", avatarColor: AvatarColor.forIndex(3)),
+            PlayerSlot(displayName: "P5", avatarColor: AvatarColor.forIndex(4)),
+        ]
         store.setPlayers(players)
 
         let pair = WordPair(id: "1", insiderWord: "A", mismatchWord: "B", category: "Test")
         try store.distributeRoles(wordPair: pair)
 
-        let order = store.passThePhoneOrder()
+        let order = store.passThePhoneOrder().map(\.id)
+        let fixedBase = [
+            players[1].id, players[2].id, players[3].id, players[4].id, host.id,
+        ]
+
         #expect(order.count == 5)
-        #expect(Set(order.map(\.id)) == Set(players.map(\.id)))
-        #expect(store.currentSession?.passOrderPlayerIds.count == 5)
+        #expect(Set(order) == Set(fixedBase))
+
+        guard let start = fixedBase.firstIndex(of: order[0]) else {
+            Issue.record("Pass order must start from a player in the fixed sequence.")
+            return
+        }
+        let rotated = Array(fixedBase[start...] + fixedBase[..<start])
+        #expect(order == rotated)
     }
 
     @Test @MainActor func claimedCardsTracksPickedSlots() throws {
@@ -206,5 +249,20 @@ struct PassThePhoneOrderTests {
         #expect(claimed.count == 1)
         #expect(claimed[0].index == 2)
         #expect(claimed[0].playerName == "Alice")
+    }
+
+    @Test @MainActor func remainingOutsiderCountsExcludeEliminatedPlayers() throws {
+        let store = GameSessionStore()
+        store.createSession()
+        store.setPlayers([
+            PlayerSlot(displayName: "A", avatarColor: .red, assignment: RoleAssignment(role: .mismatch, word: "B")),
+            PlayerSlot(displayName: "B", avatarColor: .blue, assignment: RoleAssignment(role: .ghost)),
+            PlayerSlot(displayName: "C", avatarColor: .green, assignment: RoleAssignment(role: .insider, word: "A")),
+            PlayerSlot(displayName: "D", avatarColor: .orange, assignment: RoleAssignment(role: .mismatch, word: "B"), isEliminated: true),
+        ])
+
+        let counts = store.remainingOutsiderCounts()
+        #expect(counts.mismatch == 1)
+        #expect(counts.ghost == 1)
     }
 }

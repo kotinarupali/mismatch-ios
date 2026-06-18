@@ -40,7 +40,7 @@ final class GameSessionStore {
         )
         session.players = assigned
         session.state = .distributing
-        session.passOrderPlayerIds = try CryptoRandom.shuffled(session.players.map(\.id))
+        session.passOrderPlayerIds = try passOrderPlayerIds(for: session.players)
         let round = Round(index: session.rounds.count, wordPairId: wordPair.id)
         session.rounds.append(round)
         session.currentRoundIndex = session.rounds.count - 1
@@ -80,6 +80,13 @@ final class GameSessionStore {
 
     func playersWithPickedCards() -> [PlayerSlot] {
         currentSession?.players.filter { $0.hasOpenedCard && $0.assignment != nil } ?? []
+    }
+
+    func remainingOutsiderCounts() -> (mismatch: Int, ghost: Int) {
+        let active = currentSession?.players.filter { !$0.isEliminated } ?? []
+        let mismatch = active.filter { $0.assignment?.role == .mismatch }.count
+        let ghost = active.filter { $0.assignment?.role == .ghost }.count
+        return (mismatch, ghost)
     }
 
     func updatePlayerCardURL(playerId: UUID, token: String, url: String) {
@@ -177,5 +184,20 @@ final class GameSessionStore {
 
     var roundOutcome: RoundOutcome? {
         currentRound?.outcome
+    }
+
+    private func passOrderPlayerIds(for players: [PlayerSlot]) throws -> [UUID] {
+        var ordered = players
+        if let hostIndex = ordered.firstIndex(where: \.isHost) {
+            let host = ordered.remove(at: hostIndex)
+            ordered.append(host)
+        }
+
+        let ids = ordered.map(\.id)
+        guard ids.count > 1 else { return ids }
+
+        let randomBytes = try CryptoRandom.randomBytes(count: MemoryLayout<UInt32>.size)
+        let startIndex = Int(randomBytes.withUnsafeBytes { $0.load(as: UInt32.self) } % UInt32(ids.count))
+        return Array(ids[startIndex...] + ids[..<startIndex])
     }
 }
