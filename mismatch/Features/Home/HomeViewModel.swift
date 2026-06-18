@@ -70,6 +70,11 @@ final class HomeViewModel {
     }
 
     private func loadWordPairStats() {
-        wordPairStats = try? dependencies.wordPairSelector.stats()
+        guard let catalog = try? dependencies.wordPackLoader.loadCatalog() else {
+            wordPairStats = nil
+            return
+        }
+        let packIds = catalog.packs.map(\.id)
+        wordPairStats = try? dependencies.wordPairSelector.aggregateStats(for: packIds)
     }
 }

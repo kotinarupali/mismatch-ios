@@ -21,6 +21,17 @@ struct WordPairSelector: Sendable {
         }
     }
 
+    func aggregateStats(for packIds: [String]) throws -> WordPairStats {
+        let summaries = try stats(for: packIds)
+        let used = summaries.reduce(0) { $0 + $1.stats.used }
+        let total = summaries.reduce(0) { $0 + $1.stats.total }
+        return WordPairStats(
+            used: used,
+            remaining: max(0, total - used),
+            total: total
+        )
+    }
+
     func nextPair(packIds: [String]) throws -> WordPairSelection {
         let normalized = normalizedPackIds(packIds)
         guard !normalized.isEmpty else { throw WordPairSelectorError.noPacksSelected }
