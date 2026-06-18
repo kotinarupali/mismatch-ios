@@ -8,6 +8,8 @@ struct LobbyAddPlayerField: View {
             HStack(spacing: 10) {
                 TextField("Player name", text: $viewModel.newPlayerName)
                     .textFieldStyle(.plain)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
                     .padding(.horizontal, 14)
                     .padding(.vertical, 14)
                     .background(AppColor.card)

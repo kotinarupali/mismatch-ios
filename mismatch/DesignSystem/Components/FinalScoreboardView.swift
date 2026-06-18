@@ -95,13 +95,9 @@ struct FinalScoreboardView: View {
 
     private func playerMeta(_ row: FinalScoreboardRow) -> some View {
         VStack(alignment: .leading, spacing: 2) {
-            HStack(spacing: 6) {
-                RoleIconBadge(role: row.role, size: .tiny)
-
-                Text(row.role.displayName)
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(roleColor(for: row.role))
-            }
+            Text(row.role.displayName)
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(roleColor(for: row.role))
 
             if row.isEliminated {
                 Text("Voted out")
@@ -142,19 +138,19 @@ struct FinalScoreboardView: View {
             }
             .frame(width: columnWidth, height: crownSlotHeight)
 
-            ZStack {
+            ZStack(alignment: .bottomTrailing) {
                 AvatarView(name: row.displayName, color: row.avatarColor, size: avatarSize)
                     .opacity(row.isEliminated && !row.isWinner ? 0.42 : 1)
 
                 if row.isEliminated && !row.isWinner {
-                    Circle()
-                        .strokeBorder(AppColor.accentSecondary.opacity(0.85), lineWidth: 2.5)
-
                     Image(systemName: "xmark")
                         .font(.system(size: 18, weight: .black))
                         .foregroundStyle(AppColor.accentSecondary)
                         .shadow(color: .black.opacity(0.45), radius: 1, y: 1)
                 }
+
+                RoleOverlayMark(role: row.role, size: 14)
+                    .padding(2)
             }
             .frame(width: avatarSize, height: avatarSize)
         }

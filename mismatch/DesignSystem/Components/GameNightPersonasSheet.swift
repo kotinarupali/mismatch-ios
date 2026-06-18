@@ -1,47 +1,26 @@
 import SwiftUI
 
-struct GameNightPersonasSheet: View {
+struct GameNightPersonasList: View {
     let cards: [PlayerPersonaCard]
     var gamesPlayedCount: Int = 0
-    let onDone: () -> Void
-
-    @Environment(\.dismiss) private var dismiss
+    var showsIntro: Bool = true
 
     var body: some View {
-        NavigationStack {
-            ZStack {
-                PartyRoomBackground(style: .reveal)
+        VStack(spacing: 20) {
+            if showsIntro {
+                header
+            }
 
-                ScrollView {
-                    VStack(spacing: 20) {
-                        header
-
-                        if cards.isEmpty {
-                            emptyState
-                        } else {
-                            VStack(spacing: 10) {
-                                ForEach(cards) { card in
-                                    personaRow(card)
-                                }
-                            }
-                        }
-
-                        PrimaryButton(title: "Back to Home") {
-                            dismiss()
-                            onDone()
-                        }
+            if cards.isEmpty {
+                emptyState
+            } else {
+                VStack(spacing: 10) {
+                    ForEach(cards) { card in
+                        personaRow(card)
                     }
-                    .padding(.horizontal, 24)
-                    .padding(.top, 12)
-                    .padding(.bottom, 32)
                 }
             }
-            .navigationTitle("Party Personas")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(AppColor.background.opacity(0.9), for: .navigationBar)
-            .toolbarColorScheme(.dark, for: .navigationBar)
         }
-        .preferredColorScheme(.dark)
     }
 
     private var header: some View {
@@ -146,6 +125,44 @@ struct GameNightPersonasSheet: View {
         case .rose: AppColor.accentSecondary
         case .amber: BrandPalette.sadMid
         }
+    }
+}
+
+struct GameNightPersonasSheet: View {
+    let cards: [PlayerPersonaCard]
+    var gamesPlayedCount: Int = 0
+    let onDone: () -> Void
+
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                PartyRoomBackground(style: .reveal)
+
+                ScrollView {
+                    VStack(spacing: 20) {
+                        GameNightPersonasList(
+                            cards: cards,
+                            gamesPlayedCount: gamesPlayedCount
+                        )
+
+                        PrimaryButton(title: "Back to Home") {
+                            dismiss()
+                            onDone()
+                        }
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.top, 12)
+                    .padding(.bottom, 32)
+                }
+            }
+            .navigationTitle("Party Personas")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(AppColor.background.opacity(0.9), for: .navigationBar)
+            .toolbarColorScheme(.dark, for: .navigationBar)
+        }
+        .preferredColorScheme(.dark)
     }
 }
 

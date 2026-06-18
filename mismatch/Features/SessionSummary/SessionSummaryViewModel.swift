@@ -1,11 +1,16 @@
 import Foundation
 
+enum SessionSummaryPhase: Equatable {
+    case scoreboard
+    case personas
+}
+
 @MainActor
 @Observable
 final class SessionSummaryViewModel {
     private let dependencies: AppDependencies
 
-    var showPartyPersonas = false
+    var phase: SessionSummaryPhase = .scoreboard
 
     init(dependencies: AppDependencies) {
         self.dependencies = dependencies
@@ -99,11 +104,18 @@ final class SessionSummaryViewModel {
 
     func onAppear() {
         applyProfileStatsIfNeeded()
-        showPartyPersonas = true
+    }
+
+    func showPersonasTapped() {
+        phase = .personas
+    }
+
+    func backToScoresTapped() {
+        phase = .scoreboard
     }
 
     func backToHomeTapped() {
-        showPartyPersonas = false
+        phase = .scoreboard
         dependencies.newGameNight()
     }
 

@@ -227,7 +227,7 @@ final class LobbyViewModel {
 
         let seatedProfileIds = Set(seatedPlayers.compactMap(\.profileId))
         return savedProfiles.filter { profile in
-            !seatedProfileIds.contains(profile.id) && profile.name.contains(query)
+            !seatedProfileIds.contains(profile.id) && Self.profileNameMatchesSearch(profile.name, query: query)
         }
     }
 
@@ -498,5 +498,9 @@ final class LobbyViewModel {
 
         dependencies.gameSessionStore.setPlayers(slots)
         dependencies.gameSessionStore.setSeatingOrder(seatedPlayers.map(\.id))
+    }
+
+    private static func profileNameMatchesSearch(_ name: String, query: String) -> Bool {
+        name.range(of: query, options: []) != nil
     }
 }

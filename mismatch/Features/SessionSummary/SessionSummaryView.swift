@@ -5,48 +5,24 @@ struct SessionSummaryView: View {
 
     var body: some View {
         PlaceholderScreenLayout(
-            title: "Game Night Over",
-            subtitle: viewModel.subtitle,
-            icon: "trophy.fill",
+            title: layoutTitle,
+            subtitle: layoutSubtitle,
+            icon: layoutIcon,
+            showsBrandLogo: viewModel.phase == .personas,
             roomStyle: .reveal
         ) {
             VStack(spacing: 20) {
-                if viewModel.showsGameOutcome {
-                    sessionOutcomeHeader
-                    GameFinalResultsSection(
-                        insiderWord: viewModel.finalInsiderWord,
-                        mismatchWord: viewModel.finalMismatchWord
+                switch viewModel.phase {
+                case .scoreboard:
+                    scoreboardContent
+                    scoreboardActions
+                case .personas:
+                    GameNightPersonasList(
+                        cards: viewModel.personaCards,
+                        gamesPlayedCount: viewModel.gamesPlayedCount,
+                        showsIntro: false
                     )
-                }
-
-                if let leaderHeadline = viewModel.leaderHeadline {
-                    Text(leaderHeadline)
-                        .font(AppTypography.body)
-                        .foregroundStyle(AppColor.label)
-                        .multilineTextAlignment(.center)
-                        .frame(maxWidth: .infinity)
-                        .padding(.horizontal, 8)
-                }
-
-                if viewModel.showsDetailedScoreboard {
-                    FinalScoreboardView(
-                        title: "Tonight's leaderboard",
-                        rows: viewModel.finalScoreboardRows
-                    )
-                } else if viewModel.showsLeaderboard {
-                    SessionScoreboardView(
-                        title: "Tonight's leaderboard",
-                        rows: viewModel.scoreboardRows,
-                        showsRoundPoints: true,
-                        showsRoundPointsBubble: true,
-                        highlightTopRank: true
-                    )
-                } else {
-                    noScoresCard
-                }
-
-                PrimaryButton(title: "Back to Home") {
-                    viewModel.backToHomeTapped()
+                    personasActions
                 }
             }
             .frame(maxWidth: .infinity)
@@ -56,15 +32,82 @@ struct SessionSummaryView: View {
         .navigationBarBackButtonHidden(true)
         .toolbarBackground(AppColor.background.opacity(0.9), for: .navigationBar)
         .toolbarColorScheme(.dark, for: .navigationBar)
-        .sheet(isPresented: $viewModel.showPartyPersonas) {
-            GameNightPersonasSheet(
-                cards: viewModel.personaCards,
-                gamesPlayedCount: viewModel.gamesPlayedCount
-            ) {
+        .onAppear { viewModel.onAppear() }
+    }
+
+    private var layoutTitle: String {
+        viewModel.phase == .personas ? "Party Personas" : "Game Night Over"
+    }
+
+    private var layoutSubtitle: String {
+        viewModel.phase == .personas
+            ? "How everyone showed up tonight"
+            : viewModel.subtitle
+    }
+
+    private var layoutIcon: String? {
+        viewModel.phase == .personas ? nil : "trophy.fill"
+    }
+
+    @ViewBuilder
+    private var scoreboardContent: some View {
+        if viewModel.showsGameOutcome {
+            sessionOutcomeHeader
+            GameFinalResultsSection(
+                insiderWord: viewModel.finalInsiderWord,
+                mismatchWord: viewModel.finalMismatchWord
+            )
+        }
+
+        if let leaderHeadline = viewModel.leaderHeadline {
+            Text(leaderHeadline)
+                .font(AppTypography.body)
+                .foregroundStyle(AppColor.label)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 8)
+        }
+
+        if viewModel.showsDetailedScoreboard {
+            FinalScoreboardView(
+                title: "Tonight's leaderboard",
+                rows: viewModel.finalScoreboardRows
+            )
+        } else if viewModel.showsLeaderboard {
+            SessionScoreboardView(
+                title: "Tonight's leaderboard",
+                rows: viewModel.scoreboardRows,
+                showsRoundPoints: true,
+                showsRoundPointsBubble: true,
+                highlightTopRank: true
+            )
+        } else {
+            noScoresCard
+        }
+    }
+
+    private var scoreboardActions: some View {
+        VStack(spacing: 12) {
+            SecondaryButton(title: "Party Personas") {
+                viewModel.showPersonasTapped()
+            }
+
+            PrimaryButton(title: "Back to Home") {
                 viewModel.backToHomeTapped()
             }
         }
-        .onAppear { viewModel.onAppear() }
+    }
+
+    private var personasActions: some View {
+        VStack(spacing: 12) {
+            SecondaryButton(title: "Back to Scores") {
+                viewModel.backToScoresTapped()
+            }
+
+            PrimaryButton(title: "Back to Home") {
+                viewModel.backToHomeTapped()
+            }
+        }
     }
 
     private var sessionOutcomeHeader: some View {

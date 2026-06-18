@@ -160,6 +160,41 @@ struct SessionWinCheckerTests {
         #expect(SessionWinChecker.checkWinner(players: players, settings: .default) == .insiderSideWins)
     }
 
+    @Test func gameContinuesWhenMismatchEliminatedAndGhostRemains() {
+        var settings = GameSettings.default
+        settings.ghostEnabled = true
+        let players = [
+            PlayerSlot(displayName: "A", avatarColor: .red, assignment: RoleAssignment(role: .insider, word: "A")),
+            PlayerSlot(displayName: "B", avatarColor: .blue, assignment: RoleAssignment(role: .insider, word: "A")),
+            PlayerSlot(displayName: "C", avatarColor: .green, assignment: RoleAssignment(role: .insider, word: "A")),
+            PlayerSlot(displayName: "D", avatarColor: .orange, assignment: RoleAssignment(role: .mismatch, word: "B"), isEliminated: true),
+            PlayerSlot(displayName: "E", avatarColor: .purple, assignment: RoleAssignment(role: .ghost))
+        ]
+        #expect(SessionWinChecker.checkWinner(players: players, settings: settings) == nil)
+    }
+
+    @Test func loneGhostDoesNotWinOnHeadcountTieAfterMismatchEliminated() {
+        var settings = GameSettings.default
+        settings.ghostEnabled = true
+        let players = [
+            PlayerSlot(displayName: "A", avatarColor: .red, assignment: RoleAssignment(role: .insider, word: "A")),
+            PlayerSlot(displayName: "B", avatarColor: .blue, assignment: RoleAssignment(role: .mismatch, word: "B"), isEliminated: true),
+            PlayerSlot(displayName: "C", avatarColor: .green, assignment: RoleAssignment(role: .ghost))
+        ]
+        #expect(SessionWinChecker.checkWinner(players: players, settings: settings) == nil)
+    }
+
+    @Test func allianceGameContinuesWhenOnlyGhostRemainsWithInsiders() {
+        var settings = GameSettings.default
+        settings.mismatchGhostAlliance = true
+        let players = [
+            PlayerSlot(displayName: "A", avatarColor: .red, assignment: RoleAssignment(role: .insider, word: "A")),
+            PlayerSlot(displayName: "B", avatarColor: .blue, assignment: RoleAssignment(role: .mismatch, word: "B"), isEliminated: true),
+            PlayerSlot(displayName: "C", avatarColor: .green, assignment: RoleAssignment(role: .ghost"))
+        ]
+        #expect(SessionWinChecker.checkWinner(players: players, settings: settings) == nil)
+    }
+
     @Test func mismatchWinsWhenAllInsidersEliminated() {
         let players = [
             PlayerSlot(displayName: "A", avatarColor: .red, assignment: RoleAssignment(role: .insider, word: "A"), isEliminated: true),
@@ -644,6 +679,10 @@ struct GhostGuessTests {
             return
         }
         store.eliminate(playerId: mismatchId)
+
+        #expect(store.isSessionComplete == false)
+        #expect(store.sessionWinner == nil)
+
         store.continueAfterElimination()
 
         guard let ghostId = store.currentSession?.players.first(where: { $0.assignment?.role == .ghost })?.id else {
@@ -1133,6 +1172,21 @@ struct ProfileRepositoryTests {
         let viewModel = LobbyViewModel(dependencies: dependencies)
 
         viewModel.newPlayerName = "Fr"
+        #expect(viewModel.profileSuggestions.isEmpty)
+
+        viewModel.newPlayerName = "Fre"
+        #expect(viewModel.profileSuggestions.map(\.name) == ["Freya"])
+    }
+
+    @Test @MainActor func profileSuggestionsAreCaseSensitive() throws {
+        let dependencies = try AppDependencies.makeForTesting()
+        let repository = dependencies.profileRepository
+        _ = try repository.create(name: "Freya", avatarColor: .green)
+
+        dependencies.gameSessionStore.createSession()
+        let viewModel = LobbyViewModel(dependencies: dependencies)
+
+        viewModel.newPlayerName = "fre"
         #expect(viewModel.profileSuggestions.isEmpty)
 
         viewModel.newPlayerName = "Fre"
