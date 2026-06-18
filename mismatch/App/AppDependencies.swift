@@ -33,7 +33,7 @@ final class AppDependencies {
         self.hostPreferencesStore = HostPreferencesStore()
     }
 
-    init() {
+    convenience init() {
         let container: ModelContainer
         do {
             container = try SwiftDataContainer.makeProduction()

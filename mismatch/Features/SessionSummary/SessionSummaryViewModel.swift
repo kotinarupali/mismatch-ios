@@ -7,8 +7,6 @@ final class SessionSummaryViewModel {
 
     var showPartyPersonas = false
 
-    var isRedistributing = false
-
     init(dependencies: AppDependencies) {
         self.dependencies = dependencies
     }
@@ -18,11 +16,15 @@ final class SessionSummaryViewModel {
     }
 
     var scoreboardRows: [SessionScoreRow] {
-        dependencies.gameSessionStore.sessionScoreboard(showsRoundPoints: false)
+        dependencies.gameSessionStore.sessionSummaryScoreboard()
+    }
+
+    var showsLeaderboard: Bool {
+        gamesPlayedCount > 0 || !scoreboardRows.isEmpty
     }
 
     var hasScores: Bool {
-        scoreboardRows.contains { $0.sessionScore > 0 }
+        scoreboardRows.contains { $0.sessionScore > 0 || $0.roundPoints > 0 }
     }
 
     var leaderHeadline: String? {
@@ -83,31 +85,18 @@ final class SessionSummaryViewModel {
         dependencies.gameSessionStore.playerPersonaCards()
     }
 
-    var showsPartyPersonas: Bool {
-        !personaCards.isEmpty
+    var mismatchGhostAllianceEnabled: Bool {
+        dependencies.gameSessionStore.currentSession?.settings.mismatchGhostAlliance ?? false
     }
 
     func onAppear() {
         applyProfileStatsIfNeeded()
-    }
-
-    func openPartyPersonas() {
         showPartyPersonas = true
     }
 
-    func playAgainTapped() {
-        guard !isRedistributing else { return }
-        Task { await playAgain() }
-    }
-
-    func newGameNightTapped() {
+    func backToHomeTapped() {
+        showPartyPersonas = false
         dependencies.newGameNight()
-    }
-
-    private func playAgain() async {
-        isRedistributing = true
-        defer { isRedistributing = false }
-        await dependencies.playAgainSameGroup()
     }
 
     private func applyProfileStatsIfNeeded() {

@@ -970,6 +970,43 @@ struct ScoringEngineTests {
         #expect(store.roundsPlayed == 0)
     }
 
+    @Test @MainActor func sessionScoresPersistAcrossPlayAgain() throws {
+        let dependencies = AppDependencies()
+        let store = dependencies.gameSessionStore
+        var settings = GameSettings.default
+        settings.ghostEnabled = false
+        store.createSession(settings: settings)
+        store.setPlayers((1...4).map { index in
+            PlayerSlot(displayName: "P\(index)", avatarColor: AvatarColor.forIndex(index))
+        })
+
+        let pair = WordPair(id: "1", insiderWord: "Apple", mismatchWord: "Apricot", category: "Fruit")
+        try store.distributeRoles(wordPair: pair)
+
+        let insiderIds = store.currentSession!.players
+            .filter { $0.assignment?.role == .insider }
+            .map(\.id)
+        guard insiderIds.count >= 2 else {
+            Issue.record("Expected at least two insiders.")
+            return
+        }
+
+        store.eliminate(playerId: insiderIds[0])
+        store.continueAfterElimination()
+        store.eliminate(playerId: insiderIds[1])
+
+        let scoresAfterGameOne = store.currentSession!.players.map(\.sessionScore)
+        #expect(scoresAfterGameOne.contains { $0 > 0 })
+
+        store.resetRoundForPlayAgain()
+
+        #expect(store.currentSession!.players.map(\.sessionScore) == scoresAfterGameOne)
+
+        store.markSessionEnded()
+        let summaryRows = store.sessionSummaryScoreboard()
+        #expect(summaryRows.contains { $0.sessionScore > 0 })
+    }
+
     @Test func personaEngineAssignsPartyLegendToTopScorer() {
         let alex = UUID()
         let jordan = UUID()

@@ -4,7 +4,12 @@ struct SessionScoreboardView: View {
     let title: String
     let rows: [SessionScoreRow]
     var showsRoundPoints: Bool = true
+    var showsRoundPointsBubble: Bool = false
     var highlightTopRank: Bool = false
+
+    private let avatarSize: CGFloat = 40
+    private let crownSlotHeight: CGFloat = 18
+    private let columnWidth: CGFloat = 44
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -38,7 +43,7 @@ struct SessionScoreboardView: View {
                 .frame(width: 24, alignment: .center)
                 .accessibilityHidden(true)
 
-            AvatarView(name: row.displayName, color: row.avatarColor, size: 40)
+            playerColumn(row, isLeader: isLeader)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(row.displayName)
@@ -46,11 +51,11 @@ struct SessionScoreboardView: View {
                     .foregroundStyle(AppColor.label)
                     .lineLimit(1)
 
-                if showsRoundPoints, row.roundPoints > 0 {
+                if showsRoundPoints, !showsRoundPointsBubble, row.roundPoints > 0 {
                     Text("+\(row.roundPoints) this round")
                         .font(AppTypography.caption)
                         .foregroundStyle(AppColor.success)
-                } else if showsRoundPoints, row.roundPoints == 0, !highlightTopRank {
+                } else if showsRoundPoints, !showsRoundPointsBubble, row.roundPoints == 0, !highlightTopRank {
                     Text("No points this round")
                         .font(AppTypography.caption)
                         .foregroundStyle(AppColor.secondaryLabel)
@@ -59,10 +64,7 @@ struct SessionScoreboardView: View {
 
             Spacer(minLength: 8)
 
-            Text("\(row.sessionScore)")
-                .font(.system(size: 22, weight: .bold, design: .rounded))
-                .foregroundStyle(isLeader ? AppColor.warning : AppColor.label)
-                .accessibilityHidden(true)
+            scoreColumn(row, isLeader: isLeader)
         }
         .padding(.vertical, 8)
         .padding(.horizontal, 10)
@@ -71,12 +73,56 @@ struct SessionScoreboardView: View {
         .accessibilityLabel(scoreRowAccessibilityLabel(for: row, isLeader: isLeader))
     }
 
+    private func playerColumn(_ row: SessionScoreRow, isLeader: Bool) -> some View {
+        VStack(spacing: 4) {
+            ZStack {
+                if isLeader {
+                    Image(systemName: "crown.fill")
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundStyle(AppColor.warning)
+                        .shadow(color: AppColor.warning.opacity(0.5), radius: 5, y: 2)
+                }
+            }
+            .frame(width: columnWidth, height: crownSlotHeight)
+
+            AvatarView(name: row.displayName, color: row.avatarColor, size: avatarSize)
+        }
+        .frame(width: columnWidth, alignment: .center)
+    }
+
+    private func scoreColumn(_ row: SessionScoreRow, isLeader: Bool) -> some View {
+        HStack(spacing: 8) {
+            if showsRoundPointsBubble, row.roundPoints > 0 {
+                Text("+\(row.roundPoints)")
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppColor.success)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(AppColor.success.opacity(0.14))
+                    .clipShape(Capsule())
+            }
+
+            Text("\(row.sessionScore)")
+                .font(.system(size: 22, weight: .bold, design: .rounded))
+                .foregroundStyle(isLeader ? AppColor.warning : AppColor.label)
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(scoreColumnAccessibilityLabel(for: row))
+    }
+
+    private func scoreColumnAccessibilityLabel(for row: SessionScoreRow) -> String {
+        if showsRoundPointsBubble, row.roundPoints > 0 {
+            return "\(row.sessionScore) total points, plus \(row.roundPoints) this game"
+        }
+        return "\(row.sessionScore) total points"
+    }
+
     private func scoreRowAccessibilityLabel(for row: SessionScoreRow, isLeader: Bool) -> String {
         var label = "Rank \(row.rank), \(row.displayName), \(row.sessionScore) total points"
         if isLeader {
             label += ", leading"
         }
-        if showsRoundPoints, row.roundPoints > 0 {
+        if showsRoundPoints, !showsRoundPointsBubble, row.roundPoints > 0 {
             label += ", plus \(row.roundPoints) this round"
         }
         return label
@@ -170,7 +216,8 @@ struct RoundScoreBreakdownView: View {
     SessionScoreboardView(
         title: "Tonight's scores",
         rows: ScoringEngine.sampleScoreboard(),
-        showsRoundPoints: false,
+        showsRoundPoints: true,
+        showsRoundPointsBubble: true,
         highlightTopRank: true
     )
     .padding()

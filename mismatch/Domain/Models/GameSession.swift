@@ -22,6 +22,9 @@ struct GameSession: Identifiable, Codable, Equatable, Sendable {
     var sessionWinBonusesApplied: Bool
     var gamesPlayedCount: Int
     var profileStatsApplied: Bool
+    var lastCompletedGamePointsByPlayer: [UUID: Int]
+    var summaryScoreByPlayer: [UUID: Int]
+    var summaryLastGamePointsByPlayer: [UUID: Int]
 
     init(
         id: UUID = UUID(),
@@ -44,7 +47,10 @@ struct GameSession: Identifiable, Codable, Equatable, Sendable {
         sessionEndScoreEvents: [ScoreEvent] = [],
         sessionWinBonusesApplied: Bool = false,
         gamesPlayedCount: Int = 0,
-        profileStatsApplied: Bool = false
+        profileStatsApplied: Bool = false,
+        lastCompletedGamePointsByPlayer: [UUID: Int] = [:],
+        summaryScoreByPlayer: [UUID: Int] = [:],
+        summaryLastGamePointsByPlayer: [UUID: Int] = [:]
     ) {
         self.id = id
         self.createdAt = createdAt
@@ -67,6 +73,9 @@ struct GameSession: Identifiable, Codable, Equatable, Sendable {
         self.sessionWinBonusesApplied = sessionWinBonusesApplied
         self.gamesPlayedCount = gamesPlayedCount
         self.profileStatsApplied = profileStatsApplied
+        self.lastCompletedGamePointsByPlayer = lastCompletedGamePointsByPlayer
+        self.summaryScoreByPlayer = summaryScoreByPlayer
+        self.summaryLastGamePointsByPlayer = summaryLastGamePointsByPlayer
     }
 
     var playerCount: Int { players.count }

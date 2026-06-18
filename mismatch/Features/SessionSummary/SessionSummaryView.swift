@@ -28,30 +28,20 @@ struct SessionSummaryView: View {
                         .padding(.horizontal, 8)
                 }
 
-                if viewModel.hasScores {
+                if viewModel.showsLeaderboard {
                     SessionScoreboardView(
                         title: "Tonight's leaderboard",
                         rows: viewModel.scoreboardRows,
-                        showsRoundPoints: false,
+                        showsRoundPoints: true,
+                        showsRoundPointsBubble: true,
                         highlightTopRank: true
                     )
                 } else {
                     noScoresCard
                 }
 
-                if viewModel.showsPartyPersonas {
-                    SecondaryButton(title: "Party Personas") {
-                        viewModel.openPartyPersonas()
-                    }
-                }
-
-                PrimaryButton(title: viewModel.isRedistributing ? "Setting up…" : "Play Again") {
-                    viewModel.playAgainTapped()
-                }
-                .disabled(viewModel.isRedistributing)
-
-                SecondaryButton(title: "New Game Night") {
-                    viewModel.newGameNightTapped()
+                PrimaryButton(title: "Back to Home") {
+                    viewModel.backToHomeTapped()
                 }
             }
             .frame(maxWidth: .infinity)
@@ -66,14 +56,19 @@ struct SessionSummaryView: View {
                 cards: viewModel.personaCards,
                 gamesPlayedCount: viewModel.gamesPlayedCount
             ) {
-                // Stay on session summary after personas.
+                viewModel.backToHomeTapped()
             }
         }
         .onAppear { viewModel.onAppear() }
     }
 
     private var sessionOutcomeHeader: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 16) {
+            Image(systemName: "crown.fill")
+                .font(.system(size: 32, weight: .bold))
+                .foregroundStyle(AppColor.warning)
+                .shadow(color: AppColor.warning.opacity(0.5), radius: 6, y: 2)
+
             HStack(spacing: 10) {
                 ForEach(viewModel.winningRolesOrdered, id: \.self) { role in
                     RoleIconBadge(role: role, size: .extraLarge)
@@ -82,19 +77,32 @@ struct SessionSummaryView: View {
 
             if let headline = viewModel.winnerHeadline {
                 Text(headline)
-                    .font(AppTypography.title)
-                    .foregroundStyle(AppColor.label)
+                    .font(.system(size: 36, weight: .bold, design: .rounded))
+                    .foregroundStyle(winnerHeadlineColor)
                     .multilineTextAlignment(.center)
             }
 
             if !viewModel.winnerPlayerNames.isEmpty {
                 Text(viewModel.winnerPlayerNames.joined(separator: " · "))
-                    .font(AppTypography.body)
-                    .foregroundStyle(AppColor.secondaryLabel)
+                    .font(AppTypography.title)
+                    .foregroundStyle(AppColor.label)
                     .multilineTextAlignment(.center)
             }
         }
         .frame(maxWidth: .infinity)
+        .padding(.vertical, 12)
+        .padding(.horizontal, 8)
+    }
+
+    private var winnerHeadlineColor: Color {
+        guard let outcome = viewModel.sessionOutcome else { return AppColor.label }
+        let roles = outcome.winningRoles(
+            allianceEnabled: viewModel.mismatchGhostAllianceEnabled
+        )
+        if roles.contains(.ghost), roles.contains(.mismatch) { return AppColor.accent }
+        if roles.contains(.ghost) { return Color(red: 0.72, green: 0.55, blue: 1.0) }
+        if roles.contains(.mismatch) { return AppColor.warning }
+        return AppColor.success
     }
 
     private var noScoresCard: some View {

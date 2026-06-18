@@ -270,6 +270,12 @@ final class GameSessionStore {
 
     func resetRoundForPlayAgain() {
         guard var session = currentSession else { return }
+
+        let completedEvents = session.rounds.flatMap(\.scoreEvents) + session.sessionEndScoreEvents
+        if !completedEvents.isEmpty {
+            session.lastCompletedGamePointsByPlayer = ScoringEngine.pointsByPlayer(from: completedEvents)
+        }
+
         session.state = .lobby
         session.rounds = []
         session.currentRoundIndex = 0
@@ -285,6 +291,8 @@ final class GameSessionStore {
         session.sessionEndScoreEvents = []
         session.sessionWinBonusesApplied = false
         session.profileStatsApplied = false
+        session.summaryScoreByPlayer = [:]
+        session.summaryLastGamePointsByPlayer = [:]
         session.players = session.players.map { player in
             var updated = player
             updated.assignment = nil
@@ -293,7 +301,6 @@ final class GameSessionStore {
             updated.pickedCardIndex = nil
             updated.cardToken = nil
             updated.cardURL = nil
-            updated.sessionScore = 0
             return updated
         }
         currentSession = session
@@ -397,7 +404,11 @@ final class GameSessionStore {
         return session.rounds.flatMap(\.scoreEvents) + session.sessionEndScoreEvents
     }
 
-    func sessionScoreboard(roundPoints: [UUID: Int]? = nil, showsRoundPoints: Bool = true) -> [SessionScoreRow] {
+    func sessionScoreboard(
+        roundPoints: [UUID: Int]? = nil,
+        showsRoundPoints: Bool = true,
+        scoreOverride: [UUID: Int]? = nil
+    ) -> [SessionScoreRow] {
         guard let session = currentSession else { return [] }
         let roundLookup = roundPoints ?? ScoringEngine.pointsByPlayer(from: currentRoundScoreEvents)
         let rows = session.players.map { player in
@@ -405,7 +416,7 @@ final class GameSessionStore {
                 id: player.id,
                 displayName: player.isHost ? "You" : player.displayName,
                 avatarColor: player.avatarColor,
-                sessionScore: player.sessionScore,
+                sessionScore: scoreOverride?[player.id] ?? player.sessionScore,
                 roundPoints: showsRoundPoints ? (roundLookup[player.id] ?? 0) : 0,
                 isHost: player.isHost,
                 rank: 0
@@ -422,10 +433,51 @@ final class GameSessionStore {
         return SessionScoreboardRanker.assignSharedRanks(to: rows)
     }
 
+    func sessionSummaryScoreboard() -> [SessionScoreRow] {
+        guard let session = currentSession else { return [] }
+
+        let totals = !session.summaryScoreByPlayer.isEmpty
+            ? session.summaryScoreByPlayer
+            : Dictionary(uniqueKeysWithValues: session.players.map { ($0.id, $0.sessionScore) })
+
+        let lastGamePoints: [UUID: Int]
+        if !session.summaryLastGamePointsByPlayer.isEmpty {
+            lastGamePoints = session.summaryLastGamePointsByPlayer
+        } else {
+            let currentGamePoints = ScoringEngine.pointsByPlayer(from: allScoreEvents())
+            lastGamePoints = currentGamePoints.isEmpty
+                ? session.lastCompletedGamePointsByPlayer
+                : currentGamePoints
+        }
+
+        return sessionScoreboard(
+            roundPoints: lastGamePoints,
+            showsRoundPoints: true,
+            scoreOverride: totals
+        )
+    }
+
     func markSessionEnded() {
         guard var session = currentSession else { return }
+        captureSummaryScoreSnapshot(&session)
         session.state = .ended
         currentSession = session
+    }
+
+    private func captureSummaryScoreSnapshot(_ session: inout GameSession) {
+        let currentGamePoints = ScoringEngine.pointsByPlayer(
+            from: session.rounds.flatMap(\.scoreEvents) + session.sessionEndScoreEvents
+        )
+
+        session.summaryScoreByPlayer = Dictionary(
+            uniqueKeysWithValues: session.players.map { ($0.id, $0.sessionScore) }
+        )
+
+        if !currentGamePoints.isEmpty {
+            session.summaryLastGamePointsByPlayer = currentGamePoints
+        } else {
+            session.summaryLastGamePointsByPlayer = session.lastCompletedGamePointsByPlayer
+        }
     }
 
     func markProfileStatsApplied() {
