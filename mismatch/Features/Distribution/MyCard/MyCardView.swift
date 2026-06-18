@@ -25,8 +25,11 @@ struct MyCardView: View {
                             claimedCards: sessionStore.claimedCards(),
                             canGhostRoleSwap: viewModel.canGhostRoleSwap,
                             onGhostRoleSwap: { viewModel.swapGhostRole() },
-                            onComplete: { cardIndex in
-                                viewModel.markOpened(cardIndex: cardIndex)
+                            onComplete: { cardIndex, attemptedGhostRoleSwap in
+                                viewModel.markOpened(
+                                    cardIndex: cardIndex,
+                                    attemptedGhostRoleSwap: attemptedGhostRoleSwap
+                                )
                                 dismiss()
                             }
                         )

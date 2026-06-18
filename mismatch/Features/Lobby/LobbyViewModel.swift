@@ -47,7 +47,10 @@ final class LobbyViewModel {
         distributionMode = Self.resolvedDistributionMode(settings.distributionMode)
         cloudGuestVotingEnabled = settings.cloudGuestVotingEnabled
 
-        seatedPlayers = loadSeatedPlayers(from: dependencies.gameSessionStore.currentSession)
+        seatedPlayers = Self.loadSeatedPlayers(
+            from: dependencies.gameSessionStore.currentSession,
+            dependencies: dependencies
+        )
         reservedHostId = dependencies.gameSessionStore.currentSession?.players.first(where: \.isHost)?.id
 
         reconcileHostSeat()
@@ -74,7 +77,10 @@ final class LobbyViewModel {
         ghostDisabledByUser = playerCount >= RoleDistributionTable.minimumPlayerCountForGhost
             && !settings.ghostEnabled
 
-        seatedPlayers = loadSeatedPlayers(from: dependencies.gameSessionStore.currentSession)
+        seatedPlayers = Self.loadSeatedPlayers(
+            from: dependencies.gameSessionStore.currentSession,
+            dependencies: dependencies
+        )
         reservedHostId = dependencies.gameSessionStore.currentSession?.players.first(where: \.isHost)?.id
         newPlayerName = ""
         isDistributing = false
@@ -85,7 +91,10 @@ final class LobbyViewModel {
         syncSession()
     }
 
-    private func loadSeatedPlayers(from session: GameSession?) -> [LobbySeatedPlayer] {
+    private static func loadSeatedPlayers(
+        from session: GameSession?,
+        dependencies: AppDependencies
+    ) -> [LobbySeatedPlayer] {
         let players = session?.players ?? []
         let order = session?.seatingOrderPlayerIds ?? []
         let lookup = Dictionary(uniqueKeysWithValues: players.map { ($0.id, $0) })
@@ -94,7 +103,7 @@ final class LobbyViewModel {
         return ordered.map { player in
             LobbySeatedPlayer(
                 id: player.id,
-                displayName: resolvedPlayerDisplayName(player),
+                displayName: resolvedPlayerDisplayName(player, dependencies: dependencies),
                 isHost: player.isHost,
                 avatarColor: player.avatarColor,
                 profileId: player.profileId
@@ -102,15 +111,22 @@ final class LobbyViewModel {
         }
     }
 
+    private static func resolvedPlayerDisplayName(
+        _ player: PlayerSlot,
+        dependencies: AppDependencies
+    ) -> String {
+        if player.isHost, player.displayName == "You" || player.displayName.isEmpty {
+            return dependencies.hostPreferencesStore.load().resolvedHostDisplayName
+        }
+        return player.displayName
+    }
+
     private var preferredHostDisplayName: String {
         dependencies.hostPreferencesStore.load().resolvedHostDisplayName
     }
 
     private func resolvedPlayerDisplayName(_ player: PlayerSlot) -> String {
-        if player.isHost, player.displayName == "You" || player.displayName.isEmpty {
-            return preferredHostDisplayName
-        }
-        return player.displayName
+        Self.resolvedPlayerDisplayName(player, dependencies: dependencies)
     }
 
     func openChangePlayerPicker(for playerId: UUID) {

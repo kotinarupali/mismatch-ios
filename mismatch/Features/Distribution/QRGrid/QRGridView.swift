@@ -14,7 +14,7 @@ struct QRGridView: View {
         PlaceholderScreenLayout(
             title: "Scan to Join",
             subtitle: viewModel.statusMessage,
-            icon: "qrcode.viewfinder",
+            showsBrandLogo: true,
             roomStyle: .distribution
         ) {
             VStack(spacing: 16) {
@@ -89,15 +89,22 @@ struct QRGridView: View {
                 .multilineTextAlignment(.center)
 
             if let image = viewModel.qrImage {
-                Image(uiImage: image)
-                    .interpolation(.none)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 220, height: 220)
-                    .padding(16)
-                    .background(Color.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                    .accessibilityLabel("Shared game QR code")
+                ZStack {
+                    RoundedRectangle(cornerRadius: 24, style: .continuous)
+                        .fill(AppColor.heroGradient)
+                        .frame(width: 252, height: 252)
+                        .shadow(color: BrandPalette.ghostMid.opacity(0.35), radius: 16, y: 8)
+
+                    Image(uiImage: image)
+                        .interpolation(.none)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 220, height: 220)
+                        .padding(16)
+                        .background(Color.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                }
+                .accessibilityLabel("Shared game QR code")
             }
 
             if let url = viewModel.sharedJoinURL {

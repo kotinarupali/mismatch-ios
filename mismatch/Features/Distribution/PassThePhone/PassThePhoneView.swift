@@ -2,6 +2,12 @@ import SwiftUI
 
 struct PassThePhoneView: View {
     @Bindable var viewModel: PassThePhoneViewModel
+    @Bindable private var sessionStore: GameSessionStore
+
+    init(viewModel: PassThePhoneViewModel) {
+        self.viewModel = viewModel
+        _sessionStore = Bindable(viewModel.gameSessionStore)
+    }
 
     var body: some View {
         PlaceholderScreenLayout(
@@ -19,12 +25,17 @@ struct PassThePhoneView: View {
                     showRoleOnCard: viewModel.showRoleOnCard,
                     assignment: assignment,
                     insiderWord: viewModel.insiderWord,
-                    claimedCards: viewModel.claimedCards,
+                    claimedCards: sessionStore.claimedCards(),
                     nextPlayerName: viewModel.nextPlayerDisplayName,
                     showsInstructions: false,
                     canGhostRoleSwap: viewModel.canGhostRoleSwap,
                     onGhostRoleSwap: { viewModel.swapGhostRole() },
-                    onComplete: { viewModel.cardCompleted(cardIndex: $0) }
+                    onComplete: { cardIndex, attemptedGhostRoleSwap in
+                        viewModel.cardCompleted(
+                            cardIndex: cardIndex,
+                            attemptedGhostRoleSwap: attemptedGhostRoleSwap
+                        )
+                    }
                 )
                 .id(viewModel.currentPlayerId)
             } else if viewModel.isMissingRoleAssignments {

@@ -9,6 +9,8 @@ final class DiscussionViewModel {
     let timerDurationSeconds: Int
     var selectedPlayerId: UUID?
     var showConfirmDialog = false
+    var showNoConsensusConfirmDialog = false
+    var showNoConsensusUnavailableAlert = false
     var showPlayerRolePicker = false
     var playerToReveal: PlayerSlot?
     var guestVoteTallies: [UUID: Int] = [:]
@@ -111,6 +113,22 @@ final class DiscussionViewModel {
         return activePlayers.contains { $0.id == id }
     }
 
+    var noConsensusOutcome: RoundOutcome? {
+        guard let session = dependencies.gameSessionStore.currentSession else { return nil }
+        return SessionWinChecker.checkNoConsensusWinner(
+            players: session.players,
+            settings: session.settings
+        )
+    }
+
+    var noConsensusConfirmMessage: String {
+        guard let outcome = noConsensusOutcome else {
+            return "Insiders still outnumber outsiders — keep playing and pick someone to eliminate."
+        }
+        let alliance = dependencies.gameSessionStore.currentSession?.settings.mismatchGhostAlliance ?? false
+        return "\(outcome.celebrationHeadline(allianceEnabled: alliance)) End the game without an elimination?"
+    }
+
     func onAppear() {
         dependencies.gameSessionStore.updateState(.discussing)
         if let id = selectedPlayerId,
@@ -153,6 +171,21 @@ final class DiscussionViewModel {
         guard let id = selectedPlayerId else { return }
         dependencies.timerService.stop()
         dependencies.gameSessionStore.eliminate(playerId: id)
+        Task { await closeCloudGuestVoting() }
+        dependencies.router.navigate(to: .results)
+    }
+
+    func noConsensusEndTapped() {
+        if noConsensusOutcome == nil {
+            showNoConsensusUnavailableAlert = true
+            return
+        }
+        showNoConsensusConfirmDialog = true
+    }
+
+    func confirmNoConsensusEnd() {
+        guard dependencies.gameSessionStore.endGameOnNoConsensus() != nil else { return }
+        dependencies.timerService.stop()
         Task { await closeCloudGuestVoting() }
         dependencies.router.navigate(to: .results)
     }

@@ -51,6 +51,10 @@ struct DiscussionView: View {
                 ) {
                     viewModel.confirmVoteTapped()
                 }
+
+                SecondaryButton(title: "End game — no consensus") {
+                    viewModel.noConsensusEndTapped()
+                }
             }
             .frame(maxWidth: .infinity)
         }
@@ -81,6 +85,22 @@ struct DiscussionView: View {
         ) {
             viewModel.submitElimination()
         }
+        .confirmDialog(
+            isPresented: $viewModel.showNoConsensusConfirmDialog,
+            title: "End game on deadlock?",
+            message: viewModel.noConsensusConfirmMessage,
+            confirmTitle: "End Game"
+        ) {
+            viewModel.confirmNoConsensusEnd()
+        }
+        .alert(
+            "Can't end yet",
+            isPresented: $viewModel.showNoConsensusUnavailableAlert
+        ) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(viewModel.noConsensusConfirmMessage)
+        }
         .onAppear { viewModel.onAppear() }
         .onDisappear { viewModel.onDisappear() }
     }
@@ -108,6 +128,12 @@ struct DiscussionView: View {
                 viewModel.startRevoteTapped()
             }
             .disabled(viewModel.isStartingRevote)
+
+            if viewModel.noConsensusOutcome != nil {
+                SecondaryButton(title: "End game — no consensus") {
+                    viewModel.noConsensusEndTapped()
+                }
+            }
 
             Text("Guests vote again on their phones. Tied players can't be chosen. Or pick someone below to break the tie.")
                 .font(AppTypography.caption)

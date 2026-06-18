@@ -177,6 +177,21 @@ final class RemoteCardSessionClient {
         try validate(response: response)
     }
 
+    func swapGhostRole(token: String, playerId: UUID) async throws {
+        guard let baseURL = CloudCardConfig.baseURL else {
+            throw RemoteCardSessionError.notConfigured
+        }
+
+        let url = baseURL.appendingPathComponent("api/session/\(token)/swap-ghost")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONEncoder().encode(["playerId": playerId.uuidString])
+
+        let (_, response) = try await session.data(for: request)
+        try validate(response: response)
+    }
+
     func invalidate(token: String) async {
         guard let baseURL = CloudCardConfig.baseURL else { return }
 

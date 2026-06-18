@@ -15,7 +15,7 @@ struct CardPickView: View {
     var showsInstructions: Bool = true
     var canGhostRoleSwap: Bool = false
     var onGhostRoleSwap: (() -> RoleAssignment?)?
-    let onComplete: (Int) -> Void
+    let onComplete: (Int, Bool) -> Void
 
     @State private var phase: Phase = .pick
     @State private var selectedCardIndex: Int?
@@ -96,9 +96,6 @@ struct CardPickView: View {
                     } else {
                         Button {
                             selectedCardIndex = index
-                            if isSeekingNewRole {
-                                swappedAssignment = onGhostRoleSwap?()
-                            }
                             withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) {
                                 phase = .revealed
                             }
@@ -122,6 +119,8 @@ struct CardPickView: View {
 
             if canGhostRepick {
                 SecondaryButton(title: "Pick again for another role") {
+                    guard let swapped = onGhostRoleSwap?() else { return }
+                    swappedAssignment = swapped
                     passedGhostCardIndex = selectedCardIndex
                     isSeekingNewRole = true
                     selectedCardIndex = nil
@@ -183,9 +182,8 @@ struct CardPickView: View {
     }
 
     private func finishPick() {
-        if let selectedCardIndex {
-            onComplete(selectedCardIndex)
-        }
+        guard let selectedCardIndex else { return }
+        onComplete(selectedCardIndex, isSeekingNewRole)
     }
 
     private var faceDownCard: some View {

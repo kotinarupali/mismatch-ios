@@ -49,7 +49,6 @@ enum ScoringEngine {
                     events.append(ScoreEvent(playerId: player.id, reason: .ghostWinBonus))
                 }
             case .outsiderSideWins:
-                guard settings.mismatchGhostAlliance else { continue }
                 switch role {
                 case .mismatch:
                     events.append(ScoreEvent(playerId: player.id, reason: .mismatchWinBonus))

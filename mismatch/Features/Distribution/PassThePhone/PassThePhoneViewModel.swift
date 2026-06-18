@@ -78,6 +78,10 @@ final class PassThePhoneViewModel {
 
     var nextPlayerDisplayName: String? {
         guard currentIndex + 1 < passOrder.count else { return nil }
+        let nextId = passOrder[currentIndex + 1].id
+        if let live = dependencies.gameSessionStore.currentSession?.players.first(where: { $0.id == nextId }) {
+            return displayName(for: live)
+        }
         return displayName(for: passOrder[currentIndex + 1])
     }
 
@@ -88,11 +92,6 @@ final class PassThePhoneViewModel {
     var canGhostRoleSwap: Bool {
         guard let playerId = currentPlayerId else { return false }
         return dependencies.gameSessionStore.canSwapGhostRole(from: playerId)
-    }
-
-    func swapGhostRole() -> RoleAssignment? {
-        guard let playerId = currentPlayerId else { return nil }
-        return dependencies.gameSessionStore.swapGhostRoleAway(from: playerId)
     }
 
     var usesHeroTitle: Bool {
@@ -111,6 +110,10 @@ final class PassThePhoneViewModel {
 
     private var currentPlayer: PlayerSlot? {
         guard currentIndex < passOrder.count else { return nil }
+        let playerId = passOrder[currentIndex].id
+        if let live = dependencies.gameSessionStore.currentSession?.players.first(where: { $0.id == playerId }) {
+            return live
+        }
         return passOrder[currentIndex]
     }
 
@@ -124,9 +127,23 @@ final class PassThePhoneViewModel {
         awaitingHandoff = false
     }
 
-    func cardCompleted(cardIndex: Int) {
-        guard let player = currentPlayer else { return }
-        dependencies.gameSessionStore.markCardOpened(playerId: player.id, cardIndex: cardIndex)
+    func swapGhostRole() -> RoleAssignment? {
+        guard let playerId = currentPlayerId else { return nil }
+        guard let swapped = dependencies.gameSessionStore.swapGhostRoleAway(from: playerId) else { return nil }
+        syncPassOrderPlayer(playerId)
+        return swapped
+    }
+
+    func cardCompleted(cardIndex: Int, attemptedGhostRoleSwap: Bool = false) {
+        guard let playerId = currentPlayerId else { return }
+
+        if attemptedGhostRoleSwap,
+           dependencies.gameSessionStore.currentSession?.players.first(where: { $0.id == playerId })?.assignment?.role == .ghost {
+            _ = dependencies.gameSessionStore.swapGhostRoleAway(from: playerId)
+            syncPassOrderPlayer(playerId)
+        }
+
+        dependencies.gameSessionStore.markCardOpened(playerId: playerId, cardIndex: cardIndex)
         reloadPassState()
 
         if allCardsOpened {
@@ -187,6 +204,12 @@ final class PassThePhoneViewModel {
         passOrder = remaining
         currentIndex = 0
         awaitingHandoff = !remaining.isEmpty
+    }
+
+    private func syncPassOrderPlayer(_ playerId: UUID) {
+        guard let live = dependencies.gameSessionStore.currentSession?.players.first(where: { $0.id == playerId }),
+              let index = passOrder.firstIndex(where: { $0.id == playerId }) else { return }
+        passOrder[index] = live
     }
 
     private func displayName(for player: PlayerSlot) -> String {

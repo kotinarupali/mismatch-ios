@@ -48,9 +48,21 @@ final class MyCardViewModel {
     }
 
     func swapGhostRole() -> RoleAssignment? {
-        guard let hostId = dependencies.gameSessionStore.currentSession?.players
-            .first(where: \.isHost)?.id else { return nil }
-        return dependencies.gameSessionStore.swapGhostRoleAway(from: hostId)
+        guard let session = dependencies.gameSessionStore.currentSession,
+              let hostId = session.players.first(where: \.isHost)?.id else { return nil }
+        guard let swapped = dependencies.gameSessionStore.swapGhostRoleAway(from: hostId) else { return nil }
+
+        if session.cardDeliveryBackend == .cloud,
+           let token = session.joinSessionToken {
+            Task { [dependencies] in
+                try? await dependencies.remoteCardSessionClient.swapGhostRole(
+                    token: token,
+                    playerId: hostId
+                )
+            }
+        }
+
+        return swapped
     }
 
     func startCloudClaimRefresh() {
@@ -76,9 +88,15 @@ final class MyCardViewModel {
         refreshTask = nil
     }
 
-    func markOpened(cardIndex: Int) {
+    func markOpened(cardIndex: Int, attemptedGhostRoleSwap: Bool = false) {
         guard let hostId = dependencies.gameSessionStore.currentSession?.players
             .first(where: \.isHost)?.id else { return }
+
+        if attemptedGhostRoleSwap,
+           dependencies.gameSessionStore.currentSession?.players.first(where: { $0.id == hostId })?.assignment?.role == .ghost {
+            _ = swapGhostRole()
+        }
+
         dependencies.gameSessionStore.markCardOpened(playerId: hostId, cardIndex: cardIndex)
     }
 }

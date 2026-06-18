@@ -42,7 +42,7 @@ export class CardSession implements DurableObject {
       return this.initSession(request);
     }
     if (url.pathname === "/snapshot" && request.method === "GET") {
-      return this.snapshot();
+      return this.snapshot(request);
     }
     if (url.pathname === "/claim" && request.method === "POST") {
       return this.claim(request);
@@ -222,7 +222,16 @@ export class CardSession implements DurableObject {
       return json({ error: "unknown_player" }, 404);
     }
     if (this.session.players[ghostIndex].role !== "ghost") {
-      return json({ error: "swap_unavailable" }, 409);
+      const current = this.session.players[ghostIndex];
+      const payload: Record<string, unknown> = {
+        role: current.role,
+        showRoleOnCard: this.session.showRoleOnCard,
+        faceDownCardCount: this.session.faceDownCardCount,
+        revision: this.session.revision,
+      };
+      if (current.word) payload.word = current.word;
+      if (current.categoryHint) payload.categoryHint = current.categoryHint;
+      return json(payload);
     }
     if (!this.session.ghostPickAgainEnabled) {
       return json({ error: "swap_unavailable" }, 409);

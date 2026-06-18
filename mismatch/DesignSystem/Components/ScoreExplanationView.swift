@@ -65,7 +65,7 @@ struct ScoreExplanationView: View {
                 ruleRow(
                     points: ScoreReason.ghostWinBonus.points,
                     title: "Ghost win bonus",
-                    detail: "Surviving Ghosts get +3 when the Ghost side wins. With alliance on, surviving outsiders on the winning team each get +3."
+                    detail: "Surviving Ghosts get +3 when the Ghost side wins. When both outsiders win together, surviving Mismatch and Ghost players each get +3."
                 )
                 ruleRow(
                     points: ScoreReason.ghostCorrectGuess.points,

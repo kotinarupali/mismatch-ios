@@ -433,8 +433,7 @@
     } else if (data.word) {
       savePassedGhostCardIndex(null);
       lastGhostCardIndex = null;
-      body += '<p class="reveal-copy">Press and hold to reveal</p>';
-      body += '<div class="secret" id="secret">••••••</div>';
+      body += '<div class="secret shown word-reveal">' + escapeHtml(data.word) + '</div>';
     }
 
     body += '</div>';
@@ -471,7 +470,6 @@
     if (repick) {
       repick.onclick = function () {
         const passedIndex = claimedCardIndex != null ? claimedCardIndex : lastGhostCardIndex;
-        savePassedGhostCardIndex(passedIndex);
         fetch('/api/session/' + encodeURIComponent(sessionToken) + '/swap-ghost', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -482,23 +480,13 @@
             return r.json();
           })
           .then(function () {
+            savePassedGhostCardIndex(passedIndex);
             assignment = null;
             localStorage.removeItem('mismatch_assignment_' + sessionToken + '_' + selectedPlayerId);
             fetchSession().then(function (session) { renderPick(session, true); }).catch(showError);
           })
           .catch(showError);
       };
-    }
-
-    const secret = document.getElementById('secret');
-    if (secret && data.word) {
-      secret.addEventListener('touchstart', show, { passive: true });
-      secret.addEventListener('touchend', hide);
-      secret.addEventListener('mousedown', show);
-      secret.addEventListener('mouseup', hide);
-      secret.addEventListener('mouseleave', hide);
-      function show() { secret.textContent = data.word; secret.classList.add('shown'); }
-      function hide() { secret.textContent = '••••••'; secret.classList.remove('shown'); }
     }
   }
 

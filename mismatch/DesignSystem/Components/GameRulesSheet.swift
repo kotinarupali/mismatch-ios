@@ -104,9 +104,11 @@ struct GameRulesSheet: View {
             text: """
             Insiders win when every Mismatch (and Ghost, if enabled) has been eliminated.
 
-            Mismatch wins if all Insiders are eliminated while a Mismatch is still in the game — or if remaining Mismatch and Ghost players tie or outnumber the Insiders (Insiders can no longer control the vote).
+            Mismatch wins if all Insiders are eliminated while a Mismatch is still in the game — or automatically when only one Insider remains while any Mismatch or Ghost is still in the game (including when both a Mismatch and Ghost remain).
 
-            Ghost wins if all Insiders are eliminated, no Mismatch remains, and a Ghost is still in the game — if remaining Ghosts tie or outnumber Insiders, or if an eliminated Ghost guesses the secret word correctly.
+            Ghost wins if all Insiders are eliminated, no Mismatch remains, and a Ghost is still in the game — or automatically when only one Insider remains and only Ghost(s) are left among the outsiders, or if an eliminated Ghost guesses the secret word correctly.
+
+            With two or more Insiders and at least one outsider still in, the game continues — even at 2 vs 2. The host can end on no consensus from Discuss & Vote if outsiders tie or outnumber insiders and the group cannot agree on an elimination.
 
             With Mismatch & Ghost alliance enabled, outsiders share a team win — if either Mismatch or Ghost wins, the whole team wins.
             """

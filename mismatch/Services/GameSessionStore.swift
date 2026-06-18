@@ -104,9 +104,13 @@ final class GameSessionStore {
     /// Returns the new assignment for the player who gave up ghost.
     func swapGhostRoleAway(from playerId: UUID) -> RoleAssignment? {
         guard var session = currentSession else { return nil }
+        guard let ghostIndex = session.players.firstIndex(where: { $0.id == playerId }) else { return nil }
+
+        if session.players[ghostIndex].assignment?.role != .ghost {
+            return session.players[ghostIndex].assignment
+        }
+
         guard canSwapGhostRole(from: playerId) else { return nil }
-        guard let ghostIndex = session.players.firstIndex(where: { $0.id == playerId }),
-              session.players[ghostIndex].assignment?.role == .ghost else { return nil }
 
         let partnerIds = session.players.compactMap { player -> UUID? in
             guard player.id != playerId,
@@ -209,13 +213,24 @@ final class GameSessionStore {
         }
 
         if let assignments = snapshot.assignments {
+            let hostId = session.players.first(where: \.isHost)?.id
             for assignment in assignments {
                 guard let index = session.players.firstIndex(where: { $0.id == assignment.id }) else { continue }
-                session.players[index].assignment = RoleAssignment(
+                let incoming = RoleAssignment(
                     role: assignment.role,
                     word: assignment.word,
                     categoryHint: assignment.categoryHint
                 )
+                let current = session.players[index].assignment
+                if current == incoming { continue }
+                // Host may swap locally before the cloud POST completes; ignore stale ghost payloads.
+                if assignment.id == hostId,
+                   !session.players[index].hasOpenedCard,
+                   current?.role != .ghost,
+                   incoming.role == .ghost {
+                    continue
+                }
+                session.players[index].assignment = incoming
             }
         }
 
@@ -329,6 +344,25 @@ final class GameSessionStore {
         let activeIds = session.players.filter { !$0.isEliminated }.map(\.id)
         session.discussionStartPlayerId = (try? CryptoRandom.shuffled(activeIds).first) ?? activeIds.first
         currentSession = session
+    }
+
+    @discardableResult
+    func endGameOnNoConsensus() -> RoundOutcome? {
+        guard var session = currentSession else { return nil }
+        guard !isGhostGuessPending else { return nil }
+        guard let outcome = SessionWinChecker.checkNoConsensusWinner(
+            players: session.players,
+            settings: session.settings
+        ) else { return nil }
+
+        session.forcedSessionOutcome = outcome
+        let roundIndex = session.currentRoundIndex
+        if roundIndex < session.rounds.count, session.rounds[roundIndex].outcome == nil {
+            session.rounds[roundIndex].outcome = outcome
+        }
+        currentSession = session
+        applySessionWinBonusesIfNeeded()
+        return outcome
     }
 
     var hasRoleAssignments: Bool {
