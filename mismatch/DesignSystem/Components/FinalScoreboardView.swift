@@ -13,6 +13,7 @@ struct FinalScoreboardRow: Identifiable, Equatable, Sendable {
 }
 
 struct FinalScoreboardView: View {
+    var title: String = "Final scores"
     let rows: [FinalScoreboardRow]
 
     private let avatarSize: CGFloat = 44
@@ -31,7 +32,7 @@ struct FinalScoreboardView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Final scores")
+                Text(title)
                     .font(AppTypography.headline)
                     .foregroundStyle(AppColor.label)
 
@@ -93,12 +94,20 @@ struct FinalScoreboardView: View {
     }
 
     private func playerMeta(_ row: FinalScoreboardRow) -> some View {
-        HStack(spacing: 6) {
-            RoleIconBadge(role: row.role, size: .tiny)
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(spacing: 6) {
+                RoleIconBadge(role: row.role, size: .tiny)
 
-            Text(row.role.displayName)
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(roleColor(for: row.role))
+                Text(row.role.displayName)
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(roleColor(for: row.role))
+            }
+
+            if row.isEliminated {
+                Text("Voted out")
+                    .font(AppTypography.caption)
+                    .foregroundStyle(AppColor.accentSecondary)
+            }
         }
     }
 

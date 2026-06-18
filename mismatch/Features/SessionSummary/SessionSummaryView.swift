@@ -28,7 +28,12 @@ struct SessionSummaryView: View {
                         .padding(.horizontal, 8)
                 }
 
-                if viewModel.showsLeaderboard {
+                if viewModel.showsDetailedScoreboard {
+                    FinalScoreboardView(
+                        title: "Tonight's leaderboard",
+                        rows: viewModel.finalScoreboardRows
+                    )
+                } else if viewModel.showsLeaderboard {
                     SessionScoreboardView(
                         title: "Tonight's leaderboard",
                         rows: viewModel.scoreboardRows,

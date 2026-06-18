@@ -931,6 +931,43 @@ struct ScoringEngineTests {
         }
     }
 
+    @Test @MainActor func sessionSummaryFinalScoreboardIncludesRolesAndEliminations() throws {
+        let dependencies = AppDependencies()
+        let store = dependencies.gameSessionStore
+        var settings = GameSettings.default
+        settings.ghostEnabled = false
+        store.createSession(settings: settings)
+        store.setPlayers([
+            PlayerSlot(displayName: "Adrian", avatarColor: .orange),
+            PlayerSlot(displayName: "Carol", avatarColor: .green),
+            PlayerSlot(displayName: "You", avatarColor: .blue, isHost: true),
+            PlayerSlot(displayName: "Ben", avatarColor: .yellow)
+        ])
+
+        let pair = WordPair(id: "1", insiderWord: "Apple", mismatchWord: "Apricot", category: "Fruit")
+        try store.distributeRoles(wordPair: pair)
+
+        let mismatchId = store.currentSession!.players
+            .first(where: { $0.assignment?.role == .mismatch })?.id
+        guard let mismatchId else {
+            Issue.record("Expected mismatch player.")
+            return
+        }
+
+        store.eliminate(playerId: mismatchId)
+        store.markSessionEnded()
+
+        let rows = store.sessionSummaryFinalScoreboardRows()
+        #expect(rows.count == 4)
+
+        let mismatchRow = rows.first { $0.id == mismatchId }
+        #expect(mismatchRow?.role == .mismatch)
+        #expect(mismatchRow?.isEliminated == true)
+
+        let insiderRows = rows.filter { $0.role == .insider }
+        #expect(insiderRows.contains { $0.isWinner })
+    }
+
     @Test @MainActor func gamesPlayedCountIncrementsOnCompletionAndPersistsAcrossPlayAgain() throws {
         let dependencies = AppDependencies()
         let store = dependencies.gameSessionStore
@@ -1084,6 +1121,22 @@ struct ProfileRepositoryTests {
 
         #expect(resolved.name == "alex")
         #expect(try repository.fetchAll().count == 2)
+    }
+
+    @Test @MainActor func profileSuggestionsRequireThreeCharacters() throws {
+        let dependencies = try AppDependencies.makeForTesting()
+        let repository = dependencies.profileRepository
+        _ = try repository.create(name: "Freya", avatarColor: .green)
+        _ = try repository.create(name: "Adrian", avatarColor: .orange)
+
+        dependencies.gameSessionStore.createSession()
+        let viewModel = LobbyViewModel(dependencies: dependencies)
+
+        viewModel.newPlayerName = "Fr"
+        #expect(viewModel.profileSuggestions.isEmpty)
+
+        viewModel.newPlayerName = "Fre"
+        #expect(viewModel.profileSuggestions.map(\.name) == ["Freya"])
     }
 
     @Test @MainActor func addingLobbyPlayerCreatesProfileAutomatically() throws {

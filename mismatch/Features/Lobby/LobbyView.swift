@@ -13,9 +13,7 @@ struct LobbyView: View {
             roomStyle: .lobby
         ) {
             VStack(spacing: 20) {
-                SecondaryButton(title: "Add Player") {
-                    viewModel.openAddPlayerPicker()
-                }
+                LobbyAddPlayerField(viewModel: viewModel)
 
                 if let shortfallMessage = viewModel.playersShortfallMessage {
                     Text(shortfallMessage)
@@ -39,7 +37,7 @@ struct LobbyView: View {
                             Text("Seating order")
                                 .font(AppTypography.body)
                                 .foregroundStyle(AppColor.label)
-                            Text("Arrange players as they sit in the circle. Tap a seat to swap players.")
+                            Text("Arrange players as they sit in the circle. Type a name to add, or tap a seat to swap.")
                                 .font(AppTypography.caption)
                                 .foregroundStyle(AppColor.secondaryLabel)
                         }

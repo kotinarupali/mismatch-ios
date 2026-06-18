@@ -457,6 +457,27 @@ final class GameSessionStore {
         )
     }
 
+    func sessionSummaryFinalScoreboardRows() -> [FinalScoreboardRow] {
+        let reveals = Dictionary(uniqueKeysWithValues: finalPlayerReveals().map { ($0.id, $0) })
+        guard !reveals.isEmpty else { return [] }
+
+        let winnerIds = sessionWinnerPlayerIds()
+        return sessionSummaryScoreboard().map { row in
+            let reveal = reveals[row.id]
+            return FinalScoreboardRow(
+                id: row.id,
+                displayName: row.displayName,
+                avatarColor: row.avatarColor,
+                role: reveal?.role ?? .insider,
+                sessionScore: row.sessionScore,
+                pointsGained: row.roundPoints,
+                rank: row.rank,
+                isWinner: winnerIds.contains(row.id),
+                isEliminated: reveal?.isEliminated ?? false
+            )
+        }
+    }
+
     func markSessionEnded() {
         guard var session = currentSession else { return }
         captureSummaryScoreSnapshot(&session)

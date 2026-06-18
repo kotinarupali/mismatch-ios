@@ -19,6 +19,14 @@ final class SessionSummaryViewModel {
         dependencies.gameSessionStore.sessionSummaryScoreboard()
     }
 
+    var finalScoreboardRows: [FinalScoreboardRow] {
+        dependencies.gameSessionStore.sessionSummaryFinalScoreboardRows()
+    }
+
+    var showsDetailedScoreboard: Bool {
+        !finalScoreboardRows.isEmpty
+    }
+
     var showsLeaderboard: Bool {
         gamesPlayedCount > 0 || !scoreboardRows.isEmpty
     }

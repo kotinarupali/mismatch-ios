@@ -22,6 +22,8 @@ final class LobbyViewModel {
     var distributionMode: DistributionMode
     var cloudGuestVotingEnabled: Bool
     var seatedPlayers: [LobbySeatedPlayer]
+    var newPlayerName: String = ""
+    var savedProfiles: [PlayerProfile] = []
     var isDistributing = false
     var errorMessage: String?
     var showPlayerPicker = false
@@ -47,7 +49,12 @@ final class LobbyViewModel {
         reservedHostId = dependencies.gameSessionStore.currentSession?.players.first(where: \.isHost)?.id
 
         reconcileHostSeat()
+        reloadSavedProfiles()
         syncSession()
+    }
+
+    func reloadSavedProfiles() {
+        savedProfiles = (try? dependencies.profileRepository.fetchAll()) ?? []
     }
 
     func reloadFromSession() {
@@ -66,10 +73,12 @@ final class LobbyViewModel {
 
         seatedPlayers = Self.loadSeatedPlayers(from: dependencies.gameSessionStore.currentSession)
         reservedHostId = dependencies.gameSessionStore.currentSession?.players.first(where: \.isHost)?.id
+        newPlayerName = ""
         isDistributing = false
         errorMessage = nil
 
         reconcileHostSeat()
+        reloadSavedProfiles()
         syncSession()
     }
 
@@ -88,11 +97,6 @@ final class LobbyViewModel {
                 profileId: player.profileId
             )
         }
-    }
-
-    func openAddPlayerPicker() {
-        playerPickerTargetId = nil
-        showPlayerPicker = true
     }
 
     func openChangePlayerPicker(for playerId: UUID) {
@@ -127,7 +131,13 @@ final class LobbyViewModel {
 
         errorMessage = nil
         dismissPlayerPicker()
+        newPlayerName = ""
+        reloadSavedProfiles()
         syncSession()
+    }
+
+    func selectSuggestedProfile(_ profile: PlayerProfile) {
+        addPlayer(from: profile)
     }
 
     func addNewPlayer(named name: String) {
@@ -204,7 +214,21 @@ final class LobbyViewModel {
     }
 
     var canAddPlayer: Bool {
-        true
+        !newPlayerName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    var showsProfileSuggestions: Bool {
+        newPlayerName.trimmingCharacters(in: .whitespacesAndNewlines).count >= 3
+    }
+
+    var profileSuggestions: [PlayerProfile] {
+        let query = newPlayerName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard query.count >= 3 else { return [] }
+
+        let seatedProfileIds = Set(seatedPlayers.compactMap(\.profileId))
+        return savedProfiles.filter { profile in
+            !seatedProfileIds.contains(profile.id) && profile.name.contains(query)
+        }
     }
 
     var canContinue: Bool {
@@ -285,7 +309,9 @@ final class LobbyViewModel {
     }
 
     func addPlayer() {
-        openAddPlayerPicker()
+        let trimmed = newPlayerName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        addNewPlayer(named: trimmed)
     }
 
     func removePlayer(id: UUID) {
