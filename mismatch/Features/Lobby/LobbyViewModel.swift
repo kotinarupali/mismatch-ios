@@ -22,6 +22,7 @@ final class LobbyViewModel {
     var timerMinutes: Int
     var distributionMode: DistributionMode
     var cloudGuestVotingEnabled: Bool
+    var wordPackSummaries: [WordPackSummary] = []
     var seatedPlayers: [LobbySeatedPlayer]
     var newPlayerName: String = ""
     var savedProfiles: [PlayerProfile] = []
@@ -56,6 +57,7 @@ final class LobbyViewModel {
         reconcileHostSeat()
         reloadSavedProfiles()
         syncSession()
+        reloadWordPackSummaries()
     }
 
     func reloadSavedProfiles() {
@@ -89,6 +91,46 @@ final class LobbyViewModel {
         reconcileHostSeat()
         reloadSavedProfiles()
         syncSession()
+        reloadWordPackSummaries()
+    }
+
+    func reloadWordPackSummaries() {
+        let selectedIds = dependencies.gameSessionStore.currentSession?.settings.selectedWordPackIds
+            ?? GameSettings.defaultSelectedWordPackIds
+        wordPackSummaries = (try? dependencies.wordPairSelector.stats(for: selectedIds)) ?? []
+    }
+
+    func toggleWordPack(id: String) {
+        var selected = Set(
+            dependencies.gameSessionStore.currentSession?.settings.selectedWordPackIds
+                ?? GameSettings.defaultSelectedWordPackIds
+        )
+        if selected.contains(id) {
+            selected.remove(id)
+            guard !selected.isEmpty else { return }
+        } else {
+            selected.insert(id)
+        }
+
+        var settings = dependencies.gameSessionStore.currentSession?.settings ?? .default
+        settings.selectedWordPackIds = GameSettings.normalizedPackIds(Array(selected))
+        dependencies.gameSessionStore.updateSettings(settings)
+        reloadWordPackSummaries()
+    }
+
+    var selectedWordPackSummary: String {
+        let names = wordPackSummaries.filter(\.isSelected).map(\.displayName)
+        guard !names.isEmpty else { return "General" }
+        if names.count <= 2 {
+            return names.joined(separator: " + ")
+        }
+        return "\(names.prefix(2).joined(separator: " + ")) + \(names.count - 2) more"
+    }
+
+    private func selectedWordPackIds() -> [String] {
+        let ids = dependencies.gameSessionStore.currentSession?.settings.selectedWordPackIds
+            ?? GameSettings.defaultSelectedWordPackIds
+        return ids.isEmpty ? GameSettings.defaultSelectedWordPackIds : ids
     }
 
     private static func loadSeatedPlayers(
@@ -262,7 +304,9 @@ final class LobbyViewModel {
     }
 
     var canContinue: Bool {
-        totalPlayerCount >= minimumPlayers && !isDistributing
+        totalPlayerCount >= minimumPlayers
+            && !isDistributing
+            && wordPackSummaries.contains(where: \.isSelected)
     }
 
     var statusMessage: String {
@@ -280,7 +324,7 @@ final class LobbyViewModel {
     }
 
     var rulesSummary: String {
-        var parts = [distributionMode.displayName]
+        var parts = [selectedWordPackSummary, distributionMode.displayName]
         if hostIsPlaying { parts.append("You're playing") }
         if ghostEnabled { parts.append("Ghost") }
         if ghostEnabled && ghostPickAgainEnabled { parts.append("Ghost pick again") }
@@ -413,9 +457,10 @@ final class LobbyViewModel {
 
     private func performDistribution() async {
         do {
-            let wordPair = try dependencies.wordPairSelector.nextPair()
-            try dependencies.gameSessionStore.distributeRoles(wordPair: wordPair)
-            dependencies.wordPairSelector.markUsed(wordPair)
+            let selection = try dependencies.wordPairSelector.nextPair(packIds: selectedWordPackIds())
+            try dependencies.gameSessionStore.distributeRoles(wordPair: selection.pair)
+            dependencies.wordPairSelector.markUsed(selection)
+            reloadWordPackSummaries()
 
             switch distributionMode {
             case .passThePhone:
@@ -423,7 +468,7 @@ final class LobbyViewModel {
             case .cloudQR:
                 await startCloudQRDistribution()
             }
-        } catch WordPairSelectorError.noPairsAvailable {
+        } catch WordPairSelectorError.noPairsAvailable, WordPairSelectorError.noPacksSelected {
             errorMessage = "No word pairs available."
         } catch {
             errorMessage = "Could not distribute roles."

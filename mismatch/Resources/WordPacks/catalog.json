@@ -1,0 +1,24 @@
+{
+  "packs": [
+    {
+      "id": "general",
+      "displayName": "General",
+      "resourceName": "general"
+    },
+    {
+      "id": "hollywood_movies",
+      "displayName": "Hollywood Movies & Series",
+      "resourceName": "hollywood_movies"
+    },
+    {
+      "id": "indian_pop_culture",
+      "displayName": "Indian Pop Culture",
+      "resourceName": "indian_pop_culture"
+    },
+    {
+      "id": "pop_culture",
+      "displayName": "Pop Culture",
+      "resourceName": "pop_culture"
+    }
+  ]
+}

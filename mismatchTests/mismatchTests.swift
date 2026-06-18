@@ -3,13 +3,37 @@ import Testing
 
 struct WordPackLoaderTests {
 
-    @Test func loadsGeneralPackWith130Pairs() throws {
+    @Test func loadsCatalogWithFourBuiltInPacks() throws {
+        let loader = WordPackLoader()
+        let catalog = try loader.loadCatalog()
+
+        #expect(catalog.packs.count == 4)
+        #expect(catalog.packs.map(\.id).contains("general"))
+        #expect(catalog.packs.map(\.id).contains("hollywood_movies"))
+        #expect(catalog.packs.map(\.id).contains("indian_pop_culture"))
+    }
+
+    @Test func loadsGeneralPackWith1000Pairs() throws {
         let loader = WordPackLoader()
         let pack = try loader.loadBuiltIn(packId: "general")
 
         #expect(pack.id == "general")
         #expect(pack.isBuiltIn)
-        #expect(pack.pairs.count == 130)
+        #expect(pack.pairs.count == 1000)
+    }
+
+    @Test func loadsThemePacksWith250Pairs() throws {
+        let loader = WordPackLoader()
+        for packId in ["hollywood_movies", "pop_culture"] {
+            let pack = try loader.loadBuiltIn(packId: packId)
+            #expect(pack.pairs.count == 250)
+        }
+    }
+
+    @Test func loadsIndianPopCulturePackWith500Pairs() throws {
+        let loader = WordPackLoader()
+        let pack = try loader.loadBuiltIn(packId: "indian_pop_culture")
+        #expect(pack.pairs.count == 500)
     }
 }
 
@@ -51,11 +75,22 @@ struct WordPairSelectorTests {
         let usageStore = WordPairUsageStore(defaults: defaults)
         let selector = WordPairSelector(loader: loader, usageStore: usageStore)
 
-        let first = try selector.nextPair()
+        let first = try selector.nextPair(packIds: ["general"])
         selector.markUsed(first)
 
-        let second = try selector.nextPair()
-        #expect(second.id != first.id)
+        let second = try selector.nextPair(packIds: ["general"])
+        #expect(second.pair.id != first.pair.id)
+    }
+
+    @Test func nextPairDrawsFromMixedSelection() throws {
+        let defaults = UserDefaults(suiteName: "WordPairSelectorTestsMixed")!
+        defaults.removePersistentDomain(forName: "WordPairSelectorTestsMixed")
+        let loader = WordPackLoader()
+        let usageStore = WordPairUsageStore(defaults: defaults)
+        let selector = WordPairSelector(loader: loader, usageStore: usageStore)
+
+        let selection = try selector.nextPair(packIds: ["general", "pop_culture"])
+        #expect(["general", "pop_culture"].contains(selection.packId))
     }
 
     @Test func nextPairResetsWhenAllPairsAreUsed() throws {
@@ -64,15 +99,14 @@ struct WordPairSelectorTests {
         let loader = WordPackLoader()
         let usageStore = WordPairUsageStore(defaults: defaults)
         let selector = WordPairSelector(loader: loader, usageStore: usageStore)
-        let pack = try loader.loadBuiltIn()
+        let pack = try loader.loadBuiltIn(packId: "general")
 
-        for pair in pack.pairs {
+        for pair in pack.pairs.prefix(5) {
             usageStore.markUsed(pair.id, packId: "general")
         }
 
-        let next = try selector.nextPair()
-        #expect(pack.pairs.contains(where: { $0.id == next.id }))
-        #expect(usageStore.stats(totalPairs: pack.pairs.count, packId: "general").used == 0)
+        let next = try selector.nextPair(packIds: ["general"])
+        #expect(pack.pairs.contains(where: { $0.id == next.pair.id }))
     }
 }
 

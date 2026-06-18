@@ -1,0 +1,382 @@
+#!/usr/bin/env python3
+"""Build hollywood_pairs.json — popular, plot-similar movie & series pairs."""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+# Blockbusters & household-name series only. Pairs share genre, franchise, or story vibe.
+SIMILAR_PAIRS: list[tuple[str, str]] = [
+    # Harry Potter ↔ Lord of the Rings / Hobbit
+    ("Harry Potter and the Sorcerer's Stone", "The Lord of the Rings: The Fellowship of the Ring"),
+    ("Harry Potter and the Chamber of Secrets", "The Hobbit: An Unexpected Journey"),
+    ("Harry Potter and the Prisoner of Azkaban", "Fantastic Beasts and Where to Find Them"),
+    ("Harry Potter and the Goblet of Fire", "The Lord of the Rings: The Two Towers"),
+    ("Harry Potter and the Order of the Phoenix", "The Hobbit: The Desolation of Smaug"),
+    ("Harry Potter and the Half-Blood Prince", "Fantastic Beasts: The Crimes of Grindelwald"),
+    ("Harry Potter and the Deathly Hallows Part 1", "The Lord of the Rings: The Return of the King"),
+    ("Harry Potter and the Deathly Hallows Part 2", "The Hobbit: The Battle of the Five Armies"),
+    ("Fantastic Beasts: The Secrets of Dumbledore", "Percy Jackson and the Olympians"),
+    # Epic fantasy TV
+    ("Game of Thrones", "House of the Dragon"),
+    ("The Witcher", "The Rings of Power"),
+    ("Stranger Things", "Wednesday"),
+    ("The Last of Us", "The Walking Dead"),
+    ("Squid Game", "Money Heist"),
+    ("Breaking Bad", "Better Call Saul"),
+    ("Narcos", "Peaky Blinders"),
+    ("Bridgerton", "The Crown"),
+    ("Yellowstone", "1883"),
+    ("Loki", "WandaVision"),
+    ("The Mandalorian", "Obi-Wan Kenobi"),
+    ("One Piece", "Avatar: The Last Airbender"),
+    ("Euphoria", "Outer Banks"),
+    ("Grey's Anatomy", "House"),
+    ("Friends", "The Office"),
+    ("How I Met Your Mother", "The Big Bang Theory"),
+    ("Seinfeld", "Friends"),
+    ("The Simpsons", "Family Guy"),
+    ("South Park", "Rick and Morty"),
+    ("Sherlock", "House"),
+    ("Cobra Kai", "Karate Kid"),
+    ("Daredevil", "Jessica Jones"),
+    ("The Boys", "Invincible"),
+    # Star Wars
+    ("Star Wars: A New Hope", "Star Wars: The Empire Strikes Back"),
+    ("Star Wars: Return of the Jedi", "Star Wars: The Force Awakens"),
+    ("Star Wars: The Last Jedi", "Star Wars: The Rise of Skywalker"),
+    ("Rogue One: A Star Wars Story", "Solo: A Star Wars Story"),
+    ("The Phantom Menace", "Revenge of the Sith"),
+    ("Attack of the Clones", "Rogue One: A Star Wars Story"),
+    # Marvel — biggest hits
+    ("Iron Man", "Iron Man 2"),
+    ("Iron Man 3", "Captain America: The First Avenger"),
+    ("The Avengers", "Avengers: Age of Ultron"),
+    ("Avengers: Infinity War", "Avengers: Endgame"),
+    ("Captain America: The Winter Soldier", "Captain America: Civil War"),
+    ("Thor", "Thor: The Dark World"),
+    ("Thor: Ragnarok", "Thor: Love and Thunder"),
+    ("Guardians of the Galaxy", "Guardians of the Galaxy Vol. 2"),
+    ("Guardians of the Galaxy Vol. 3", "The Marvels"),
+    ("Ant-Man", "Ant-Man and the Wasp"),
+    ("Ant-Man and the Wasp: Quantumania", "Captain Marvel"),
+    ("Doctor Strange", "Doctor Strange in the Multiverse of Madness"),
+    ("Black Panther", "Black Panther: Wakanda Forever"),
+    ("Spider-Man: Homecoming", "Spider-Man: Far From Home"),
+    ("Spider-Man: No Way Home", "Spider-Man: Across the Spider-Verse"),
+    ("Spider-Man: Into the Spider-Verse", "Big Hero 6"),
+    ("Deadpool", "Deadpool 2"),
+    ("Deadpool & Wolverine", "Logan"),
+    ("X-Men", "X-Men: Days of Future Past"),
+    ("Black Widow", "Shang-Chi and the Legend of the Ten Rings"),
+    ("Eternals", "The Incredible Hulk"),
+    ("The Dark Knight", "Joker"),
+    ("The Batman", "Joker: Folie à Deux"),
+    # DC & superheroes
+    ("Wonder Woman", "Wonder Woman 1984"),
+    ("Aquaman", "Aquaman and the Lost Kingdom"),
+    ("Man of Steel", "Batman v Superman: Dawn of Justice"),
+    ("Justice League", "Zack Snyder's Justice League"),
+    ("Suicide Squad", "The Suicide Squad"),
+    ("Shazam!", "Shazam! Fury of the Gods"),
+    ("Superman", "Man of Steel"),
+    # Pixar & Disney animation megahits
+    ("Toy Story", "Toy Story 2"),
+    ("Toy Story 3", "Toy Story 4"),
+    ("Finding Nemo", "Finding Dory"),
+    ("The Incredibles", "Incredibles 2"),
+    ("Monsters, Inc.", "Monsters University"),
+    ("Inside Out", "Inside Out 2"),
+    ("Up", "Soul"),
+    ("Coco", "Encanto"),
+    ("Moana", "Moana 2"),
+    ("Frozen", "Frozen II"),
+    ("Zootopia", "Raya and the Last Dragon"),
+    ("The Lion King", "Aladdin"),
+    ("Beauty and the Beast", "The Little Mermaid"),
+    ("Tangled", "Brave"),
+    ("Cars", "Cars 2"),
+    ("Luca", "Turning Red"),
+    ("Elemental", "Wish"),
+    ("Wreck-It Ralph", "Ralph Breaks the Internet"),
+    # DreamWorks & family hits
+    ("Shrek", "Shrek 2"),
+    ("How to Train Your Dragon", "How to Train Your Dragon: The Hidden World"),
+    ("Kung Fu Panda", "Kung Fu Panda 4"),
+    ("Madagascar", "Madagascar 2"),
+    ("Despicable Me", "Despicable Me 2"),
+    ("Despicable Me 3", "Minions"),
+    ("Minions: The Rise of Gru", "Sing 2"),
+    ("The Secret Life of Pets", "Sing"),
+    ("Puss in Boots: The Last Wish", "Shrek Forever After"),
+    ("The Lego Movie", "The Lego Batman Movie"),
+    ("The Super Mario Bros. Movie", "Sonic the Hedgehog 2"),
+    ("Sonic the Hedgehog 3", "The Angry Birds Movie"),
+    # Box-office action & sci-fi
+    ("Avatar", "Avatar: The Way of Water"),
+    ("Titanic", "Avatar"),
+    ("Jurassic Park", "Jurassic World"),
+    ("Jurassic World", "Jurassic World: Fallen Kingdom"),
+    ("Jurassic World Dominion", "Jurassic Park III"),
+    ("Star Wars: The Force Awakens", "Star Wars: The Last Jedi"),
+    ("Dune", "Dune: Part Two"),
+    ("Inception", "Interstellar"),
+    ("The Matrix", "The Matrix Resurrections"),
+    ("Tenet", "Oppenheimer"),
+    ("Independence Day", "War of the Worlds"),
+    ("Transformers", "Transformers: Dark of the Moon"),
+    ("Transformers: Age of Extinction", "Transformers: Rise of the Beasts"),
+    ("Bumblebee", "Transformers: Rise of the Beasts"),
+    ("Pacific Rim", "Godzilla vs. Kong"),
+    ("Godzilla", "Godzilla x Kong: The New Empire"),
+    ("King Kong", "Kong: Skull Island"),
+    ("Men in Black", "Men in Black: International"),
+    ("Terminator 2: Judgment Day", "Terminator: Dark Fate"),
+    ("Predator", "Prey"),
+    ("Alien", "Aliens"),
+    ("Prometheus", "Alien: Romulus"),
+    ("The Martian", "Gravity"),
+    ("Ready Player One", "Free Guy"),
+    ("Passengers", "The Martian"),
+    # Fast & Furious + action franchises
+    ("Fast & Furious", "2 Fast 2 Furious"),
+    ("Fast Five", "Fast & Furious 6"),
+    ("Furious 7", "The Fate of the Furious"),
+    ("F9", "Fast X"),
+    ("Fast & Furious Presents: Hobbs & Shaw", "F9"),
+    ("Mission: Impossible", "Mission: Impossible – Ghost Protocol"),
+    ("Mission: Impossible – Rogue Nation", "Mission: Impossible – Fallout"),
+    ("Mission: Impossible – Dead Reckoning Part One", "Mission: Impossible – The Final Reckoning"),
+    ("John Wick", "John Wick: Chapter 2"),
+    ("John Wick: Chapter 3 – Parabellum", "John Wick: Chapter 4"),
+    ("Taken", "Taken 2"),
+    ("The Equalizer", "The Equalizer 3"),
+    ("Top Gun", "Top Gun: Maverick"),
+    ("Mad Max: Fury Road", "Furiosa: A Mad Max Saga"),
+    ("Die Hard", "Live Free or Die Hard"),
+    ("The Rock", "Con Air"),
+    ("Bad Boys", "Bad Boys for Life"),
+    ("Bad Boys: Ride or Die", "Bad Boys for Life"),
+    ("Rambo", "Rambo: Last Blood"),
+    ("Rocky", "Creed"),
+    ("Creed II", "Creed III"),
+    ("Gladiator", "Gladiator II"),
+    ("300", "Troy"),
+    ("Pirates of the Caribbean: The Curse of the Black Pearl", "Pirates of the Caribbean: Dead Man's Chest"),
+    ("Pirates of the Caribbean: At World's End", "Pirates of the Caribbean: Dead Men Tell No Tales"),
+    ("Indiana Jones and the Raiders of the Lost Ark", "Indiana Jones and the Last Crusade"),
+    ("Indiana Jones and the Temple of Doom", "Indiana Jones and the Dial of Destiny"),
+    ("National Treasure", "Jungle Cruise"),
+    ("James Bond: Casino Royale", "James Bond: Skyfall"),
+    ("James Bond: Spectre", "No Time to Die"),
+    ("Kingsman: The Secret Service", "Kingsman: The Golden Circle"),
+    ("The Bourne Identity", "The Bourne Ultimatum"),
+    ("Jason Bourne", "The Bourne Legacy"),
+    # Horror blockbusters
+    ("It", "It Chapter Two"),
+    ("The Conjuring", "The Conjuring 2"),
+    ("Annabelle", "The Nun"),
+    ("Insidious", "Insidious: Chapter 2"),
+    ("A Quiet Place", "A Quiet Place Part II"),
+    ("A Quiet Place: Day One", "Bird Box"),
+    ("Get Out", "Us"),
+    ("Scream", "Scream VI"),
+    ("Halloween", "Halloween Kills"),
+    ("Friday the 13th", "A Nightmare on Elm Street"),
+    ("Saw", "Jigsaw"),
+    ("The Exorcist", "The Ring"),
+    ("Paranormal Activity", "Insidious"),
+    ("Smile", "Smile 2"),
+    ("Five Nights at Freddy's", "It"),
+    ("M3GAN", "Chucky"),
+    ("The Purge", "The Forever Purge"),
+    # Comedy & rom-com hits
+    ("The Hangover", "The Hangover Part II"),
+    ("Superbad", "Booksmart"),
+    ("Bridesmaids", "Girls Trip"),
+    ("Ghostbusters", "Ghostbusters: Afterlife"),
+    ("Ghostbusters: Frozen Empire", "Ghostbusters: Afterlife"),
+    ("Home Alone", "Home Alone 2: Lost in New York"),
+    ("Mean Girls", "Legally Blonde"),
+    ("Pitch Perfect", "Pitch Perfect 2"),
+    ("21 Jump Street", "22 Jump Street"),
+    ("Ted", "Ted 2"),
+    ("Jumanji: Welcome to the Jungle", "Jumanji: The Next Level"),
+    ("Night at the Museum", "Night at the Museum: Battle of the Smithsonian"),
+    ("Crazy Rich Asians", "Anyone But You"),
+    ("La La Land", "The Greatest Showman"),
+    ("Barbie", "Oppenheimer"),
+    ("Don't Look Up", "The Interview"),
+    ("The Mask", "Ace Ventura: Pet Detective"),
+    ("Mrs. Doubtfire", "Home Alone"),
+    ("Forrest Gump", "Cast Away"),
+    ("The Green Mile", "The Shawshank Redemption"),
+    # Mystery & thriller hits
+    ("Knives Out", "Glass Onion: A Knives Out Mystery"),
+    ("Murder on the Orient Express", "Death on the Nile"),
+    ("Gone Girl", "The Girl on the Train"),
+    ("Se7en", "Zodiac"),
+    ("The Silence of the Lambs", "Hannibal"),
+    ("Split", "Glass"),
+    ("Unbreakable", "Split"),
+    ("Now You See Me", "Now You See Me 2"),
+    ("Ocean's Eleven", "Ocean's Twelve"),
+    ("The Italian Job", "Logan Lucky"),
+    ("Red Notice", "The Adam Project"),
+    ("Bullet Train", "The Lost City"),
+    # Award-winners everyone knows
+    ("Parasite", "Everything Everywhere All at Once"),
+    ("La La Land", "Whiplash"),
+    ("The Shape of Water", "Birdman"),
+    ("Slumdog Millionaire", "Life of Pi"),
+    ("The Revenant", "The Martian"),
+    ("1917", "Dunkirk"),
+    ("Saving Private Ryan", "Hacksaw Ridge"),
+    ("Bohemian Rhapsody", "Rocketman"),
+    ("Elvis", "Walk the Line"),
+    ("A Star Is Born", "La La Land"),
+    ("Black Swan", "Whiplash"),
+    ("The Wolf of Wall Street", "The Big Short"),
+    ("The Social Network", "Steve Jobs"),
+    ("Once Upon a Time in Hollywood", "Pulp Fiction"),
+    ("Fight Club", "American Psycho"),
+    ("Good Will Hunting", "Dead Poets Society"),
+    ("The Godfather", "Goodfellas"),
+    ("Scarface", "Casino"),
+    ("The Departed", "The Untouchables"),
+    ("Jaws", "Deep Blue Sea"),
+    ("E.T. the Extra-Terrestrial", "Close Encounters of the Third Kind"),
+    ("Back to the Future", "Back to the Future Part II"),
+    ("Ghost", "Pretty Woman"),
+    ("Titanic", "The Notebook"),
+    ("The Notebook", "A Walk to Remember"),
+    ("Twilight", "The Twilight Saga: New Moon"),
+    ("The Twilight Saga: Eclipse", "The Twilight Saga: Breaking Dawn"),
+    ("The Hunger Games", "The Hunger Games: Catching Fire"),
+    ("The Hunger Games: Mockingjay – Part 1", "The Hunger Games: Mockingjay – Part 2"),
+    ("Divergent", "The Maze Runner"),
+    ("Harry Potter and the Sorcerer's Stone", "The Chronicles of Narnia: The Lion, the Witch and the Wardrobe"),
+    ("West Side Story", "In the Heights"),
+    ("Mamma Mia!", "Mamma Mia! Here We Go Again"),
+    ("A Minecraft Movie", "The Super Mario Bros. Movie"),
+    ("Space Jam", "Space Jam: A New Legacy"),
+    ("Who Framed Roger Rabbit", "Cool World"),
+    ("The Lion King", "The Jungle Book"),
+    ("Pinocchio", "Dumbo"),
+    ("Snow White", "Cinderella"),
+    ("Mulan", "Pocahontas"),
+    ("Hercules", "Tarzan"),
+    ("Lilo & Stitch", "Moana 2"),
+    ("Frozen", "Frozen II"),
+    ("Trolls", "Trolls World Tour"),
+    ("The Emoji Movie", "Cats"),
+    ("Scoob!", "Tom and Jerry"),
+    ("Detective Pikachu", "Sonic the Hedgehog"),
+    ("Rampage", "Skyscraper"),
+    ("San Andreas", "2012"),
+    ("Twisters", "The Day After Tomorrow"),
+    ("World War Z", "I Am Legend"),
+    ("War of the Worlds", "Signs"),
+    ("Armageddon", "Deep Impact"),
+    ("The Day After Tomorrow", "2012"),
+    ("Cast Away", "The Terminal"),
+    ("The Truman Show", "The Mask"),
+    ("Groundhog Day", "Click"),
+    ("The Sixth Sense", "Unbreakable"),
+    ("Signs", "War of the Worlds"),
+    ("Uncharted", "Tomb Raider"),
+    ("Tomb Raider", "Lara Croft: Tomb Raider"),
+    ("Resident Evil", "World War Z"),
+    ("The Meg", "Meg 2: The Trench"),
+    ("Jaws", "The Meg"),
+    ("King Kong", "Godzilla"),
+    ("Clash of the Titans", "Wrath of the Titans"),
+    ("300", "Immortals"),
+    ("Braveheart", "Gladiator"),
+    ("Troy", "Alexander"),
+    ("Pearl Harbor", "Dunkirk"),
+    ("Black Hawk Down", "Zero Dark Thirty"),
+    ("American Sniper", "Lone Survivor"),
+    ("Fury", "Hacksaw Ridge"),
+    ("Full Metal Jacket", "Apocalypse Now"),
+    ("Platoon", "Saving Private Ryan"),
+    ("The Hurt Locker", "Zero Dark Thirty"),
+    ("Hidden Figures", "First Man"),
+    ("Apollo 13", "First Man"),
+    ("Interstellar", "The Martian"),
+    ("Arrival", "Contact"),
+    ("Blade Runner 2049", "Blade Runner"),
+    ("Star Trek", "Star Trek Into Darkness"),
+    ("Star Trek Beyond", "Star Trek Into Darkness"),
+    ("Ratatouille", "Wall-E"),
+    ("Charlie and the Chocolate Factory", "Willy Wonka & the Chocolate Factory"),
+    ("The Sixth Sense", "Split"),
+    ("Rush Hour", "Rush Hour 2"),
+    ("Men in Black II", "Men in Black 3"),
+    ("Transformers: Revenge of the Fallen", "Transformers: The Last Knight"),
+    ("Die Hard 2", "Die Hard with a Vengeance"),
+    ("The Polar Express", "How the Grinch Stole Christmas"),
+    ("Elf", "Home Alone"),
+    ("The Grinch", "The Polar Express"),
+    ("Bee Movie", "Shark Tale"),
+    ("Despicable Me 4", "Minions: The Rise of Gru"),
+    ("Moana 2", "Lilo & Stitch"),
+    ("Freaky Friday", "The Parent Trap"),
+    ("High School Musical", "Camp Rock"),
+    ("Camp Rock 2: The Final Jam", "High School Musical 3: Senior Year"),
+    ("Wicked", "Les Misérables"),
+    ("West Side Story", "In the Heights"),
+    ("Mamma Mia!", "Mamma Mia! Here We Go Again"),
+]
+
+
+def dedupe_similar_pairs(pairs: list[tuple[str, str]]) -> list[tuple[str, str]]:
+    seen: set[str] = set()
+    result: list[tuple[str, str]] = []
+    for insider, mismatch in pairs:
+        a = insider.casefold().strip()
+        b = mismatch.casefold().strip()
+        if not a or not b or a == b:
+            continue
+        if a in seen or b in seen:
+            continue
+        seen.add(a)
+        seen.add(b)
+        result.append((insider.strip(), mismatch.strip()))
+    return result
+
+
+def validate_pairs(pairs: list[tuple[str, str]], target: int = 250) -> None:
+    if len(pairs) < target:
+        raise ValueError(f"Need {target} pairs, got {len(pairs)}")
+
+    seen_words: set[str] = set()
+    for a, b in pairs[:target]:
+        for word in (a, b):
+            key = word.casefold().strip()
+            if key in seen_words:
+                raise ValueError(f"Repeated title: {word}")
+            seen_words.add(key)
+
+
+def build_pairs(target: int = 250) -> list[tuple[str, str]]:
+    pairs = dedupe_similar_pairs(SIMILAR_PAIRS)
+    if len(pairs) < target:
+        raise ValueError(f"Need {target} similar pairs after dedupe, got {len(pairs)}")
+    selected = pairs[:target]
+    validate_pairs(selected, target)
+    return selected
+
+
+def main() -> None:
+    pairs = build_pairs(250)
+    out_dir = Path(__file__).resolve().parent
+    payload = [{"insider": a, "mismatch": b} for a, b in pairs]
+    out_path = out_dir / "hollywood_pairs.json"
+    out_path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    print(f"Wrote {len(pairs)} similar pairs to {out_path.name}")
+
+
+if __name__ == "__main__":
+    main()

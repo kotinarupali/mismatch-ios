@@ -32,7 +32,7 @@
 
 ### North Star
 
-**Mismatch** is an original social deduction party game built for groups of 6–16 players who want the thrill of hidden roles without the friction of passing one phone around a crowded room. Mismatch is inspired by the social deduction genre — games where players hold secret information, discuss, and vote — but it is not a clone of any existing title. Every role name, word pack, screen, and rule is original.
+**Mismatch** is an original social deduction party game built for groups of 3–16 players who want the thrill of hidden roles without the friction of passing one phone around a crowded room. Mismatch is inspired by the social deduction genre — games where players hold secret information, discuss, and vote — but it is not a clone of any existing title. Every role name, word pack, screen, and rule is original.
 
 **Core promise:** *Everyone knows their secret — including the host.*
 

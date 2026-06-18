@@ -31,6 +31,13 @@ struct LobbyView: View {
                     )
                 }
 
+                if !viewModel.wordPackSummaries.isEmpty {
+                    WordPackSelectionSection(
+                        packs: viewModel.wordPackSummaries,
+                        onToggle: { viewModel.toggleWordPack(id: $0) }
+                    )
+                }
+
                 if !viewModel.seatedPlayers.isEmpty {
                     VStack(alignment: .leading, spacing: 8) {
                         VStack(alignment: .leading, spacing: 4) {

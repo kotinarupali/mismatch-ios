@@ -1,0 +1,3007 @@
+{
+  "id": "indian_pop_culture",
+  "displayName": "Indian Pop Culture",
+  "isBuiltIn": true,
+  "pairs": [
+    {
+      "id": "1",
+      "insiderWord": "Shah Rukh Khan",
+      "mismatchWord": "Salman Khan",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "2",
+      "insiderWord": "Aamir Khan",
+      "mismatchWord": "Hrithik Roshan",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "3",
+      "insiderWord": "Ranbir Kapoor",
+      "mismatchWord": "Ranveer Singh",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "4",
+      "insiderWord": "Amitabh Bachchan",
+      "mismatchWord": "Dharmendra",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "5",
+      "insiderWord": "Akshay Kumar",
+      "mismatchWord": "Ajay Devgn",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "6",
+      "insiderWord": "Varun Dhawan",
+      "mismatchWord": "Sidharth Malhotra",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "7",
+      "insiderWord": "Tiger Shroff",
+      "mismatchWord": "Kartik Aaryan",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "8",
+      "insiderWord": "Shahid Kapoor",
+      "mismatchWord": "Ayushmann Khurrana",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "9",
+      "insiderWord": "Rajinikanth",
+      "mismatchWord": "Kamal Haasan",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "10",
+      "insiderWord": "Prabhas",
+      "mismatchWord": "Allu Arjun",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "11",
+      "insiderWord": "Vijay",
+      "mismatchWord": "Ajith",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "12",
+      "insiderWord": "NTR Jr",
+      "mismatchWord": "Ram Charan",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "13",
+      "insiderWord": "Yash",
+      "mismatchWord": "Dhanush",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "14",
+      "insiderWord": "Mahesh Babu",
+      "mismatchWord": "Pawan Kalyan",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "15",
+      "insiderWord": "Anil Kapoor",
+      "mismatchWord": "Jackie Shroff",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "16",
+      "insiderWord": "Sanjay Dutt",
+      "mismatchWord": "Suniel Shetty",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "17",
+      "insiderWord": "Govinda",
+      "mismatchWord": "David Dhawan",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "18",
+      "insiderWord": "Emraan Hashmi",
+      "mismatchWord": "Imran Khan",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "19",
+      "insiderWord": "John Abraham",
+      "mismatchWord": "Abhishek Bachchan",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "20",
+      "insiderWord": "Saif Ali Khan",
+      "mismatchWord": "Farhan Akhtar",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "21",
+      "insiderWord": "Deepika Padukone",
+      "mismatchWord": "Priyanka Chopra",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "22",
+      "insiderWord": "Alia Bhatt",
+      "mismatchWord": "Katrina Kaif",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "23",
+      "insiderWord": "Kareena Kapoor",
+      "mismatchWord": "Karisma Kapoor",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "24",
+      "insiderWord": "Madhuri Dixit",
+      "mismatchWord": "Sridevi",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "25",
+      "insiderWord": "Kajol",
+      "mismatchWord": "Rani Mukerji",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "26",
+      "insiderWord": "Anushka Sharma",
+      "mismatchWord": "Sonam Kapoor",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "27",
+      "insiderWord": "Kangana Ranaut",
+      "mismatchWord": "Vidya Balan",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "28",
+      "insiderWord": "Shraddha Kapoor",
+      "mismatchWord": "Kiara Advani",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "29",
+      "insiderWord": "Janhvi Kapoor",
+      "mismatchWord": "Sara Ali Khan",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "30",
+      "insiderWord": "Nayanthara",
+      "mismatchWord": "Trisha",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "31",
+      "insiderWord": "Samantha",
+      "mismatchWord": "Rashmika Mandanna",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "32",
+      "insiderWord": "Kriti Sanon",
+      "mismatchWord": "Disha Patani",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "33",
+      "insiderWord": "Taapsee Pannu",
+      "mismatchWord": "Bhumi Pednekar",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "34",
+      "insiderWord": "Biryani",
+      "mismatchWord": "Pulao",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "35",
+      "insiderWord": "Dosa",
+      "mismatchWord": "Idli",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "36",
+      "insiderWord": "Samosa",
+      "mismatchWord": "Pakora",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "37",
+      "insiderWord": "Chai",
+      "mismatchWord": "Filter Coffee",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "38",
+      "insiderWord": "Butter Chicken",
+      "mismatchWord": "Chicken Tikka",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "39",
+      "insiderWord": "Naan",
+      "mismatchWord": "Roti",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "40",
+      "insiderWord": "Paneer",
+      "mismatchWord": "Tofu",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "41",
+      "insiderWord": "Pani Puri",
+      "mismatchWord": "Bhel Puri",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "42",
+      "insiderWord": "Vada Pav",
+      "mismatchWord": "Pav Bhaji",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "43",
+      "insiderWord": "Masala Dosa",
+      "mismatchWord": "Rava Dosa",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "44",
+      "insiderWord": "Rajma",
+      "mismatchWord": "Chole",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "45",
+      "insiderWord": "Dal Makhani",
+      "mismatchWord": "Dal Tadka",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "46",
+      "insiderWord": "Lassi",
+      "mismatchWord": "Chaas",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "47",
+      "insiderWord": "Gulab Jamun",
+      "mismatchWord": "Rasgulla",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "48",
+      "insiderWord": "Jalebi",
+      "mismatchWord": "Imarti",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "49",
+      "insiderWord": "Kheer",
+      "mismatchWord": "Payasam",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "50",
+      "insiderWord": "Barfi",
+      "mismatchWord": "Ladoo",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "51",
+      "insiderWord": "Poha",
+      "mismatchWord": "Upma",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "52",
+      "insiderWord": "Tandoori",
+      "mismatchWord": "Kebab",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "53",
+      "insiderWord": "Momos",
+      "mismatchWord": "Dim Sum",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "54",
+      "insiderWord": "Hakka Noodles",
+      "mismatchWord": "Chow Mein",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "55",
+      "insiderWord": "Dahi Puri",
+      "mismatchWord": "Sev Puri",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "56",
+      "insiderWord": "Frankie",
+      "mismatchWord": "Shawarma",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "57",
+      "insiderWord": "Maggi",
+      "mismatchWord": "Instant Noodles",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "58",
+      "insiderWord": "Chole Bhature",
+      "mismatchWord": "Amritsari Kulcha",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "59",
+      "insiderWord": "Kulfi",
+      "mismatchWord": "Ice Cream",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "60",
+      "insiderWord": "Falooda",
+      "mismatchWord": "Milkshake",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "61",
+      "insiderWord": "Aloo Paratha",
+      "mismatchWord": "Gobi Paratha",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "62",
+      "insiderWord": "Puri Bhaji",
+      "mismatchWord": "Halwa Puri",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "63",
+      "insiderWord": "Dhokla",
+      "mismatchWord": "Khandvi",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "64",
+      "insiderWord": "Thepla",
+      "mismatchWord": "Paratha",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "65",
+      "insiderWord": "Chicken 65",
+      "mismatchWord": "Gobi 65",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "66",
+      "insiderWord": "Cutting Chai",
+      "mismatchWord": "Irani Chai",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "67",
+      "insiderWord": "Masala Chai",
+      "mismatchWord": "Adrak Chai",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "68",
+      "insiderWord": "Rasmalai",
+      "mismatchWord": "Sandesh",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "69",
+      "insiderWord": "IPL",
+      "mismatchWord": "T20 World Cup",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "70",
+      "insiderWord": "Mumbai Indians",
+      "mismatchWord": "Chennai Super Kings",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "71",
+      "insiderWord": "Royal Challengers Bangalore",
+      "mismatchWord": "Kolkata Knight Riders",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "72",
+      "insiderWord": "Virat Kohli",
+      "mismatchWord": "Rohit Sharma",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "73",
+      "insiderWord": "MS Dhoni",
+      "mismatchWord": "Yuvraj Singh",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "74",
+      "insiderWord": "Sachin Tendulkar",
+      "mismatchWord": "Rahul Dravid",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "75",
+      "insiderWord": "Hardik Pandya",
+      "mismatchWord": "Ravindra Jadeja",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "76",
+      "insiderWord": "Wankhede Stadium",
+      "mismatchWord": "Eden Gardens",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "77",
+      "insiderWord": "World Cup",
+      "mismatchWord": "Champions Trophy",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "78",
+      "insiderWord": "Asia Cup",
+      "mismatchWord": "IPL Final",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "79",
+      "insiderWord": "Gully Cricket",
+      "mismatchWord": "Box Cricket",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "80",
+      "insiderWord": "Sunrisers Hyderabad",
+      "mismatchWord": "Delhi Capitals",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "81",
+      "insiderWord": "Punjab Kings",
+      "mismatchWord": "Rajasthan Royals",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "82",
+      "insiderWord": "Gujarat Titans",
+      "mismatchWord": "Lucknow Super Giants",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "83",
+      "insiderWord": "Rishabh Pant",
+      "mismatchWord": "KL Rahul",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "84",
+      "insiderWord": "Jasprit Bumrah",
+      "mismatchWord": "Mohammed Shami",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "85",
+      "insiderWord": "Chepauk Stadium",
+      "mismatchWord": "Chinnaswamy Stadium",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "86",
+      "insiderWord": "Harsha Bhogle",
+      "mismatchWord": "Ravi Shastri",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "87",
+      "insiderWord": "IPL Auction",
+      "mismatchWord": "IPL Opening Ceremony",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "88",
+      "insiderWord": "Cricket Commentary",
+      "mismatchWord": "Match Highlights",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "89",
+      "insiderWord": "Diwali",
+      "mismatchWord": "Holi",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "90",
+      "insiderWord": "Eid",
+      "mismatchWord": "Bakrid",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "91",
+      "insiderWord": "Navratri",
+      "mismatchWord": "Durga Puja",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "92",
+      "insiderWord": "Ganesh Chaturthi",
+      "mismatchWord": "Janmashtami",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "93",
+      "insiderWord": "Pongal",
+      "mismatchWord": "Onam",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "94",
+      "insiderWord": "Baisakhi",
+      "mismatchWord": "Lohri",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "95",
+      "insiderWord": "Raksha Bandhan",
+      "mismatchWord": "Karva Chauth",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "96",
+      "insiderWord": "Sangeet",
+      "mismatchWord": "Mehendi",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "97",
+      "insiderWord": "Haldi",
+      "mismatchWord": "Mehendi Ceremony",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "98",
+      "insiderWord": "Barat",
+      "mismatchWord": "Reception",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "99",
+      "insiderWord": "Saree",
+      "mismatchWord": "Lehenga",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "100",
+      "insiderWord": "Sherwani",
+      "mismatchWord": "Kurta",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "101",
+      "insiderWord": "Rangoli",
+      "mismatchWord": "Kolam",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "102",
+      "insiderWord": "Diya",
+      "mismatchWord": "Lantern",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "103",
+      "insiderWord": "Fireworks",
+      "mismatchWord": "Sparklers",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "104",
+      "insiderWord": "Puja",
+      "mismatchWord": "Aarti",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "105",
+      "insiderWord": "Garba",
+      "mismatchWord": "Dandiya",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "106",
+      "insiderWord": "Bhang",
+      "mismatchWord": "Thandai",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "107",
+      "insiderWord": "Kite Flying",
+      "mismatchWord": "Patang",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "108",
+      "insiderWord": "Wedding Mandap",
+      "mismatchWord": "Reception Stage",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "109",
+      "insiderWord": "Bindi",
+      "mismatchWord": "Sindoor",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "110",
+      "insiderWord": "Temple Visit",
+      "mismatchWord": "Gurudwara Visit",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "111",
+      "insiderWord": "Christmas",
+      "mismatchWord": "New Year Party",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "112",
+      "insiderWord": "Diwali Lights",
+      "mismatchWord": "Fairy Lights",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "113",
+      "insiderWord": "Kaun Banega Crorepati",
+      "mismatchWord": "Bigg Boss",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "114",
+      "insiderWord": "The Kapil Sharma Show",
+      "mismatchWord": "Comedy Nights",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "115",
+      "insiderWord": "Taarak Mehta Ka Ooltah Chashmah",
+      "mismatchWord": "Bhabhi Ji Ghar Par Hai",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "116",
+      "insiderWord": "CID",
+      "mismatchWord": "Crime Patrol",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "117",
+      "insiderWord": "Ramayan",
+      "mismatchWord": "Mahabharat",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "118",
+      "insiderWord": "Sa Re Ga Ma Pa",
+      "mismatchWord": "Indian Idol",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "119",
+      "insiderWord": "Dance India Dance",
+      "mismatchWord": "Boogie Woogie",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "120",
+      "insiderWord": "Roadies",
+      "mismatchWord": "Splitsvilla",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "121",
+      "insiderWord": "Shark Tank India",
+      "mismatchWord": "Dragon's Den",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "122",
+      "insiderWord": "Jhalak Dikhla Jaa",
+      "mismatchWord": "Nach Baliye",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "123",
+      "insiderWord": "The Family Man",
+      "mismatchWord": "Mirzapur",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "124",
+      "insiderWord": "Sacred Games",
+      "mismatchWord": "Scam 1992",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "125",
+      "insiderWord": "Panchayat",
+      "mismatchWord": "Gullak",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "126",
+      "insiderWord": "Kota Factory",
+      "mismatchWord": "Aspirants",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "127",
+      "insiderWord": "Hotstar",
+      "mismatchWord": "Netflix",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "128",
+      "insiderWord": "SonyLIV",
+      "mismatchWord": "Prime Video",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "129",
+      "insiderWord": "Zee5",
+      "mismatchWord": "JioCinema",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "130",
+      "insiderWord": "Colors TV",
+      "mismatchWord": "Star Plus",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "131",
+      "insiderWord": "SAB TV",
+      "mismatchWord": "Sony TV",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "132",
+      "insiderWord": "MTV India",
+      "mismatchWord": "Vh1 India",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "133",
+      "insiderWord": "Arijit Singh",
+      "mismatchWord": "Atif Aslam",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "134",
+      "insiderWord": "Sonu Nigam",
+      "mismatchWord": "Shaan",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "135",
+      "insiderWord": "Sunidhi Chauhan",
+      "mismatchWord": "Shreya Ghoshal",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "136",
+      "insiderWord": "Badshah",
+      "mismatchWord": "Yo Yo Honey Singh",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "137",
+      "insiderWord": "AR Rahman",
+      "mismatchWord": "Pritam",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "138",
+      "insiderWord": "Lata Mangeshkar",
+      "mismatchWord": "Asha Bhosle",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "139",
+      "insiderWord": "Kishore Kumar",
+      "mismatchWord": "Mohammed Rafi",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "140",
+      "insiderWord": "Neha Kakkar",
+      "mismatchWord": "Tulsi Kumar",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "141",
+      "insiderWord": "Sidhu Moose Wala",
+      "mismatchWord": "AP Dhillon",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "142",
+      "insiderWord": "Diljit Dosanjh",
+      "mismatchWord": "Guru Randhawa",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "143",
+      "insiderWord": "Coke Studio",
+      "mismatchWord": "MTV Unplugged",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "144",
+      "insiderWord": "Gaana",
+      "mismatchWord": "JioSaavn",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "145",
+      "insiderWord": "Spotify",
+      "mismatchWord": "Apple Music",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "146",
+      "insiderWord": "Bhangra",
+      "mismatchWord": "Punjabi Pop",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "147",
+      "insiderWord": "Qawwali",
+      "mismatchWord": "Sufi Music",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "148",
+      "insiderWord": "Antakshari",
+      "mismatchWord": "Karaoke",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "149",
+      "insiderWord": "Item Song",
+      "mismatchWord": "Dance Number",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "150",
+      "insiderWord": "Ilaiyaraaja",
+      "mismatchWord": "SP Balasubrahmanyam",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "151",
+      "insiderWord": "Ritviz",
+      "mismatchWord": "Prateek Kuhad",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "152",
+      "insiderWord": "Divine",
+      "mismatchWord": "Raftaar",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "153",
+      "insiderWord": "Zomato",
+      "mismatchWord": "Swiggy",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "154",
+      "insiderWord": "Paytm",
+      "mismatchWord": "PhonePe",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "155",
+      "insiderWord": "Google Pay",
+      "mismatchWord": "BHIM UPI",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "156",
+      "insiderWord": "Flipkart",
+      "mismatchWord": "Amazon India",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "157",
+      "insiderWord": "Ola",
+      "mismatchWord": "Uber",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "158",
+      "insiderWord": "IRCTC",
+      "mismatchWord": "MakeMyTrip",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "159",
+      "insiderWord": "BookMyShow",
+      "mismatchWord": "Paytm Insider",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "160",
+      "insiderWord": "CRED",
+      "mismatchWord": "BharatPe",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "161",
+      "insiderWord": "Blinkit",
+      "mismatchWord": "Zepto",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "162",
+      "insiderWord": "BigBasket",
+      "mismatchWord": "Grofers",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "163",
+      "insiderWord": "Nykaa",
+      "mismatchWord": "Myntra",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "164",
+      "insiderWord": "Jio",
+      "mismatchWord": "Airtel",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "165",
+      "insiderWord": "Dunzo",
+      "mismatchWord": "Swiggy Instamart",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "166",
+      "insiderWord": "Meesho",
+      "mismatchWord": "Ajio",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "167",
+      "insiderWord": "BYJU'S",
+      "mismatchWord": "Unacademy",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "168",
+      "insiderWord": "OYO",
+      "mismatchWord": "Treebo",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "169",
+      "insiderWord": "Rapido",
+      "mismatchWord": "Uber Moto",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "170",
+      "insiderWord": "ShareChat",
+      "mismatchWord": "Josh",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "171",
+      "insiderWord": "Dream11",
+      "mismatchWord": "MPL",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "172",
+      "insiderWord": "Policybazaar",
+      "mismatchWord": "Paytm Insurance",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "173",
+      "insiderWord": "Mumbai",
+      "mismatchWord": "Delhi",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "174",
+      "insiderWord": "Bangalore",
+      "mismatchWord": "Hyderabad",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "175",
+      "insiderWord": "Chennai",
+      "mismatchWord": "Kochi",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "176",
+      "insiderWord": "Pune",
+      "mismatchWord": "Ahmedabad",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "177",
+      "insiderWord": "Jaipur",
+      "mismatchWord": "Udaipur",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "178",
+      "insiderWord": "Goa",
+      "mismatchWord": "Pondicherry",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "179",
+      "insiderWord": "Shimla",
+      "mismatchWord": "Manali",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "180",
+      "insiderWord": "Darjeeling",
+      "mismatchWord": "Ooty",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "181",
+      "insiderWord": "Varanasi",
+      "mismatchWord": "Haridwar",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "182",
+      "insiderWord": "Chandigarh",
+      "mismatchWord": "Ludhiana",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "183",
+      "insiderWord": "Marine Drive",
+      "mismatchWord": "Gateway of India",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "184",
+      "insiderWord": "India Gate",
+      "mismatchWord": "Qutub Minar",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "185",
+      "insiderWord": "Taj Mahal",
+      "mismatchWord": "Red Fort",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "186",
+      "insiderWord": "Local Train",
+      "mismatchWord": "Metro",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "187",
+      "insiderWord": "Auto Rickshaw",
+      "mismatchWord": "Cab",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "188",
+      "insiderWord": "Dhaba",
+      "mismatchWord": "Restaurant",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "189",
+      "insiderWord": "Kirana Store",
+      "mismatchWord": "Supermarket",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "190",
+      "insiderWord": "Sabzi Mandi",
+      "mismatchWord": "Fish Market",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "191",
+      "insiderWord": "Hill Station",
+      "mismatchWord": "Beach Town",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "192",
+      "insiderWord": "Old Delhi",
+      "mismatchWord": "Chandni Chowk",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "193",
+      "insiderWord": "Haldiram's",
+      "mismatchWord": "Bikanervala",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "194",
+      "insiderWord": "Amul Butter",
+      "mismatchWord": "Britannia Butter",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "195",
+      "insiderWord": "Parle-G",
+      "mismatchWord": "Monaco Biscuits",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "196",
+      "insiderWord": "Frooti",
+      "mismatchWord": "Maaza",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "197",
+      "insiderWord": "Thums Up",
+      "mismatchWord": "Coca-Cola",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "198",
+      "insiderWord": "Old Monk",
+      "mismatchWord": "Royal Stag",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "199",
+      "insiderWord": "Rajma Chawal",
+      "mismatchWord": "Dal Chawal",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "200",
+      "insiderWord": "Hyderabadi Biryani",
+      "mismatchWord": "Lucknowi Biryani",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "201",
+      "insiderWord": "Palak Paneer",
+      "mismatchWord": "Saag Paneer",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "202",
+      "insiderWord": "Chicken Biryani",
+      "mismatchWord": "Mutton Biryani",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "203",
+      "insiderWord": "Masala Papad",
+      "mismatchWord": "Roasted Papad",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "204",
+      "insiderWord": "Aloo Gobi",
+      "mismatchWord": "Mix Veg",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "205",
+      "insiderWord": "Fish Fry",
+      "mismatchWord": "Pomfret Fry",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "206",
+      "insiderWord": "Butter Naan",
+      "mismatchWord": "Garlic Naan",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "207",
+      "insiderWord": "Rogan Josh",
+      "mismatchWord": "Vindaloo",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "208",
+      "insiderWord": "Pickle",
+      "mismatchWord": "Chutney",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "209",
+      "insiderWord": "Raita",
+      "mismatchWord": "Curd",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "210",
+      "insiderWord": "Punjabi",
+      "mismatchWord": "Hindi",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "211",
+      "insiderWord": "Tamil",
+      "mismatchWord": "Telugu",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "212",
+      "insiderWord": "Bengali",
+      "mismatchWord": "Marathi",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "213",
+      "insiderWord": "Gujarati",
+      "mismatchWord": "Rajasthani",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "214",
+      "insiderWord": "South Indian",
+      "mismatchWord": "North Indian",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "215",
+      "insiderWord": "Dhaba Food",
+      "mismatchWord": "Home Food",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "216",
+      "insiderWord": "Tiffin",
+      "mismatchWord": "Lunch Box",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "217",
+      "insiderWord": "Coaching Class",
+      "mismatchWord": "Tuition",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "218",
+      "insiderWord": "Board Exam",
+      "mismatchWord": "Entrance Exam",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "219",
+      "insiderWord": "Arranged Marriage",
+      "mismatchWord": "Love Marriage",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "220",
+      "insiderWord": "Joint Family",
+      "mismatchWord": "Nuclear Family",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "221",
+      "insiderWord": "NRI",
+      "mismatchWord": "Desi Abroad",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "222",
+      "insiderWord": "Kollywood",
+      "mismatchWord": "Sandalwood",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "223",
+      "insiderWord": "Punjabi Wedding",
+      "mismatchWord": "Sikh Wedding",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "224",
+      "insiderWord": "Rickshaw",
+      "mismatchWord": "Cab Ride",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "225",
+      "insiderWord": "Engineering College",
+      "mismatchWord": "Medical College",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "226",
+      "insiderWord": "Campus Placement",
+      "mismatchWord": "Internship",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "227",
+      "insiderWord": "Rent Agreement",
+      "mismatchWord": "Broker",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "228",
+      "insiderWord": "Society Watchman",
+      "mismatchWord": "Building Security",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "229",
+      "insiderWord": "Power Cut",
+      "mismatchWord": "Inverter Backup",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "230",
+      "insiderWord": "Water Tanker",
+      "mismatchWord": "Borewell",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "231",
+      "insiderWord": "First Show",
+      "mismatchWord": "Matinee",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "232",
+      "insiderWord": "Corner Seat",
+      "mismatchWord": "Balcony Seat",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "233",
+      "insiderWord": "Interval",
+      "mismatchWord": "Intermission",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "234",
+      "insiderWord": "Single Screen",
+      "mismatchWord": "Multiplex",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "235",
+      "insiderWord": "First Day First Show",
+      "mismatchWord": "Premiere",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "236",
+      "insiderWord": "Fan Club",
+      "mismatchWord": "Fan Page",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "237",
+      "insiderWord": "Paisa Vasool",
+      "mismatchWord": "Blockbuster Hit",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "238",
+      "insiderWord": "Kachori",
+      "mismatchWord": "Bedmi Puri",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "239",
+      "insiderWord": "Aloo Tikki",
+      "mismatchWord": "Chaat",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "240",
+      "insiderWord": "Papdi Chaat",
+      "mismatchWord": "Dahi Bhalla",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "241",
+      "insiderWord": "Soan Papdi",
+      "mismatchWord": "Patisa",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "242",
+      "insiderWord": "Masala Soda",
+      "mismatchWord": "Nimbu Pani",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "243",
+      "insiderWord": "Cold Coffee",
+      "mismatchWord": "Frappe",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "244",
+      "insiderWord": "Filter Kaapi",
+      "mismatchWord": "Degree Coffee",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "245",
+      "insiderWord": "Panipuri",
+      "mismatchWord": "Golgappa",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "246",
+      "insiderWord": "Bhel",
+      "mismatchWord": "Jhalmuri",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "247",
+      "insiderWord": "Bhatura",
+      "mismatchWord": "Poori",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "248",
+      "insiderWord": "Tandoori Roti",
+      "mismatchWord": "Roomali Roti",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "249",
+      "insiderWord": "Paneer Butter Masala",
+      "mismatchWord": "Shahi Paneer",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "250",
+      "insiderWord": "Kabaddi",
+      "mismatchWord": "Kho Kho",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "251",
+      "insiderWord": "Hockey",
+      "mismatchWord": "Football",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "252",
+      "insiderWord": "Badminton",
+      "mismatchWord": "Table Tennis",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "253",
+      "insiderWord": "Chess",
+      "mismatchWord": "Carrom",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "254",
+      "insiderWord": "PV Sindhu",
+      "mismatchWord": "Saina Nehwal",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "255",
+      "insiderWord": "Neeraj Chopra",
+      "mismatchWord": "Abhinav Bindra",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "256",
+      "insiderWord": "Leander Paes",
+      "mismatchWord": "Mahesh Bhupathi",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "257",
+      "insiderWord": "Mumbai Marathon",
+      "mismatchWord": "Delhi Half Marathon",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "258",
+      "insiderWord": "Gully Football",
+      "mismatchWord": "Street Cricket",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "259",
+      "insiderWord": "Pro Kabaddi League",
+      "mismatchWord": "Pro Wrestling League",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "260",
+      "insiderWord": "Hockey India League",
+      "mismatchWord": "Indian Super League",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "261",
+      "insiderWord": "Sunil Chhetri",
+      "mismatchWord": "Bhaichung Bhutia",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "262",
+      "insiderWord": "Mary Kom",
+      "mismatchWord": "Vijender Singh",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "263",
+      "insiderWord": "Meme Page",
+      "mismatchWord": "Reels Account",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "264",
+      "insiderWord": "Instagram Reels",
+      "mismatchWord": "YouTube Shorts",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "265",
+      "insiderWord": "WhatsApp Group",
+      "mismatchWord": "Telegram Channel",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "266",
+      "insiderWord": "Family Group",
+      "mismatchWord": "Friends Group",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "267",
+      "insiderWord": "Good Morning Message",
+      "mismatchWord": "Forward Message",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "268",
+      "insiderWord": "Status Update",
+      "mismatchWord": "Story",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "269",
+      "insiderWord": "Influencer",
+      "mismatchWord": "Content Creator",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "270",
+      "insiderWord": "Vlog",
+      "mismatchWord": "Podcast",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "271",
+      "insiderWord": "Stand-Up Comedy",
+      "mismatchWord": "Roast Show",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "272",
+      "insiderWord": "Open Mic",
+      "mismatchWord": "Comedy Club",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "273",
+      "insiderWord": "Wedding Sangeet",
+      "mismatchWord": "Sangeet Night",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "274",
+      "insiderWord": "Shaadi.com",
+      "mismatchWord": "Bumble",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "275",
+      "insiderWord": "Arranged Match",
+      "mismatchWord": "Swipe Right",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "276",
+      "insiderWord": "Big Fat Wedding",
+      "mismatchWord": "Destination Wedding",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "277",
+      "insiderWord": "Mehendi Night",
+      "mismatchWord": "Haldi Function",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "278",
+      "insiderWord": "DDLJ",
+      "mismatchWord": "Mohabbatein",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "279",
+      "insiderWord": "Sholay",
+      "mismatchWord": "Deewar",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "280",
+      "insiderWord": "Lagaan",
+      "mismatchWord": "Chak De India",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "281",
+      "insiderWord": "3 Idiots",
+      "mismatchWord": "PK",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "282",
+      "insiderWord": "Dangal",
+      "mismatchWord": "Sultan",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "283",
+      "insiderWord": "KBC Host",
+      "mismatchWord": "Bigg Boss Host",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "284",
+      "insiderWord": "Rajesh Khanna",
+      "mismatchWord": "Dev Anand",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "285",
+      "insiderWord": "Helen",
+      "mismatchWord": "Zeenat Aman",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "286",
+      "insiderWord": "Rishi Kapoor",
+      "mismatchWord": "Jeetendra",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "287",
+      "insiderWord": "Rekha",
+      "mismatchWord": "Hema Malini",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "288",
+      "insiderWord": "Amitabh Voice",
+      "mismatchWord": "Pran Voice",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "289",
+      "insiderWord": "Filmy Dialogue",
+      "mismatchWord": "One-Liner",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "290",
+      "insiderWord": "Masala Film",
+      "mismatchWord": "Family Entertainer",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "291",
+      "insiderWord": "Item Number",
+      "mismatchWord": "Romantic Song",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "292",
+      "insiderWord": "Background Score",
+      "mismatchWord": "Title Track",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "293",
+      "insiderWord": "Pathaan",
+      "mismatchWord": "Jawan",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "294",
+      "insiderWord": "Gully Boy",
+      "mismatchWord": "Rockstar",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "295",
+      "insiderWord": "Chennai Express",
+      "mismatchWord": "Dilwale",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "296",
+      "insiderWord": "Kapil Sharma",
+      "mismatchWord": "Krushna Abhishek",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "297",
+      "insiderWord": "Manish Malhotra",
+      "mismatchWord": "Sabyasachi",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "298",
+      "insiderWord": "Suhana Khan",
+      "mismatchWord": "Khushi Kapoor",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "299",
+      "insiderWord": "Filmfare Awards",
+      "mismatchWord": "IIFA Awards",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "300",
+      "insiderWord": "Marine Lines",
+      "mismatchWord": "Bandra-Worli Sea Link",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "301",
+      "insiderWord": "Dabbawala",
+      "mismatchWord": "Swiggy Delivery",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "302",
+      "insiderWord": "Auto Stand",
+      "mismatchWord": "Cab Booking",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "303",
+      "insiderWord": "Baahubali",
+      "mismatchWord": "RRR",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "304",
+      "insiderWord": "KGF",
+      "mismatchWord": "Pushpa",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "305",
+      "insiderWord": "Stree",
+      "mismatchWord": "Bala",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "306",
+      "insiderWord": "Andhadhun",
+      "mismatchWord": "Badla",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "307",
+      "insiderWord": "Queen",
+      "mismatchWord": "English Vinglish",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "308",
+      "insiderWord": "Drishyam",
+      "mismatchWord": "Drishyam 2",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "309",
+      "insiderWord": "War",
+      "mismatchWord": "Tiger",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "310",
+      "insiderWord": "Brahmastra",
+      "mismatchWord": "Adipurush",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "311",
+      "insiderWord": "Stree 2",
+      "mismatchWord": "Munjya",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "312",
+      "insiderWord": "Animal",
+      "mismatchWord": "Kabir Singh",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "313",
+      "insiderWord": "Badhaai Do",
+      "mismatchWord": "Shubh Mangal Saavdhan",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "314",
+      "insiderWord": "Haider",
+      "mismatchWord": "Omkara",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "315",
+      "insiderWord": "Zindagi Na Milegi Dobara",
+      "mismatchWord": "Dil Chahta Hai",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "316",
+      "insiderWord": "Kal Ho Naa Ho",
+      "mismatchWord": "Kuch Kuch Hota Hai",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "317",
+      "insiderWord": "Hum Aapke Hain Kaun",
+      "mismatchWord": "Hum Saath Saath Hain",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "318",
+      "insiderWord": "Main Hoon Na",
+      "mismatchWord": "Om Shanti Om",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "319",
+      "insiderWord": "Golmaal",
+      "mismatchWord": "Housefull",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "320",
+      "insiderWord": "Golmaal Returns",
+      "mismatchWord": "Housefull 2",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "321",
+      "insiderWord": "Dhoom",
+      "mismatchWord": "Dhoom 2",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "322",
+      "insiderWord": "Race",
+      "mismatchWord": "Race 2",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "323",
+      "insiderWord": "Wanted",
+      "mismatchWord": "Dabangg",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "324",
+      "insiderWord": "Singham",
+      "mismatchWord": "Simmba",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "325",
+      "insiderWord": "Student of the Year",
+      "mismatchWord": "Student of the Year 2",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "326",
+      "insiderWord": "Ae Dil Hai Mushkil",
+      "mismatchWord": "Kabhi Alvida Naa Kehna",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "327",
+      "insiderWord": "Piku",
+      "mismatchWord": "Pink",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "328",
+      "insiderWord": "Taare Zameen Par",
+      "mismatchWord": "Stanley Ka Dabba",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "329",
+      "insiderWord": "Munna Bhai MBBS",
+      "mismatchWord": "Lage Raho Munna Bhai",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "330",
+      "insiderWord": "Hera Pheri",
+      "mismatchWord": "Phir Hera Pheri",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "331",
+      "insiderWord": "Welcome",
+      "mismatchWord": "Hungama",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "332",
+      "insiderWord": "Toilet Ek Prem Katha",
+      "mismatchWord": "Pad Man",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "333",
+      "insiderWord": "Mission Mangal",
+      "mismatchWord": "Shakuntala Devi",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "334",
+      "insiderWord": "Uri",
+      "mismatchWord": "Kesari",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "335",
+      "insiderWord": "Tanhaji",
+      "mismatchWord": "Panipat",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "336",
+      "insiderWord": "Raazi",
+      "mismatchWord": "Ghazi Attack",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "337",
+      "insiderWord": "Raees",
+      "mismatchWord": "Ra.One",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "338",
+      "insiderWord": "Bhediya",
+      "mismatchWord": "Bhoot Police",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "339",
+      "insiderWord": "Gangubai Kathiawadi",
+      "mismatchWord": "Thalaivi",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "340",
+      "insiderWord": "Heeramandi",
+      "mismatchWord": "Maharani",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "341",
+      "insiderWord": "Karan Johar",
+      "mismatchWord": "Farah Khan",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "342",
+      "insiderWord": "Sanjay Leela Bhansali",
+      "mismatchWord": "Ashutosh Gowariker",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "343",
+      "insiderWord": "Anurag Kashyap",
+      "mismatchWord": "Imtiaz Ali",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "344",
+      "insiderWord": "Zoya Akhtar",
+      "mismatchWord": "Reema Kagti",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "345",
+      "insiderWord": "Rajkumar Hirani",
+      "mismatchWord": "Shoojit Sircar",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "346",
+      "insiderWord": "Rohit Shetty",
+      "mismatchWord": "Atlee",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "347",
+      "insiderWord": "Shankar",
+      "mismatchWord": "Mani Ratnam",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "348",
+      "insiderWord": "Nawazuddin Siddiqui",
+      "mismatchWord": "Manoj Bajpayee",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "349",
+      "insiderWord": "Rajkummar Rao",
+      "mismatchWord": "Vicky Kaushal",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "350",
+      "insiderWord": "Jacqueline Fernandez",
+      "mismatchWord": "Nora Fatehi",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "351",
+      "insiderWord": "Mouni Roy",
+      "mismatchWord": "Hina Khan",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "352",
+      "insiderWord": "Urvashi Rautela",
+      "mismatchWord": "Sunny Leone",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "353",
+      "insiderWord": "Juhi Chawla",
+      "mismatchWord": "Tabu",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "354",
+      "insiderWord": "Ratna Pathak",
+      "mismatchWord": "Supriya Pathak",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "355",
+      "insiderWord": "Paresh Rawal",
+      "mismatchWord": "Om Puri",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "356",
+      "insiderWord": "Nana Patekar",
+      "mismatchWord": "Anupam Kher",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "357",
+      "insiderWord": "Johnny Lever",
+      "mismatchWord": "Rajpal Yadav",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "358",
+      "insiderWord": "Sunil Grover",
+      "mismatchWord": "Krishna Abhishek",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "359",
+      "insiderWord": "Bharti Singh",
+      "mismatchWord": "Sumona Chakravarti",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "360",
+      "insiderWord": "Shehnaaz Gill",
+      "mismatchWord": "Jasmin Bhasin",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "361",
+      "insiderWord": "Chunky Pandey",
+      "mismatchWord": "Shakti Kapoor",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "362",
+      "insiderWord": "Gulshan Grover",
+      "mismatchWord": "Prem Chopra",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "363",
+      "insiderWord": "Prakash Raj",
+      "mismatchWord": "Nassar",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "364",
+      "insiderWord": "Rana Daggubati",
+      "mismatchWord": "Rakul Preet",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "365",
+      "insiderWord": "Tamannaah",
+      "mismatchWord": "Shruti Haasan",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "366",
+      "insiderWord": "Keerthy Suresh",
+      "mismatchWord": "Sai Pallavi",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "367",
+      "insiderWord": "Dulquer Salmaan",
+      "mismatchWord": "Fahadh Faasil",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "368",
+      "insiderWord": "Mohanlal",
+      "mismatchWord": "Mammootty",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "369",
+      "insiderWord": "Anupama",
+      "mismatchWord": "Yeh Rishta Kya Kehlata Hai",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "370",
+      "insiderWord": "Naagin",
+      "mismatchWord": "Sasural Simar Ka",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "371",
+      "insiderWord": "Kumkum Bhagya",
+      "mismatchWord": "Kundali Bhagya",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "372",
+      "insiderWord": "Balika Vadhu",
+      "mismatchWord": "Uttaran",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "373",
+      "insiderWord": "Comedy Nights with Kapil",
+      "mismatchWord": "The Great Indian Laughter Challenge",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "374",
+      "insiderWord": "Indian Matchmaking",
+      "mismatchWord": "Made in Heaven",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "375",
+      "insiderWord": "Delhi Crime",
+      "mismatchWord": "Paatal Lok",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "376",
+      "insiderWord": "Special Ops",
+      "mismatchWord": "Asur",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "377",
+      "insiderWord": "Faadu",
+      "mismatchWord": "Jubilee",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "378",
+      "insiderWord": "Aarya",
+      "mismatchWord": "Criminal Justice",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "379",
+      "insiderWord": "Broken But Beautiful",
+      "mismatchWord": "Never Kiss Your Best Friend",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "380",
+      "insiderWord": "Class",
+      "mismatchWord": "Hostel Daze",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "381",
+      "insiderWord": "Permanent Roommates",
+      "mismatchWord": "Tripling",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "382",
+      "insiderWord": "Little Things",
+      "mismatchWord": "Modern Love Mumbai",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "383",
+      "insiderWord": "Flames",
+      "mismatchWord": "College Romance",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "384",
+      "insiderWord": "TVF Pitchers",
+      "mismatchWord": "TVF Tripling",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "385",
+      "insiderWord": "Shekhar Ravjiani",
+      "mismatchWord": "Vishal Dadlani",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "386",
+      "insiderWord": "Shankar Mahadevan",
+      "mismatchWord": "Hariharan",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "387",
+      "insiderWord": "Udit Narayan",
+      "mismatchWord": "Kumar Sanu",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "388",
+      "insiderWord": "Alka Yagnik",
+      "mismatchWord": "Kavita Krishnamurthy",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "389",
+      "insiderWord": "Benny Dayal",
+      "mismatchWord": "Armaan Malik",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "390",
+      "insiderWord": "MC Stan",
+      "mismatchWord": "Ikka",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "391",
+      "insiderWord": "Sachin-Jigar",
+      "mismatchWord": "Amit Trivedi",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "392",
+      "insiderWord": "Salim-Sulaiman",
+      "mismatchWord": "Shankar-Ehsaan-Loy",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "393",
+      "insiderWord": "Ismail Darbar",
+      "mismatchWord": "Anu Malik",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "394",
+      "insiderWord": "Himesh Reshammiya",
+      "mismatchWord": "Mika Singh",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "395",
+      "insiderWord": "Appam",
+      "mismatchWord": "Puttu",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "396",
+      "insiderWord": "Mysore Pak",
+      "mismatchWord": "Halwa",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "397",
+      "insiderWord": "Mysore Bonda",
+      "mismatchWord": "Medu Vada",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "398",
+      "insiderWord": "Sambar",
+      "mismatchWord": "Rasam",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "399",
+      "insiderWord": "Chettinad Chicken",
+      "mismatchWord": "Andhra Chicken",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "400",
+      "insiderWord": "Gongura",
+      "mismatchWord": "Pachadi",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "401",
+      "insiderWord": "Avial",
+      "mismatchWord": "Thoran",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "402",
+      "insiderWord": "Pesarattu",
+      "mismatchWord": "Neer Dosa",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "403",
+      "insiderWord": "Malabar Parotta",
+      "mismatchWord": "Kerala Parotta",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "404",
+      "insiderWord": "Kerala Sadya",
+      "mismatchWord": "Onam Sadya",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "405",
+      "insiderWord": "Galouti Kebab",
+      "mismatchWord": "Seekh Kebab",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "406",
+      "insiderWord": "Shami Kebab",
+      "mismatchWord": "Reshmi Kebab",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "407",
+      "insiderWord": "Litti Chokha",
+      "mismatchWord": "Baati Chokha",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "408",
+      "insiderWord": "Chana Masala",
+      "mismatchWord": "Chole Masala",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "409",
+      "insiderWord": "Malai Kofta",
+      "mismatchWord": "Navratan Korma",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "410",
+      "insiderWord": "Malai Matar",
+      "mismatchWord": "Matar Paneer",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "411",
+      "insiderWord": "Kadi Pakoda",
+      "mismatchWord": "Kadi Chawal",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "412",
+      "insiderWord": "Bisibele Bath",
+      "mismatchWord": "Puliyogare",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "413",
+      "insiderWord": "Lemon Rice",
+      "mismatchWord": "Curd Rice",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "414",
+      "insiderWord": "Sabudana Khichdi",
+      "mismatchWord": "Sabudana Vada",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "415",
+      "insiderWord": "Misal",
+      "mismatchWord": "Usal",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "416",
+      "insiderWord": "Zunka Bhakar",
+      "mismatchWord": "Pitla Bhakri",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "417",
+      "insiderWord": "Muthia",
+      "mismatchWord": "Handvo",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "418",
+      "insiderWord": "Dal Dhokli",
+      "mismatchWord": "Undhiyu",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "419",
+      "insiderWord": "Kashmiri Wazwan",
+      "mismatchWord": "Kahwa",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "420",
+      "insiderWord": "Bun Maska",
+      "mismatchWord": "Brun Maska",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "421",
+      "insiderWord": "Kolkata Biryani",
+      "mismatchWord": "Awadhi Biryani",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "422",
+      "insiderWord": "Gautam Gambhir",
+      "mismatchWord": "Virender Sehwag",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "423",
+      "insiderWord": "Sourav Ganguly",
+      "mismatchWord": "Anil Kumble",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "424",
+      "insiderWord": "Zaheer Khan",
+      "mismatchWord": "Irfan Pathan",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "425",
+      "insiderWord": "Suresh Raina",
+      "mismatchWord": "Dinesh Karthik",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "426",
+      "insiderWord": "Axar Patel",
+      "mismatchWord": "Washington Sundar",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "427",
+      "insiderWord": "Shardul Thakur",
+      "mismatchWord": "Deepak Chahar",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "428",
+      "insiderWord": "Kuldeep Yadav",
+      "mismatchWord": "Yuzvendra Chahal",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "429",
+      "insiderWord": "Ishan Kishan",
+      "mismatchWord": "Sanju Samson",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "430",
+      "insiderWord": "Mohammed Siraj",
+      "mismatchWord": "Arshdeep Singh",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "431",
+      "insiderWord": "Umran Malik",
+      "mismatchWord": "Navdeep Saini",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "432",
+      "insiderWord": "Kolkata",
+      "mismatchWord": "Howrah",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "433",
+      "insiderWord": "Howrah Bridge",
+      "mismatchWord": "Vidyasagar Setu",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "434",
+      "insiderWord": "Victoria Memorial",
+      "mismatchWord": "Indian Museum",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "435",
+      "insiderWord": "Juhu Beach",
+      "mismatchWord": "Versova Beach",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "436",
+      "insiderWord": "Bandra Fort",
+      "mismatchWord": "Carter Road",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "437",
+      "insiderWord": "Colaba Causeway",
+      "mismatchWord": "Linking Road",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "438",
+      "insiderWord": "Connaught Place",
+      "mismatchWord": "Khan Market",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "439",
+      "insiderWord": "Sarojini Nagar",
+      "mismatchWord": "Lajpat Nagar",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "440",
+      "insiderWord": "Hauz Khas",
+      "mismatchWord": "GK M Block",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "441",
+      "insiderWord": "Cyber Hub",
+      "mismatchWord": "DLF Phase 3",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "442",
+      "insiderWord": "MG Road",
+      "mismatchWord": "Brigade Road",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "443",
+      "insiderWord": "Cubbon Park",
+      "mismatchWord": "Lalbagh",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "444",
+      "insiderWord": "Charminar",
+      "mismatchWord": "Hussain Sagar",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "445",
+      "insiderWord": "Haji Ali",
+      "mismatchWord": "Siddhivinayak",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "446",
+      "insiderWord": "Golden Temple",
+      "mismatchWord": "Akshardham",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "447",
+      "insiderWord": "Lotus Temple",
+      "mismatchWord": "Iskcon Temple",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "448",
+      "insiderWord": "Rishikesh",
+      "mismatchWord": "Roorkee",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "449",
+      "insiderWord": "Mussoorie",
+      "mismatchWord": "Nainital",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "450",
+      "insiderWord": "Kasol",
+      "mismatchWord": "Dharamshala",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "451",
+      "insiderWord": "McLeod Ganj",
+      "mismatchWord": "Dalhousie",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "452",
+      "insiderWord": "Spiti Valley",
+      "mismatchWord": "Ladakh",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "453",
+      "insiderWord": "Leh",
+      "mismatchWord": "Kargil",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "454",
+      "insiderWord": "Andaman",
+      "mismatchWord": "Lakshadweep",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "455",
+      "insiderWord": "Alleppey",
+      "mismatchWord": "Munnar",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "456",
+      "insiderWord": "Wayanad",
+      "mismatchWord": "Coorg",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "457",
+      "insiderWord": "Hampi",
+      "mismatchWord": "Badami",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "458",
+      "insiderWord": "Jaisalmer",
+      "mismatchWord": "Jodhpur",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "459",
+      "insiderWord": "Bikaner",
+      "mismatchWord": "Pushkar",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "460",
+      "insiderWord": "Mamaearth",
+      "mismatchWord": "Wow Skin Science",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "461",
+      "insiderWord": "Boat",
+      "mismatchWord": "Noise",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "462",
+      "insiderWord": "Lenskart",
+      "mismatchWord": "Titan Eye Plus",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "463",
+      "insiderWord": "Urban Company",
+      "mismatchWord": "Housejoy",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "464",
+      "insiderWord": "Practo",
+      "mismatchWord": "1mg",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "465",
+      "insiderWord": "PharmEasy",
+      "mismatchWord": "Netmeds",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "466",
+      "insiderWord": "Dominos",
+      "mismatchWord": "Pizza Hut",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "467",
+      "insiderWord": "KFC",
+      "mismatchWord": "Burger King",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "468",
+      "insiderWord": "McDonalds India",
+      "mismatchWord": "Taco Bell India",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "469",
+      "insiderWord": "Cafe Coffee Day",
+      "mismatchWord": "Starbucks India",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "470",
+      "insiderWord": "Barista",
+      "mismatchWord": "Theobroma",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "471",
+      "insiderWord": "Licious",
+      "mismatchWord": "Freshtohome",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "472",
+      "insiderWord": "Country Delight",
+      "mismatchWord": "Milkbasket",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "473",
+      "insiderWord": "Namma Yatri",
+      "mismatchWord": "Ola Auto",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "474",
+      "insiderWord": "Goibibo",
+      "mismatchWord": "Cleartrip",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "475",
+      "insiderWord": "EaseMyTrip",
+      "mismatchWord": "Yatra",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "476",
+      "insiderWord": "Zerodha",
+      "mismatchWord": "Groww",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "477",
+      "insiderWord": "Upstox",
+      "mismatchWord": "Angel One",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "478",
+      "insiderWord": "Amazon Pay",
+      "mismatchWord": "Samsung Pay",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "479",
+      "insiderWord": "Classplus",
+      "mismatchWord": "Physics Wallah",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "480",
+      "insiderWord": "Allen Institute",
+      "mismatchWord": "Resonance Kota",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "481",
+      "insiderWord": "Vedantu",
+      "mismatchWord": "Extramarks",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "482",
+      "insiderWord": "WhiteHat Jr",
+      "mismatchWord": "Cuemath",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "483",
+      "insiderWord": "PG Accommodation",
+      "mismatchWord": "Flatmate Hunt",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "484",
+      "insiderWord": "Broker Commission",
+      "mismatchWord": "Token Amount",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "485",
+      "insiderWord": "Society Meeting",
+      "mismatchWord": "RWA Notice",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "486",
+      "insiderWord": "Maintenance Bill",
+      "mismatchWord": "Electricity Bill",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "487",
+      "insiderWord": "Water Bill",
+      "mismatchWord": "Gas Bill",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "488",
+      "insiderWord": "LPG Subsidy",
+      "mismatchWord": "UPI Payment",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "489",
+      "insiderWord": "ATM Queue",
+      "mismatchWord": "Bank Passbook",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "490",
+      "insiderWord": "Fixed Deposit",
+      "mismatchWord": "Mutual Fund SIP",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "491",
+      "insiderWord": "Diwali Bonus",
+      "mismatchWord": "Increment Letter",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "492",
+      "insiderWord": "Appraisal Season",
+      "mismatchWord": "Layoff News",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "493",
+      "insiderWord": "H1B Visa",
+      "mismatchWord": "Canada PR",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "494",
+      "insiderWord": "UK Student Visa",
+      "mismatchWord": "Australia PR",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "495",
+      "insiderWord": "NRI Return",
+      "mismatchWord": "Reverse Migration",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "496",
+      "insiderWord": "Shaadi Biodata",
+      "mismatchWord": "Matrimonial Ad",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "497",
+      "insiderWord": "Pandit Ji",
+      "mismatchWord": "Matchmaker Aunty",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "498",
+      "insiderWord": "Rishta Profile",
+      "mismatchWord": "LinkedIn Profile",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "499",
+      "insiderWord": "Naukri Profile",
+      "mismatchWord": "Internshala",
+      "category": "Indian Pop Culture"
+    },
+    {
+      "id": "500",
+      "insiderWord": "Freshers Party",
+      "mismatchWord": "Farewell Party",
+      "category": "Indian Pop Culture"
+    }
+  ]
+}

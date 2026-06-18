@@ -139,9 +139,12 @@ final class AppDependencies {
 
     private func dealRolesAndNavigateToDistribution() async {
         do {
-            let wordPair = try wordPairSelector.nextPair()
-            try gameSessionStore.distributeRoles(wordPair: wordPair)
-            wordPairSelector.markUsed(wordPair)
+            let packIds = gameSessionStore.currentSession?.settings.selectedWordPackIds
+                ?? GameSettings.defaultSelectedWordPackIds
+            let selection = try wordPairSelector.nextPair(packIds: packIds)
+            try gameSessionStore.distributeRoles(wordPair: selection.pair)
+            wordPairSelector.markUsed(selection)
+            lobbyViewModel.reloadWordPackSummaries()
             await navigateToDistribution()
         } catch {
             router.popToRoot()
