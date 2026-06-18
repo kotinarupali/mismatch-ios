@@ -16,9 +16,15 @@ final class QRGridViewModel {
     private(set) var playerRows: [PlayerRow] = []
     private(set) var serverFailed = false
     private(set) var statusMessage = "Scan a QR code to open your role card."
+    var showPlayerRolePicker = false
+    var playerToReveal: PlayerSlot?
 
     var hostIsPlaying: Bool {
         dependencies.gameSessionStore.currentSession?.settings.hostIsPlaying ?? false
+    }
+
+    var playersWithPickedCards: [PlayerSlot] {
+        dependencies.gameSessionStore.playersWithPickedCards()
     }
 
     init(dependencies: AppDependencies) {
@@ -58,6 +64,14 @@ final class QRGridViewModel {
 
     func endGame() {
         dependencies.endGame()
+    }
+
+    func checkPlayerRoleTapped() {
+        showPlayerRolePicker = true
+    }
+
+    func selectPlayerForRoleCheck(_ player: PlayerSlot) {
+        playerToReveal = player
     }
 
     private func buildRows() {

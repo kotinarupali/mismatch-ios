@@ -35,8 +35,17 @@ struct PassThePhoneView: View {
         .toolbarColorScheme(.dark, for: .navigationBar)
         .hostGameMenu(
             onRepick: { viewModel.repickRoles() },
-            onEndGame: { viewModel.endGame() }
+            onEndGame: { viewModel.endGame() },
+            onCheckPlayerRole: { viewModel.checkPlayerRoleTapped() }
         )
+        .sheet(isPresented: $viewModel.showPlayerRolePicker) {
+            PlayerRolePickerSheet(players: viewModel.playersWithPickedCards) { player in
+                viewModel.selectPlayerForRoleCheck(player)
+            }
+        }
+        .sheet(item: $viewModel.playerToReveal) { player in
+            PlayerRoleRevealSheet(player: player)
+        }
     }
 
     private var handoffContent: some View {

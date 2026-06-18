@@ -78,6 +78,10 @@ final class GameSessionStore {
         }
     }
 
+    func playersWithPickedCards() -> [PlayerSlot] {
+        currentSession?.players.filter { $0.hasOpenedCard && $0.assignment != nil } ?? []
+    }
+
     func updatePlayerCardURL(playerId: UUID, token: String, url: String) {
         guard var session = currentSession else { return }
         guard let index = session.players.firstIndex(where: { $0.id == playerId }) else { return }

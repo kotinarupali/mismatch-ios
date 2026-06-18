@@ -7,7 +7,10 @@ final class DiscussionViewModel {
     let timerService: TimerService
 
     let timerDurationSeconds: Int
-    var showRolesReveal = false
+    var selectedPlayerId: UUID?
+    var showConfirmDialog = false
+    var showPlayerRolePicker = false
+    var playerToReveal: PlayerSlot?
 
     init(dependencies: AppDependencies) {
         self.dependencies = dependencies
@@ -19,20 +22,29 @@ final class DiscussionViewModel {
         dependencies.gameSessionStore.currentSession?.settings.discussionTimerEnabled ?? false
     }
 
-    var timerLabel: String {
-        timerService.formattedTime
+    var activePlayers: [PlayerSlot] {
+        dependencies.gameSessionStore.currentSession?.players
+            .filter { !$0.isEliminated } ?? []
     }
 
-    var playersForReveal: [PlayerSlot] {
-        dependencies.gameSessionStore.currentSession?.players
-            .filter { !$0.isEliminated && $0.assignment != nil } ?? []
+    var playersWithPickedCards: [PlayerSlot] {
+        dependencies.gameSessionStore.playersWithPickedCards()
+    }
+
+    var selectedPlayerName: String {
+        guard let id = selectedPlayerId,
+              let player = activePlayers.first(where: { $0.id == id }) else {
+            return "this player"
+        }
+        return player.isHost ? "You" : player.displayName
     }
 
     func onAppear() {
+        dependencies.gameSessionStore.updateState(.discussing)
         guard timerEnabled else { return }
         let duration = dependencies.gameSessionStore.currentSession?.settings.timerSeconds ?? 180
         dependencies.timerService.start(durationSeconds: duration) { [weak self] in
-            self?.startVotingTapped()
+            self?.dependencies.timerService.stop()
         }
     }
 
@@ -40,14 +52,28 @@ final class DiscussionViewModel {
         dependencies.timerService.stop()
     }
 
-    func startVotingTapped() {
-        dependencies.timerService.stop()
-        dependencies.gameSessionStore.updateState(.voting)
-        dependencies.router.navigate(to: .voting)
+    func selectPlayer(_ id: UUID) {
+        selectedPlayerId = id
     }
 
-    func revealRolesTapped() {
-        showRolesReveal = true
+    func confirmVoteTapped() {
+        guard selectedPlayerId != nil else { return }
+        showConfirmDialog = true
+    }
+
+    func submitElimination() {
+        guard let id = selectedPlayerId else { return }
+        dependencies.timerService.stop()
+        dependencies.gameSessionStore.eliminate(playerId: id)
+        dependencies.router.navigate(to: .results)
+    }
+
+    func checkPlayerRoleTapped() {
+        showPlayerRolePicker = true
+    }
+
+    func selectPlayerForRoleCheck(_ player: PlayerSlot) {
+        playerToReveal = player
     }
 
     func repickRoles() {

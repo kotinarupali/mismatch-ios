@@ -4,12 +4,12 @@ extension View {
     func hostGameMenu(
         onRepick: @escaping () -> Void,
         onEndGame: @escaping () -> Void,
-        onRevealRoles: (() -> Void)? = nil
+        onCheckPlayerRole: (() -> Void)? = nil
     ) -> some View {
         modifier(HostGameMenuModifier(
             onRepick: onRepick,
             onEndGame: onEndGame,
-            onRevealRoles: onRevealRoles
+            onCheckPlayerRole: onCheckPlayerRole
         ))
     }
 }
@@ -20,18 +20,18 @@ private struct HostGameMenuModifier: ViewModifier {
 
     let onRepick: () -> Void
     let onEndGame: () -> Void
-    let onRevealRoles: (() -> Void)?
+    let onCheckPlayerRole: (() -> Void)?
 
     func body(content: Content) -> some View {
         content
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
-                        if let onRevealRoles {
+                        if let onCheckPlayerRole {
                             Button {
-                                onRevealRoles()
+                                onCheckPlayerRole()
                             } label: {
-                                Label("Reveal Roles", systemImage: "eye.fill")
+                                Label("Check Player Role", systemImage: "eye.fill")
                             }
                         }
 

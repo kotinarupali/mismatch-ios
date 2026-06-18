@@ -5,37 +5,35 @@ struct DiscussionView: View {
 
     var body: some View {
         PlaceholderScreenLayout(
-            title: "Discussion",
-            subtitle: "Find who doesn't know the secret word.",
+            title: "Discuss & Vote",
+            subtitle: "Talk it out, then tap a player to eliminate.",
             icon: "bubble.left.and.bubble.right.fill",
             roomStyle: .discussion
         ) {
-            VStack(spacing: 24) {
+            VStack(spacing: 20) {
                 if viewModel.timerEnabled {
                     TimerView(
                         timeLabel: viewModel.timerService.formattedTime,
                         totalSeconds: viewModel.timerDurationSeconds
                     )
-                } else {
-                    Text("Take your time — start voting when the group is ready.")
-                        .font(AppTypography.body)
-                        .foregroundStyle(AppColor.secondaryLabel)
-                        .multilineTextAlignment(.center)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 24)
                 }
 
-                SecondaryButton(title: "Reveal Roles") {
-                    viewModel.revealRolesTapped()
-                }
+                PlayerGridView(
+                    players: viewModel.activePlayers,
+                    selectedPlayerId: viewModel.selectedPlayerId,
+                    onSelect: { viewModel.selectPlayer($0) }
+                )
 
-                PrimaryButton(title: viewModel.timerEnabled ? "End Early" : "Start Voting") {
-                    viewModel.startVotingTapped()
+                PrimaryButton(
+                    title: "Confirm Vote",
+                    isEnabled: viewModel.selectedPlayerId != nil
+                ) {
+                    viewModel.confirmVoteTapped()
                 }
             }
             .frame(maxWidth: .infinity)
         }
-        .navigationTitle("Discussion")
+        .navigationTitle("Discuss & Vote")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .toolbarBackground(AppColor.background.opacity(0.9), for: .navigationBar)
@@ -43,10 +41,23 @@ struct DiscussionView: View {
         .hostGameMenu(
             onRepick: { viewModel.repickRoles() },
             onEndGame: { viewModel.endGame() },
-            onRevealRoles: { viewModel.revealRolesTapped() }
+            onCheckPlayerRole: { viewModel.checkPlayerRoleTapped() }
         )
-        .sheet(isPresented: $viewModel.showRolesReveal) {
-            RolesRevealSheet(players: viewModel.playersForReveal)
+        .sheet(isPresented: $viewModel.showPlayerRolePicker) {
+            PlayerRolePickerSheet(players: viewModel.playersWithPickedCards) { player in
+                viewModel.selectPlayerForRoleCheck(player)
+            }
+        }
+        .sheet(item: $viewModel.playerToReveal) { player in
+            PlayerRoleRevealSheet(player: player)
+        }
+        .confirmDialog(
+            isPresented: $viewModel.showConfirmDialog,
+            title: "Confirm elimination",
+            message: "Eliminate \(viewModel.selectedPlayerName)?",
+            confirmTitle: "Eliminate"
+        ) {
+            viewModel.submitElimination()
         }
         .onAppear { viewModel.onAppear() }
         .onDisappear { viewModel.onDisappear() }

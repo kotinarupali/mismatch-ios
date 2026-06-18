@@ -24,7 +24,8 @@ struct AppRootView: View {
                         DiscussionView(viewModel: DiscussionViewModel(dependencies: dependencies))
                             .id(discussionRoundId)
                     case .voting:
-                        VotingView(viewModel: VotingViewModel(dependencies: dependencies))
+                        DiscussionView(viewModel: DiscussionViewModel(dependencies: dependencies))
+                            .id(discussionRoundId)
                     case .results:
                         ResultsView(viewModel: ResultsViewModel(dependencies: dependencies))
                     }

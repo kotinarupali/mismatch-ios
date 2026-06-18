@@ -8,6 +8,8 @@ final class PassThePhoneViewModel {
     private var passOrder: [PlayerSlot] = []
     private var currentIndex = 0
     private(set) var awaitingHandoff = false
+    var showPlayerRolePicker = false
+    var playerToReveal: PlayerSlot?
 
     init(dependencies: AppDependencies) {
         self.dependencies = dependencies
@@ -68,6 +70,10 @@ final class PassThePhoneViewModel {
         dependencies.gameSessionStore.claimedCards()
     }
 
+    var playersWithPickedCards: [PlayerSlot] {
+        dependencies.gameSessionStore.playersWithPickedCards()
+    }
+
     var nextPlayerDisplayName: String? {
         guard currentIndex + 1 < passOrder.count else { return nil }
         return displayName(for: passOrder[currentIndex + 1])
@@ -106,6 +112,14 @@ final class PassThePhoneViewModel {
 
     func endGame() {
         dependencies.endGame()
+    }
+
+    func checkPlayerRoleTapped() {
+        showPlayerRolePicker = true
+    }
+
+    func selectPlayerForRoleCheck(_ player: PlayerSlot) {
+        playerToReveal = player
     }
 
     private func displayName(for player: PlayerSlot) -> String {

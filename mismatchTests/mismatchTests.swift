@@ -3,13 +3,13 @@ import Testing
 
 struct WordPackLoaderTests {
 
-    @Test func loadsGeneralPackWith30Pairs() throws {
+    @Test func loadsGeneralPackWith130Pairs() throws {
         let loader = WordPackLoader()
         let pack = try loader.loadBuiltIn(packId: "general")
 
         #expect(pack.id == "general")
         #expect(pack.isBuiltIn)
-        #expect(pack.pairs.count == 30)
+        #expect(pack.pairs.count == 130)
     }
 
     @Test func gameSessionRequiresMinimumThreePlayers() {
