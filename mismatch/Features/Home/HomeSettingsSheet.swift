@@ -17,6 +17,32 @@ struct HomeSettingsSheet: View {
                             .fixedSize(horizontal: false, vertical: true)
 
                         SettingsCard {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Label("Your name", systemImage: "person.fill")
+                                    .font(AppTypography.body)
+                                    .foregroundStyle(AppColor.label)
+
+                                TextField("Name shown in the game", text: hostDisplayNameBinding)
+                                    .textFieldStyle(.plain)
+                                    .font(AppTypography.body)
+                                    .foregroundStyle(AppColor.label)
+                                    .textInputAutocapitalization(.words)
+                                    .autocorrectionDisabled()
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 10)
+                                    .background(AppColor.backgroundElevated)
+                                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+
+                                Text("Used on your player card and scoreboards instead of \"You\".")
+                                    .font(AppTypography.caption)
+                                    .foregroundStyle(AppColor.secondaryLabel)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
+                        }
+
+                        SettingsCard {
                             SettingsToggleRow(
                                 icon: "timer",
                                 title: "Discussion timer",
@@ -74,6 +100,13 @@ struct HomeSettingsSheet: View {
         Binding(
             get: { viewModel.preferences.timerMinutes },
             set: { viewModel.setTimerMinutes($0) }
+        )
+    }
+
+    private var hostDisplayNameBinding: Binding<String> {
+        Binding(
+            get: { viewModel.preferences.hostDisplayName },
+            set: { viewModel.setHostDisplayName($0) }
         )
     }
 }

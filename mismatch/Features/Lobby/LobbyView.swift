@@ -146,6 +146,20 @@ struct LobbyView: View {
                     .opacity(viewModel.canToggleGhost ? 1 : 0.45)
                     Divider().overlay(AppColor.cardBorder).padding(.horizontal, 16)
                     SettingsToggleRow(
+                        icon: "arrow.triangle.2.circlepath",
+                        title: "Ghost pick again",
+                        isOn: ghostPickAgainEnabledBinding
+                    )
+                    .disabled(!viewModel.ghostEnabled)
+                    .opacity(viewModel.ghostEnabled ? 1 : 0.45)
+                    Text("If someone gets Ghost, they can pick another card when at least two other players haven't picked yet — the ghost role passes to one of them.")
+                        .font(AppTypography.caption)
+                        .foregroundStyle(AppColor.secondaryLabel)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 4)
+                    Divider().overlay(AppColor.cardBorder).padding(.horizontal, 16)
+                    SettingsToggleRow(
                         icon: "person.2.fill",
                         title: "Mismatch & Ghost alliance",
                         isOn: mismatchGhostAllianceBinding
@@ -278,6 +292,16 @@ struct LobbyView: View {
         Binding(
             get: { viewModel.ghostEnabled },
             set: { viewModel.setGhostEnabled($0) }
+        )
+    }
+
+    private var ghostPickAgainEnabledBinding: Binding<Bool> {
+        Binding(
+            get: { viewModel.ghostPickAgainEnabled },
+            set: {
+                viewModel.ghostPickAgainEnabled = $0
+                viewModel.refreshSession()
+            }
         )
     }
 }

@@ -46,6 +46,11 @@ final class HomeViewModel {
         persistPreferences()
     }
 
+    func setHostDisplayName(_ name: String) {
+        preferences.hostDisplayName = name
+        persistPreferences()
+    }
+
     func hostGameTapped() {
         persistPreferences()
         let settings = preferences.applying(to: .default)

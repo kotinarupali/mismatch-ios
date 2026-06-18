@@ -63,7 +63,7 @@ final class ResultsViewModel {
         guard let player = dependencies.gameSessionStore.eliminatedPlayer else {
             return "Unknown"
         }
-        return player.isHost ? "You" : player.displayName
+        return player.displayName
     }
 
     var eliminatedRole: String {
@@ -186,7 +186,7 @@ final class ResultsViewModel {
     }
 
     private var finalScoringGains: [UUID: Int] {
-        ScoringEngine.pointsByPlayer(from: dependencies.gameSessionStore.allScoreEvents())
+        ScoringEngine.pointsByPlayer(from: dependencies.gameSessionStore.currentGameScoreEvents())
     }
 
     var scoreLeaderName: String? {

@@ -16,6 +16,7 @@ final class LobbyViewModel {
     var hostIsPlaying: Bool
     var showRoleOnCard: Bool
     var ghostEnabled: Bool
+    var ghostPickAgainEnabled: Bool
     var mismatchGhostAlliance: Bool
     var discussionTimerEnabled: Bool
     var timerMinutes: Int
@@ -39,13 +40,14 @@ final class LobbyViewModel {
         hostIsPlaying = settings.hostIsPlaying
         showRoleOnCard = settings.showRoleOnCard
         ghostEnabled = settings.ghostEnabled
+        ghostPickAgainEnabled = settings.ghostPickAgainEnabled
         mismatchGhostAlliance = settings.mismatchGhostAlliance
         discussionTimerEnabled = settings.discussionTimerEnabled
         timerMinutes = Self.resolvedTimerMinutes(from: settings)
         distributionMode = Self.resolvedDistributionMode(settings.distributionMode)
         cloudGuestVotingEnabled = settings.cloudGuestVotingEnabled
 
-        seatedPlayers = Self.loadSeatedPlayers(from: dependencies.gameSessionStore.currentSession)
+        seatedPlayers = loadSeatedPlayers(from: dependencies.gameSessionStore.currentSession)
         reservedHostId = dependencies.gameSessionStore.currentSession?.players.first(where: \.isHost)?.id
 
         reconcileHostSeat()
@@ -62,6 +64,7 @@ final class LobbyViewModel {
         hostIsPlaying = settings.hostIsPlaying
         showRoleOnCard = settings.showRoleOnCard
         ghostEnabled = settings.ghostEnabled
+        ghostPickAgainEnabled = settings.ghostPickAgainEnabled
         mismatchGhostAlliance = settings.mismatchGhostAlliance
         discussionTimerEnabled = settings.discussionTimerEnabled
         timerMinutes = Self.resolvedTimerMinutes(from: settings)
@@ -71,7 +74,7 @@ final class LobbyViewModel {
         ghostDisabledByUser = playerCount >= RoleDistributionTable.minimumPlayerCountForGhost
             && !settings.ghostEnabled
 
-        seatedPlayers = Self.loadSeatedPlayers(from: dependencies.gameSessionStore.currentSession)
+        seatedPlayers = loadSeatedPlayers(from: dependencies.gameSessionStore.currentSession)
         reservedHostId = dependencies.gameSessionStore.currentSession?.players.first(where: \.isHost)?.id
         newPlayerName = ""
         isDistributing = false
@@ -82,7 +85,7 @@ final class LobbyViewModel {
         syncSession()
     }
 
-    private static func loadSeatedPlayers(from session: GameSession?) -> [LobbySeatedPlayer] {
+    private func loadSeatedPlayers(from session: GameSession?) -> [LobbySeatedPlayer] {
         let players = session?.players ?? []
         let order = session?.seatingOrderPlayerIds ?? []
         let lookup = Dictionary(uniqueKeysWithValues: players.map { ($0.id, $0) })
@@ -91,12 +94,23 @@ final class LobbyViewModel {
         return ordered.map { player in
             LobbySeatedPlayer(
                 id: player.id,
-                displayName: player.isHost ? "You" : player.displayName,
+                displayName: resolvedPlayerDisplayName(player),
                 isHost: player.isHost,
                 avatarColor: player.avatarColor,
                 profileId: player.profileId
             )
         }
+    }
+
+    private var preferredHostDisplayName: String {
+        dependencies.hostPreferencesStore.load().resolvedHostDisplayName
+    }
+
+    private func resolvedPlayerDisplayName(_ player: PlayerSlot) -> String {
+        if player.isHost, player.displayName == "You" || player.displayName.isEmpty {
+            return preferredHostDisplayName
+        }
+        return player.displayName
     }
 
     func openChangePlayerPicker(for playerId: UUID) {
@@ -238,7 +252,8 @@ final class LobbyViewModel {
     var statusMessage: String {
         let playerLine: String
         if hostIsPlaying {
-            playerLine = "\(totalPlayerCount) players · you + \(guestCount) guest\(guestCount == 1 ? "" : "s")"
+            let hostName = seatedPlayers.first(where: \.isHost)?.displayName ?? preferredHostDisplayName
+            playerLine = "\(totalPlayerCount) players · \(hostName) + \(guestCount) guest\(guestCount == 1 ? "" : "s")"
         } else {
             playerLine = "\(totalPlayerCount) of \(minimumPlayers)+ players"
         }
@@ -252,6 +267,7 @@ final class LobbyViewModel {
         var parts = [distributionMode.displayName]
         if hostIsPlaying { parts.append("You're playing") }
         if ghostEnabled { parts.append("Ghost") }
+        if ghostEnabled && ghostPickAgainEnabled { parts.append("Ghost pick again") }
         if mismatchGhostAlliance { parts.append("Alliance") }
         if showRoleOnCard { parts.append("Roles on card") }
         if discussionTimerEnabled { parts.append("\(timerMinutes) min timer") }
@@ -439,14 +455,21 @@ final class LobbyViewModel {
     }
 
     private func reconcileHostSeat() {
+        let hostName = preferredHostDisplayName
         if hostIsPlaying {
-            if seatedPlayers.contains(where: \.isHost) { return }
+            if let index = seatedPlayers.firstIndex(where: \.isHost) {
+                reservedHostId = seatedPlayers[index].id
+                if seatedPlayers[index].displayName == "You" || seatedPlayers[index].displayName.isEmpty {
+                    seatedPlayers[index].displayName = hostName
+                }
+                return
+            }
             let hostId = reservedHostId ?? UUID()
             reservedHostId = hostId
             seatedPlayers.insert(
                 LobbySeatedPlayer(
                     id: hostId,
-                    displayName: "You",
+                    displayName: hostName,
                     isHost: true,
                     avatarColor: .blue
                 ),
@@ -464,6 +487,7 @@ final class LobbyViewModel {
         var settings = dependencies.gameSessionStore.currentSession?.settings ?? .default
         settings.hostIsPlaying = hostIsPlaying
         settings.ghostEnabled = ghostEnabled
+        settings.ghostPickAgainEnabled = ghostPickAgainEnabled
         settings.mismatchGhostAlliance = mismatchGhostAlliance
         settings.discussionTimerEnabled = discussionTimerEnabled
         settings.timerSeconds = timerMinutes * 60
@@ -475,23 +499,26 @@ final class LobbyViewModel {
         let existingById = Dictionary(
             uniqueKeysWithValues: (dependencies.gameSessionStore.currentSession?.players ?? []).map { ($0.id, $0) }
         )
+        let sessionState = dependencies.gameSessionStore.currentSession?.state
 
         let slots = seatedPlayers.map { entry in
             var slot = PlayerSlot(
                 id: entry.id,
-                displayName: entry.isHost ? "You" : entry.displayName,
+                displayName: entry.displayName,
                 avatarColor: entry.avatarColor,
                 isHost: entry.isHost,
                 profileId: entry.profileId
             )
             if let existing = existingById[entry.id] {
-                slot.assignment = existing.assignment
-                slot.hasOpenedCard = existing.hasOpenedCard
-                slot.pickedCardIndex = existing.pickedCardIndex
-                slot.isEliminated = existing.isEliminated
-                slot.cardToken = existing.cardToken
-                slot.cardURL = existing.cardURL
                 slot.sessionScore = existing.sessionScore
+                if sessionState != .lobby {
+                    slot.assignment = existing.assignment
+                    slot.hasOpenedCard = existing.hasOpenedCard
+                    slot.pickedCardIndex = existing.pickedCardIndex
+                    slot.isEliminated = existing.isEliminated
+                    slot.cardToken = existing.cardToken
+                    slot.cardURL = existing.cardURL
+                }
             }
             return slot
         }
@@ -501,6 +528,6 @@ final class LobbyViewModel {
     }
 
     private static func profileNameMatchesSearch(_ name: String, query: String) -> Bool {
-        name.range(of: query, options: []) != nil
+        name.range(of: query, options: .caseInsensitive) != nil
     }
 }

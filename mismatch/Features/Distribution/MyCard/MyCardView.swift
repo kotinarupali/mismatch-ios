@@ -23,6 +23,8 @@ struct MyCardView: View {
                             assignment: assignment,
                             insiderWord: viewModel.insiderWord,
                             claimedCards: sessionStore.claimedCards(),
+                            canGhostRoleSwap: viewModel.canGhostRoleSwap,
+                            onGhostRoleSwap: { viewModel.swapGhostRole() },
                             onComplete: { cardIndex in
                                 viewModel.markOpened(cardIndex: cardIndex)
                                 dismiss()

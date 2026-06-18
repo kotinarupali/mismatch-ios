@@ -90,6 +90,17 @@ final class AppDependencies {
     func repickRoles() {
         timerService.stop()
         stopCardDelivery()
+
+        if gameSessionStore.hasRoleAssignments {
+            do {
+                try gameSessionStore.repickCardClaims()
+            } catch {
+                return
+            }
+            Task { await navigateToDistribution() }
+            return
+        }
+
         gameSessionStore.resetRoundForPlayAgain()
         lobbyViewModel.reloadFromSession()
         router.replaceWithLobby()
@@ -119,31 +130,34 @@ final class AppDependencies {
         stopCardDelivery()
         gameSessionStore.resetRoundForPlayAgain()
         lobbyViewModel.reloadFromSession()
-        await distributeRolesUsingLobbySettings()
+        await dealRolesAndNavigateToDistribution()
     }
 
     func newGameNight() {
         endGame()
     }
 
-    private func distributeRolesUsingLobbySettings() async {
-        let distributionMode = Self.resolvedDistributionMode(
-            gameSessionStore.currentSession?.settings.distributionMode ?? .passThePhone
-        )
-
+    private func dealRolesAndNavigateToDistribution() async {
         do {
             let wordPair = try wordPairSelector.nextPair()
             try gameSessionStore.distributeRoles(wordPair: wordPair)
             wordPairSelector.markUsed(wordPair)
-
-            switch distributionMode {
-            case .passThePhone:
-                router.replaceWithDistribution(.passThePhone)
-            case .cloudQR:
-                await startCloudQRDistribution()
-            }
+            await navigateToDistribution()
         } catch {
             router.popToRoot()
+        }
+    }
+
+    private func navigateToDistribution() async {
+        let distributionMode = Self.resolvedDistributionMode(
+            gameSessionStore.currentSession?.settings.distributionMode ?? .passThePhone
+        )
+
+        switch distributionMode {
+        case .passThePhone:
+            router.replaceWithDistribution(.passThePhone)
+        case .cloudQR:
+            await startCloudQRDistribution()
         }
     }
 

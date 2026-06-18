@@ -5,11 +5,11 @@
   let selectedPlayerId = localStorage.getItem('mismatch_player_' + sessionToken);
   let pollTimer = null;
   let assignment = null;
-  let ghostBluffMode = false;
   let lastRevision = null;
   let claiming = false;
   let votingRound = 0;
   let myVoteTargetId = null;
+  let lastGhostCardIndex = null;
 
   if (!app) return;
 
@@ -158,9 +158,13 @@
 
     const count = session.faceDownCardCount || 4;
     const claimed = indexClaims(session.claimedCards || []);
+    const passedGhostCardIndex = loadPassedGhostCardIndex();
+    const isRepickAfterGhost = passedGhostCardIndex != null;
 
     let sub = '';
-    if ((session.claimedCards || []).length > 0) {
+    if (isRepickAfterGhost) {
+      sub = '<p class="sub">You can\'t pick the ghost card again. Someone else will get that role.</p>';
+    } else if ((session.claimedCards || []).length > 0) {
       sub = '<p class="sub">Cards already taken are marked with names.</p>';
     }
 
@@ -169,14 +173,17 @@
         '<button type="button" class="link-btn" id="change-player">Not you?</button>' +
         '<span class="player-tag">' + escapeHtml(player.displayName) + '</span>' +
       '</div>' +
-      '<h2 class="headline">Pick a card to see your role</h2>' +
+      '<h2 class="headline">' +
+        (isRepickAfterGhost
+          ? 'Pick a different card — the ghost card stays open for someone else'
+          : 'Pick a card to see your role') +
+      '</h2>' +
       sub +
       '<div class="grid" id="grid"></div>'
     );
 
     document.getElementById('change-player').onclick = function () {
       assignment = null;
-      ghostBluffMode = false;
       renderWhoAreYou(session);
     };
 
@@ -194,6 +201,13 @@
           '<span class="card-taken-icon" aria-hidden="true">✓</span>' +
           '<span class="name">' + escapeHtml(claim.playerName) + '</span>';
         grid.appendChild(taken);
+      } else if (isRepickAfterGhost && passedGhostCardIndex === i) {
+        const stillOpen = document.createElement('div');
+        stillOpen.className = 'card-taken card-still-open';
+        stillOpen.innerHTML =
+          '<span class="card-taken-icon" aria-hidden="true">☾</span>' +
+          '<span class="name">Still open</span>';
+        grid.appendChild(stillOpen);
       } else {
         const btn = document.createElement('button');
         btn.type = 'button';
@@ -345,11 +359,16 @@
       })
       .then(function (data) {
         assignment = data;
-        ghostBluffMode = false;
         if (data.revision != null) lastRevision = data.revision;
+        if (data.role === 'ghost') {
+          lastGhostCardIndex = cardIndex;
+        } else {
+          lastGhostCardIndex = null;
+          savePassedGhostCardIndex(null);
+        }
         saveAssignment(data);
         claiming = false;
-        renderReveal(data);
+        renderReveal(data, cardIndex);
       })
       .catch(function (err) {
         claiming = false;
@@ -376,7 +395,26 @@
     try { return JSON.parse(raw); } catch (e) { return null; }
   }
 
-  function renderReveal(data) {
+  function passedGhostStorageKey() {
+    return 'mismatch_passed_ghost_' + sessionToken + '_' + selectedPlayerId;
+  }
+
+  function savePassedGhostCardIndex(index) {
+    if (index == null) {
+      localStorage.removeItem(passedGhostStorageKey());
+      return;
+    }
+    localStorage.setItem(passedGhostStorageKey(), String(index));
+  }
+
+  function loadPassedGhostCardIndex() {
+    const raw = localStorage.getItem(passedGhostStorageKey());
+    if (raw == null) return null;
+    const parsed = parseInt(raw, 10);
+    return isNaN(parsed) ? null : parsed;
+  }
+
+  function renderReveal(data, claimedCardIndex) {
     stopPolling();
     let body = '<div class="revealed">';
 
@@ -384,19 +422,17 @@
       body += '<div class="badge ' + data.role + '">' + capitalize(data.role) + '</div>';
     }
 
-    if (data.role === 'ghost' && !ghostBluffMode) {
+    if (data.role === 'ghost') {
       body += '<p class="reveal-copy">No word — bluff from context</p>';
       if (data.categoryHint) {
         body += '<p class="hint">Hint: ' + escapeHtml(data.categoryHint) + '</p>';
       }
-      if (data.insiderWord) {
-        body += '<button type="button" class="secondary-btn" id="ghost-repick">Pick again</button>';
+      if (data.canSwapGhostRole) {
+        body += '<button type="button" class="secondary-btn" id="ghost-repick">Pick again for another role</button>';
       }
-    } else if (data.role === 'ghost' && ghostBluffMode && data.insiderWord) {
-      body += '<p class="hint">Insider word</p>';
-      body += '<div class="secret shown">' + escapeHtml(data.insiderWord) + '</div>';
-      body += '<p class="hint">Memorize this, then bluff during discussion.</p>';
     } else if (data.word) {
+      savePassedGhostCardIndex(null);
+      lastGhostCardIndex = null;
       body += '<p class="reveal-copy">Press and hold to reveal</p>';
       body += '<div class="secret" id="secret">••••••</div>';
     }
@@ -434,8 +470,23 @@
     const repick = document.getElementById('ghost-repick');
     if (repick) {
       repick.onclick = function () {
-        ghostBluffMode = true;
-        renderReveal(data);
+        const passedIndex = claimedCardIndex != null ? claimedCardIndex : lastGhostCardIndex;
+        savePassedGhostCardIndex(passedIndex);
+        fetch('/api/session/' + encodeURIComponent(sessionToken) + '/swap-ghost', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ playerId: selectedPlayerId })
+        })
+          .then(function (r) {
+            if (!r.ok) throw new Error('failed');
+            return r.json();
+          })
+          .then(function () {
+            assignment = null;
+            localStorage.removeItem('mismatch_assignment_' + sessionToken + '_' + selectedPlayerId);
+            fetchSession().then(function (session) { renderPick(session, true); }).catch(showError);
+          })
+          .catch(showError);
       };
     }
 

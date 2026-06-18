@@ -275,7 +275,7 @@ struct SeatingPlayerRow: View {
     @FocusState private var isNameFocused: Bool
 
     private var displayName: String {
-        player.isHost ? "You" : player.displayName
+        player.displayName
     }
 
     var body: some View {

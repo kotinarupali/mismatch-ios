@@ -51,7 +51,7 @@ final class DiscussionViewModel {
     var tiedPlayerNamesLabel: String? {
         guard let tie = guestVoteTie else { return nil }
         let names = tie.tiedPlayerIds.compactMap { id in
-            allPlayers.first(where: { $0.id == id }).map { $0.isHost ? "You" : $0.displayName }
+            allPlayers.first(where: { $0.id == id }).map(\.displayName)
         }
         guard !names.isEmpty else { return nil }
         return names.formatted(.list(type: .and))
@@ -79,7 +79,7 @@ final class DiscussionViewModel {
 
     var discussionStarterName: String? {
         guard let player = dependencies.gameSessionStore.discussionStarter else { return nil }
-        return player.isHost ? "You" : player.displayName
+        return player.displayName
     }
 
     var activePlayers: [PlayerSlot] {
@@ -103,7 +103,7 @@ final class DiscussionViewModel {
               let player = allPlayers.first(where: { $0.id == id }) else {
             return "this player"
         }
-        return player.isHost ? "You" : player.displayName
+        return player.displayName
     }
 
     var canConfirmVote: Bool {

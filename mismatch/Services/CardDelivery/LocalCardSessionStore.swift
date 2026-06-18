@@ -119,6 +119,26 @@ final class LocalCardSessionStore {
         return .success(assignment)
     }
 
+    func releaseClaim(for playerId: UUID) {
+        openedPlayerIds.remove(playerId)
+        if let index = claimedIndices.first(where: { $0.value == playerId })?.key {
+            claimedIndices.removeValue(forKey: index)
+        }
+        revision += 1
+    }
+
+    func syncAssignments(from session: GameSession) {
+        for player in session.players {
+            guard assignments[player.id] != nil, let assignment = player.assignment else { continue }
+            assignments[player.id] = LocalCardAssignment(
+                playerSlotId: player.id,
+                role: assignment.role,
+                word: assignment.word,
+                categoryHint: assignment.categoryHint
+            )
+        }
+    }
+
     func clear() {
         sessionToken = nil
         assignments.removeAll()

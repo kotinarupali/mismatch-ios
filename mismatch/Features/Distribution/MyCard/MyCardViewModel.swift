@@ -41,6 +41,18 @@ final class MyCardViewModel {
             .hasOpenedCard ?? false
     }
 
+    var canGhostRoleSwap: Bool {
+        guard let hostId = dependencies.gameSessionStore.currentSession?.players
+            .first(where: \.isHost)?.id else { return false }
+        return dependencies.gameSessionStore.canSwapGhostRole(from: hostId)
+    }
+
+    func swapGhostRole() -> RoleAssignment? {
+        guard let hostId = dependencies.gameSessionStore.currentSession?.players
+            .first(where: \.isHost)?.id else { return nil }
+        return dependencies.gameSessionStore.swapGhostRoleAway(from: hostId)
+    }
+
     func startCloudClaimRefresh() {
         guard dependencies.gameSessionStore.currentSession?.cardDeliveryBackend == .cloud,
               let token = dependencies.gameSessionStore.currentSession?.joinSessionToken else { return }

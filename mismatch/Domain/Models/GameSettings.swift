@@ -3,6 +3,7 @@ import Foundation
 struct GameSettings: Codable, Equatable, Sendable {
     var hostIsPlaying: Bool
     var ghostEnabled: Bool
+    var ghostPickAgainEnabled: Bool
     var showRoleOnCard: Bool
     var ghostMode: GhostMode
     var mismatchGhostAlliance: Bool
@@ -16,6 +17,7 @@ struct GameSettings: Codable, Equatable, Sendable {
     static let `default` = GameSettings(
         hostIsPlaying: true,
         ghostEnabled: false,
+        ghostPickAgainEnabled: true,
         showRoleOnCard: false,
         ghostMode: .classic,
         mismatchGhostAlliance: false,

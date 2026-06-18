@@ -132,12 +132,16 @@ final class QRGridViewModel {
 
     private func startCloudSyncIfNeeded() {
         guard let token = dependencies.gameSessionStore.currentSession?.joinSessionToken else { return }
+        let hostKey = dependencies.gameSessionStore.currentSession?.cloudHostKey
 
         pollTask = Task { [weak self] in
             while !Task.isCancelled {
                 guard let self else { return }
                 do {
-                    let snapshot = try await dependencies.remoteCardSessionClient.fetchSnapshot(token: token)
+                    let snapshot = try await dependencies.remoteCardSessionClient.fetchSnapshot(
+                        token: token,
+                        hostKey: hostKey
+                    )
                     if lastRevision != snapshot.revision {
                         lastRevision = snapshot.revision
                         dependencies.gameSessionStore.applyRemoteCardSnapshot(snapshot)

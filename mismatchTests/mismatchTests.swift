@@ -111,13 +111,26 @@ struct GameSessionStoreTests {
 
 struct SessionWinCheckerTests {
 
-    @Test func mismatchWinsWhenOutsidersTieInsiderCount() {
+    @Test func mismatchDoesNotWinWhenOutsidersOnlyTieInsiderCount() {
         let players = [
             PlayerSlot(displayName: "A", avatarColor: .red, assignment: RoleAssignment(role: .insider, word: "A"), isEliminated: true),
             PlayerSlot(displayName: "B", avatarColor: .blue, assignment: RoleAssignment(role: .insider, word: "A")),
             PlayerSlot(displayName: "C", avatarColor: .green, assignment: RoleAssignment(role: .mismatch, word: "B"))
         ]
-        #expect(SessionWinChecker.checkWinner(players: players, settings: .default) == .mismatchWins)
+        #expect(SessionWinChecker.checkWinner(players: players, settings: .default) == nil)
+    }
+
+    @Test func gameContinuesAfterInsiderEliminatedWithGhostAndMismatchActive() {
+        var settings = GameSettings.default
+        settings.ghostEnabled = true
+        let players = [
+            PlayerSlot(displayName: "A", avatarColor: .red, assignment: RoleAssignment(role: .insider, word: "A")),
+            PlayerSlot(displayName: "B", avatarColor: .blue, assignment: RoleAssignment(role: .insider, word: "A")),
+            PlayerSlot(displayName: "C", avatarColor: .green, assignment: RoleAssignment(role: .insider, word: "A"), isEliminated: true),
+            PlayerSlot(displayName: "D", avatarColor: .orange, assignment: RoleAssignment(role: .mismatch, word: "B")),
+            PlayerSlot(displayName: "E", avatarColor: .purple, assignment: RoleAssignment(role: .ghost))
+        ]
+        #expect(SessionWinChecker.checkWinner(players: players, settings: settings) == nil)
     }
 
     @Test func mismatchWinsWhenOutsidersOutnumberInsiders() {
@@ -140,7 +153,7 @@ struct SessionWinCheckerTests {
         #expect(SessionWinChecker.checkWinner(players: players, settings: .default) == nil)
     }
 
-    @Test func allianceOutsidersWinWhenOutsidersTieInsiders() {
+    @Test func allianceOutsidersDoNotWinWhenOnlyTiedOnHeadcount() {
         var settings = GameSettings.default
         settings.mismatchGhostAlliance = true
         let players = [
@@ -148,7 +161,7 @@ struct SessionWinCheckerTests {
             PlayerSlot(displayName: "B", avatarColor: .blue, assignment: RoleAssignment(role: .insider, word: "A")),
             PlayerSlot(displayName: "C", avatarColor: .green, assignment: RoleAssignment(role: .mismatch, word: "B"))
         ]
-        #expect(SessionWinChecker.checkWinner(players: players, settings: settings) == .outsiderSideWins)
+        #expect(SessionWinChecker.checkWinner(players: players, settings: settings) == nil)
     }
 
     @Test func insidersWinWhenAllMismatchEliminated() {
@@ -392,6 +405,10 @@ struct GameSettingsTests {
     @Test func cloudGuestVotingOffByDefault() {
         #expect(GameSettings.default.cloudGuestVotingEnabled == false)
     }
+
+    @Test func ghostPickAgainOnByDefault() {
+        #expect(GameSettings.default.ghostPickAgainEnabled == true)
+    }
 }
 
 struct HostPreferencesTests {
@@ -407,6 +424,42 @@ struct HostPreferencesTests {
     @Test func normalizesInvalidTimerMinutes() {
         let preferences = HostPreferences(discussionTimerEnabled: true, timerMinutes: 7).normalized()
         #expect(preferences.timerMinutes == HostPreferences.default.timerMinutes)
+    }
+
+    @Test func resolvesHostDisplayNameWithDefaultFallback() {
+        let empty = HostPreferences(discussionTimerEnabled: false, timerMinutes: 3, hostDisplayName: "")
+        #expect(empty.resolvedHostDisplayName == HostPreferences.defaultHostDisplayName)
+
+        let trimmed = HostPreferences(discussionTimerEnabled: false, timerMinutes: 3, hostDisplayName: "  Klaus  ").normalized()
+        #expect(trimmed.resolvedHostDisplayName == "Klaus")
+    }
+
+    @Test @MainActor func lobbyUsesSavedHostDisplayName() throws {
+        let defaults = UserDefaults(suiteName: UUID().uuidString)!
+        let preferencesStore = HostPreferencesStore(defaults: defaults)
+        preferencesStore.save(
+            HostPreferences(discussionTimerEnabled: false, timerMinutes: 3, hostDisplayName: "Klaus")
+        )
+
+        let container = try SwiftDataContainer.makeInMemory()
+        let dependencies = AppDependencies(
+            modelContainer: container,
+            gameSessionStore: GameSessionStore(),
+            wordPackLoader: WordPackLoader(),
+            wordPairUsageStore: WordPairUsageStore(),
+            wordPairSelector: WordPairSelector(loader: WordPackLoader(), usageStore: WordPairUsageStore()),
+            router: AppRouter(),
+            timerService: TimerService(),
+            localCardSessionStore: LocalCardSessionStore(),
+            localNetworkCardServer: LocalNetworkCardServer(sessionStore: LocalCardSessionStore()),
+            remoteCardSessionClient: RemoteCardSessionClient(),
+            hostPreferencesStore: preferencesStore
+        )
+
+        dependencies.gameSessionStore.createSession()
+        let viewModel = LobbyViewModel(dependencies: dependencies)
+
+        #expect(viewModel.seatedPlayers.first(where: \.isHost)?.displayName == "Klaus")
     }
 
     @Test @MainActor func savedPreferencesApplyToNewSession() {
@@ -696,6 +749,218 @@ struct GhostGuessTests {
         #expect(isCorrect == false)
         #expect(store.sessionWinner == .insiderSideWins)
         #expect(store.isSessionComplete == true)
+    }
+
+    @Test @MainActor func eliminatingOneInsiderDoesNotEndFivePlayerGame() throws {
+        let store = GameSessionStore()
+        var settings = GameSettings.default
+        settings.ghostEnabled = true
+        store.createSession(settings: settings)
+        store.setPlayers((1...5).map { index in
+            PlayerSlot(displayName: "P\(index)", avatarColor: AvatarColor.forIndex(index))
+        })
+
+        let pair = WordPair(id: "1", insiderWord: "Apple", mismatchWord: "Apricot", category: "Fruit")
+        try store.distributeRoles(wordPair: pair)
+
+        guard let insiderId = store.currentSession?.players.first(where: { $0.assignment?.role == .insider })?.id else {
+            Issue.record("Expected insider player.")
+            return
+        }
+
+        store.eliminate(playerId: insiderId)
+
+        #expect(store.isSessionComplete == false)
+        #expect(store.sessionWinner == nil)
+    }
+}
+
+struct RepickRolesTests {
+
+    @Test @MainActor func repickCardClaimsPreservesRoleAssignments() throws {
+        let store = GameSessionStore()
+        var settings = GameSettings.default
+        settings.ghostEnabled = true
+        store.createSession(settings: settings)
+        store.setPlayers((1...5).map { index in
+            PlayerSlot(displayName: "P\(index)", avatarColor: AvatarColor.forIndex(index))
+        })
+
+        let pair = WordPair(id: "1", insiderWord: "Apple", mismatchWord: "Apricot", category: "Fruit")
+        try store.distributeRoles(wordPair: pair)
+
+        let rolesBeforeRepick = Dictionary(
+            uniqueKeysWithValues: store.currentSession!.players.compactMap { player -> (UUID, Role)? in
+                guard let role = player.assignment?.role else { return nil }
+                return (player.id, role)
+            }
+        )
+        let ghostIdBeforeRepick = rolesBeforeRepick.first { $0.value == .ghost }!.key
+
+        guard let firstPlayerId = store.passThePhoneOrder().first?.id else {
+            Issue.record("Expected pass order.")
+            return
+        }
+        store.markCardOpened(playerId: firstPlayerId, cardIndex: 0)
+
+        try store.repickCardClaims()
+
+        #expect(store.currentSession?.state == .distributing)
+        #expect(store.currentSession?.players.allSatisfy { !$0.hasOpenedCard && $0.pickedCardIndex == nil } == true)
+
+        let rolesAfterRepick = Dictionary(
+            uniqueKeysWithValues: store.currentSession!.players.compactMap { player -> (UUID, Role)? in
+                guard let role = player.assignment?.role else { return nil }
+                return (player.id, role)
+            }
+        )
+        #expect(rolesAfterRepick == rolesBeforeRepick)
+        #expect(rolesAfterRepick[ghostIdBeforeRepick] == .ghost)
+    }
+
+    @Test @MainActor func repickFromDiscussionResetsCardPicksOnly() throws {
+        let store = GameSessionStore()
+        var settings = GameSettings.default
+        settings.ghostEnabled = true
+        store.createSession(settings: settings)
+        store.setPlayers((1...5).map { index in
+            PlayerSlot(displayName: "P\(index)", avatarColor: AvatarColor.forIndex(index))
+        })
+
+        let pair = WordPair(id: "1", insiderWord: "Apple", mismatchWord: "Apricot", category: "Fruit")
+        try store.distributeRoles(wordPair: pair)
+        store.updateState(.discussing)
+
+        let rolesBeforeRepick = Dictionary(
+            uniqueKeysWithValues: store.currentSession!.players.compactMap { player -> (UUID, Role)? in
+                guard let role = player.assignment?.role else { return nil }
+                return (player.id, role)
+            }
+        )
+
+        try store.repickCardClaims()
+
+        let rolesAfterRepick = Dictionary(
+            uniqueKeysWithValues: store.currentSession!.players.compactMap { player -> (UUID, Role)? in
+                guard let role = player.assignment?.role else { return nil }
+                return (player.id, role)
+            }
+        )
+        #expect(rolesAfterRepick == rolesBeforeRepick)
+        #expect(store.currentSession?.state == .distributing)
+    }
+
+    @Test @MainActor func playAgainStillClearsAssignmentsForNewDeal() throws {
+        let dependencies = try AppDependencies.makeForTesting()
+        let store = dependencies.gameSessionStore
+        store.createSession()
+        store.setPlayers((1...4).map { index in
+            PlayerSlot(displayName: "P\(index)", avatarColor: AvatarColor.forIndex(index))
+        })
+
+        let pair = WordPair(id: "1", insiderWord: "Apple", mismatchWord: "Apricot", category: "Fruit")
+        try store.distributeRoles(wordPair: pair)
+
+        store.resetRoundForPlayAgain()
+        dependencies.lobbyViewModel.reloadFromSession()
+
+        #expect(store.currentSession?.state == .lobby)
+        #expect(store.currentSession?.players.allSatisfy { $0.assignment == nil } == true)
+    }
+
+    @Test @MainActor func lobbySyncDoesNotRestoreAssignmentsWhileInLobby() throws {
+        let dependencies = try AppDependencies.makeForTesting()
+        let store = dependencies.gameSessionStore
+        store.createSession()
+        store.setPlayers((1...4).map { index in
+            PlayerSlot(displayName: "P\(index)", avatarColor: AvatarColor.forIndex(index))
+        })
+
+        let pair = WordPair(id: "1", insiderWord: "Apple", mismatchWord: "Apricot", category: "Fruit")
+        try store.distributeRoles(wordPair: pair)
+        #expect(store.currentSession?.players.contains { $0.assignment != nil } == true)
+
+        store.resetRoundForPlayAgain()
+        dependencies.lobbyViewModel.reloadFromSession()
+
+        #expect(store.currentSession?.players.allSatisfy { $0.assignment == nil } == true)
+    }
+}
+
+struct GhostRoleSwapTests {
+
+    @Test @MainActor func ghostCanSwapWithUnpickedPlayer() throws {
+        let store = GameSessionStore()
+        var settings = GameSettings.default
+        settings.ghostEnabled = true
+        store.createSession(settings: settings)
+
+        let ghostId = UUID()
+        let insiderId = UUID()
+        let mismatchId = UUID()
+        store.setPlayers([
+            PlayerSlot(id: insiderId, displayName: "Insider", avatarColor: .green, assignment: RoleAssignment(role: .insider, word: "Apple")),
+            PlayerSlot(id: mismatchId, displayName: "Mismatch", avatarColor: .orange, assignment: RoleAssignment(role: .mismatch, word: "Apricot")),
+            PlayerSlot(id: ghostId, displayName: "Ghost", avatarColor: .purple, assignment: RoleAssignment(role: .ghost)),
+            PlayerSlot(displayName: "Insider 2", avatarColor: .blue, assignment: RoleAssignment(role: .insider, word: "Apple")),
+            PlayerSlot(displayName: "Insider 3", avatarColor: .yellow, assignment: RoleAssignment(role: .insider, word: "Apple")),
+        ])
+
+        #expect(store.canSwapGhostRole(from: ghostId) == true)
+
+        let newAssignment = store.swapGhostRoleAway(from: ghostId)
+        #expect(newAssignment?.role != .ghost)
+
+        let players = store.currentSession!.players
+        #expect(players.first { $0.id == ghostId }?.assignment?.role != .ghost)
+        #expect(players.filter { $0.assignment?.role == .ghost }.count == 1)
+        #expect(players.first { $0.assignment?.role == .ghost }?.id != ghostId)
+    }
+
+    @Test @MainActor func ghostCannotSwapWhenPickAgainDisabled() {
+        let store = GameSessionStore()
+        var settings = GameSettings.default
+        settings.ghostPickAgainEnabled = false
+        store.createSession(settings: settings)
+        let ghostId = UUID()
+        store.setPlayers([
+            PlayerSlot(id: UUID(), displayName: "Insider", avatarColor: .green, assignment: RoleAssignment(role: .insider, word: "Apple")),
+            PlayerSlot(id: ghostId, displayName: "Ghost", avatarColor: .purple, assignment: RoleAssignment(role: .ghost)),
+            PlayerSlot(displayName: "Insider 2", avatarColor: .blue, assignment: RoleAssignment(role: .insider, word: "Apple")),
+        ])
+
+        #expect(store.canSwapGhostRole(from: ghostId) == false)
+        #expect(store.swapGhostRoleAway(from: ghostId) == nil)
+    }
+
+    @Test @MainActor func ghostCannotSwapWhenOnlyOnePlayerHasNotPicked() {
+        let store = GameSessionStore()
+        store.createSession()
+        let ghostId = UUID()
+        let pickedInsiderId = UUID()
+        let unpickedInsiderId = UUID()
+        store.setPlayers([
+            PlayerSlot(id: pickedInsiderId, displayName: "Picked", avatarColor: .green, assignment: RoleAssignment(role: .insider, word: "Apple"), hasOpenedCard: true),
+            PlayerSlot(id: unpickedInsiderId, displayName: "Waiting", avatarColor: .blue, assignment: RoleAssignment(role: .insider, word: "Apple")),
+            PlayerSlot(id: ghostId, displayName: "Ghost", avatarColor: .purple, assignment: RoleAssignment(role: .ghost)),
+        ])
+
+        #expect(store.canSwapGhostRole(from: ghostId) == false)
+        #expect(store.swapGhostRoleAway(from: ghostId) == nil)
+    }
+
+    @Test @MainActor func ghostCannotSwapWhenNoUnpickedPlayersRemain() {
+        let store = GameSessionStore()
+        store.createSession()
+        let ghostId = UUID()
+        let insiderId = UUID()
+        store.setPlayers([
+            PlayerSlot(id: insiderId, displayName: "Insider", avatarColor: .green, assignment: RoleAssignment(role: .insider, word: "Apple"), hasOpenedCard: true),
+            PlayerSlot(id: ghostId, displayName: "Ghost", avatarColor: .purple, assignment: RoleAssignment(role: .ghost)),
+        ])
+
+        #expect(store.canSwapGhostRole(from: ghostId) == false)
+        #expect(store.swapGhostRoleAway(from: ghostId) == nil)
     }
 }
 
@@ -1178,19 +1443,20 @@ struct ProfileRepositoryTests {
         #expect(viewModel.profileSuggestions.map(\.name) == ["Freya"])
     }
 
-    @Test @MainActor func profileSuggestionsAreCaseSensitive() throws {
+    @Test @MainActor func profileSuggestionsAreCaseInsensitive() throws {
         let dependencies = try AppDependencies.makeForTesting()
         let repository = dependencies.profileRepository
         _ = try repository.create(name: "Freya", avatarColor: .green)
+        _ = try repository.create(name: "Hayley", avatarColor: .orange)
 
         dependencies.gameSessionStore.createSession()
         let viewModel = LobbyViewModel(dependencies: dependencies)
 
         viewModel.newPlayerName = "fre"
-        #expect(viewModel.profileSuggestions.isEmpty)
-
-        viewModel.newPlayerName = "Fre"
         #expect(viewModel.profileSuggestions.map(\.name) == ["Freya"])
+
+        viewModel.newPlayerName = "hay"
+        #expect(viewModel.profileSuggestions.map(\.name) == ["Hayley"])
     }
 
     @Test @MainActor func addingLobbyPlayerCreatesProfileAutomatically() throws {

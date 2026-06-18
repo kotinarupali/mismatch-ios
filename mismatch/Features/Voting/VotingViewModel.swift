@@ -22,7 +22,7 @@ final class VotingViewModel {
               let player = activePlayers.first(where: { $0.id == id }) else {
             return "this player"
         }
-        return player.isHost ? "You" : player.displayName
+        return player.displayName
     }
 
     func selectPlayer(_ id: UUID) {

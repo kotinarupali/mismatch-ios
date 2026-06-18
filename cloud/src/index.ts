@@ -29,13 +29,23 @@ export default {
       return cors(response);
     }
 
+    const swapMatch = url.pathname.match(/^\/api\/session\/([^/]+)\/swap-ghost\/?$/);
+    if (swapMatch && request.method === "POST") {
+      const token = swapMatch[1];
+      const stub = env.CARD_SESSION.get(env.CARD_SESSION.idFromName(token));
+      const response = await stub.fetch(
+        new Request("https://do/swap-ghost", { method: "POST", body: request.body })
+      );
+      return cors(response);
+    }
+
     const sessionMatch = url.pathname.match(/^\/api\/session\/([^/]+)\/?$/);
     if (sessionMatch) {
       const token = sessionMatch[1];
       const stub = env.CARD_SESSION.get(env.CARD_SESSION.idFromName(token));
 
       if (request.method === "GET") {
-        const response = await stub.fetch("https://do/snapshot");
+        const response = await stub.fetch(new Request(`https://do/snapshot${url.search}`));
         return cors(response);
       }
 

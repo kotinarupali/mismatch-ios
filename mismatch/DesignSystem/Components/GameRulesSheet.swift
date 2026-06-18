@@ -66,7 +66,7 @@ struct GameRulesSheet: View {
             )
             roleRow(
                 role: .ghost,
-                detail: "Gets no word (optional role). Pick again to memorize the insider word, then guess it when eliminated to steal the win."
+                detail: "Gets no word (optional role). With Ghost pick again enabled, they can swap to Insider or Mismatch when at least two other players haven't picked yet — one of them becomes Ghost."
             )
         }
     }
@@ -135,6 +135,7 @@ struct GameRulesSheet: View {
             text: """
             • Need at least 3 players to start.
             • Ghost is added automatically at 5+ players — turn it off in Rules if you want a simpler game.
+            • Ghost pick again (on by default) lets Ghost swap roles during card pick when at least two other players haven't picked yet.
             • The host can check any player's role mid-game from the menu.
             """
         )

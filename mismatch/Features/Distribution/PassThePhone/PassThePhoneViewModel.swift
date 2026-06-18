@@ -85,6 +85,16 @@ final class PassThePhoneViewModel {
         currentAssignment != nil && !awaitingHandoff
     }
 
+    var canGhostRoleSwap: Bool {
+        guard let playerId = currentPlayerId else { return false }
+        return dependencies.gameSessionStore.canSwapGhostRole(from: playerId)
+    }
+
+    func swapGhostRole() -> RoleAssignment? {
+        guard let playerId = currentPlayerId else { return nil }
+        return dependencies.gameSessionStore.swapGhostRoleAway(from: playerId)
+    }
+
     var usesHeroTitle: Bool {
         currentPlayer != nil && !isMissingRoleAssignments
     }
@@ -180,6 +190,6 @@ final class PassThePhoneViewModel {
     }
 
     private func displayName(for player: PlayerSlot) -> String {
-        player.isHost ? "You" : player.displayName
+        player.displayName
     }
 }

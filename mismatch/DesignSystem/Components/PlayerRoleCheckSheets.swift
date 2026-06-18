@@ -65,12 +65,12 @@ struct PlayerRoleRevealSheet: View {
                         .foregroundStyle(AppColor.secondaryLabel)
 
                     AvatarView(
-                        name: player.isHost ? "You" : player.displayName,
+                        name: player.displayName,
                         color: player.avatarColor,
                         size: 72
                     )
 
-                    Text(player.isHost ? "You" : player.displayName)
+                    Text(player.displayName)
                         .font(AppTypography.largeTitle)
                         .foregroundStyle(AppColor.label)
 
@@ -118,11 +118,11 @@ private struct PlayerRolePickerRow: View {
     var body: some View {
         HStack(spacing: 14) {
             AvatarView(
-                name: player.isHost ? "You" : player.displayName,
+                name: player.displayName,
                 color: player.avatarColor,
                 size: 44
             )
-            Text(player.isHost ? "You" : player.displayName)
+            Text(player.displayName)
                 .font(AppTypography.headline)
                 .foregroundStyle(AppColor.label)
             Spacer()

@@ -191,7 +191,11 @@ final class LocalNetworkCardServer {
 
         if request.method == "POST", request.path.hasPrefix("/api/session/") {
             let remainder = String(request.path.dropFirst("/api/session/".count))
-            let token = normalizeToken(remainder.split(separator: "/").first.map(String.init) ?? remainder)
+            let parts = remainder.split(separator: "/").map(String.init)
+            let token = normalizeToken(parts.first ?? remainder)
+            if parts.count >= 2, parts[1] == "swap-ghost" {
+                return swapGhostJSONResponse(sessionToken: token, body: request.body)
+            }
             return claimJSONResponse(sessionToken: token, body: request.body)
         }
 
@@ -271,6 +275,9 @@ final class LocalNetworkCardServer {
             if assignment.role == .ghost, let insiderWord = sessionStore.insiderWord {
                 payload["insiderWord"] = insiderWord
             }
+            if assignment.role == .ghost {
+                payload["canSwapGhostRole"] = gameSessionStore?.canSwapGhostRole(from: playerId) ?? false
+            }
             return jsonPage(body: Self.encodeJSON(payload), status: 200)
 
         case .failure(.cardTaken):
@@ -284,6 +291,43 @@ final class LocalNetworkCardServer {
         case .failure(.unknownSession):
             return jsonPage(body: #"{"error":"not_found"}"#, status: 404)
         }
+    }
+
+    private func swapGhostJSONResponse(sessionToken: String, body: String) -> String {
+        guard sessionStore.sessionToken == sessionToken else {
+            return jsonPage(body: #"{"error":"not_found"}"#, status: 404)
+        }
+        guard let gameSessionStore,
+              let session = gameSessionStore.currentSession else {
+            return jsonPage(body: #"{"error":"not_found"}"#, status: 404)
+        }
+
+        guard let data = body.data(using: .utf8),
+              let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let playerIdString = object["playerId"] as? String,
+              let playerId = UUID(uuidString: playerIdString) else {
+            return jsonPage(body: #"{"error":"invalid_request"}"#, status: 400)
+        }
+
+        guard let newAssignment = gameSessionStore.swapGhostRoleAway(from: playerId) else {
+            return jsonPage(body: #"{"error":"swap_unavailable"}"#, status: 409)
+        }
+
+        gameSessionStore.releaseCardPick(for: playerId)
+        if let updatedSession = gameSessionStore.currentSession {
+            sessionStore.syncAssignments(from: updatedSession)
+        }
+        sessionStore.releaseClaim(for: playerId)
+
+        var payload: [String: Any] = [
+            "role": newAssignment.role.rawValue,
+            "showRoleOnCard": sessionStore.showRoleOnCard,
+            "faceDownCardCount": sessionStore.faceDownCardCount,
+            "revision": sessionStore.revision
+        ]
+        if let word = newAssignment.word { payload["word"] = word }
+        if let hint = newAssignment.categoryHint { payload["categoryHint"] = hint }
+        return jsonPage(body: Self.encodeJSON(payload), status: 200)
     }
 
     private static func encodeJSON(_ payload: [String: Any]) -> String {

@@ -73,7 +73,7 @@ private struct HostGameMenuModifier: ViewModifier {
             .confirmDialog(
                 isPresented: $showRepickConfirm,
                 title: "Re-pick roles?",
-                message: "This clears all assignments and returns to the lobby.",
+                message: "Everyone picks cards again. Role assignments stay the same.",
                 confirmTitle: "Re-pick"
             ) {
                 onRepick()

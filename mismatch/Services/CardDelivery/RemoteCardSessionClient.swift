@@ -13,6 +13,13 @@ struct RemoteCardSessionSnapshot: Decodable, Sendable {
         let hasOpenedCard: Bool
     }
 
+    struct Assignment: Decodable, Sendable {
+        let id: UUID
+        let role: Role
+        let word: String?
+        let categoryHint: String?
+    }
+
     struct ClaimedCard: Decodable, Sendable {
         let cardIndex: Int
         let playerId: UUID
@@ -24,6 +31,7 @@ struct RemoteCardSessionSnapshot: Decodable, Sendable {
     let faceDownCardCount: Int
     let showRoleOnCard: Bool
     let revision: Int
+    let assignments: [Assignment]?
     let votingEnabled: Bool?
     let votingOpen: Bool?
     let votingRound: Int?
@@ -35,6 +43,7 @@ struct RemoteCardSessionSnapshot: Decodable, Sendable {
         faceDownCardCount: Int,
         showRoleOnCard: Bool,
         revision: Int,
+        assignments: [Assignment]? = nil,
         votingEnabled: Bool? = nil,
         votingOpen: Bool? = nil,
         votingRound: Int? = nil,
@@ -45,6 +54,7 @@ struct RemoteCardSessionSnapshot: Decodable, Sendable {
         self.faceDownCardCount = faceDownCardCount
         self.showRoleOnCard = showRoleOnCard
         self.revision = revision
+        self.assignments = assignments
         self.votingEnabled = votingEnabled
         self.votingOpen = votingOpen
         self.votingRound = votingRound
@@ -112,12 +122,21 @@ final class RemoteCardSessionClient {
         )
     }
 
-    func fetchSnapshot(token: String) async throws -> RemoteCardSessionSnapshot {
+    func fetchSnapshot(token: String, hostKey: String? = nil) async throws -> RemoteCardSessionSnapshot {
         guard let baseURL = CloudCardConfig.baseURL else {
             throw RemoteCardSessionError.notConfigured
         }
 
-        let url = baseURL.appendingPathComponent("api/session/\(token)")
+        var components = URLComponents(
+            url: baseURL.appendingPathComponent("api/session/\(token)"),
+            resolvingAgainstBaseURL: false
+        )
+        if let hostKey {
+            components?.queryItems = [URLQueryItem(name: "hostKey", value: hostKey)]
+        }
+        guard let url = components?.url else {
+            throw RemoteCardSessionError.invalidResponse
+        }
         var request = URLRequest(url: url)
         request.cachePolicy = .reloadIgnoringLocalCacheData
 
@@ -186,7 +205,8 @@ final class RemoteCardSessionClient {
             faceDownCardCount: faceDownCardCount,
             showRoleOnCard: gameSession.settings.showRoleOnCard,
             insiderWord: gameSession.currentInsiderWord,
-            votingEnabled: gameSession.settings.cloudGuestVotingEnabled
+            votingEnabled: gameSession.settings.cloudGuestVotingEnabled,
+            ghostPickAgainEnabled: gameSession.settings.ghostPickAgainEnabled
         )
     }
 
@@ -215,6 +235,7 @@ private struct CreatePayload: Encodable {
     let showRoleOnCard: Bool
     let insiderWord: String?
     let votingEnabled: Bool
+    let ghostPickAgainEnabled: Bool
 }
 
 private struct VotingControlPayload: Encodable {

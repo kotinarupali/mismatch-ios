@@ -22,6 +22,8 @@ struct PassThePhoneView: View {
                     claimedCards: viewModel.claimedCards,
                     nextPlayerName: viewModel.nextPlayerDisplayName,
                     showsInstructions: false,
+                    canGhostRoleSwap: viewModel.canGhostRoleSwap,
+                    onGhostRoleSwap: { viewModel.swapGhostRole() },
                     onComplete: { viewModel.cardCompleted(cardIndex: $0) }
                 )
                 .id(viewModel.currentPlayerId)

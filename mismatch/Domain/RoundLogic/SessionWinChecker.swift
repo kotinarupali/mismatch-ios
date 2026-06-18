@@ -48,19 +48,6 @@ enum SessionWinChecker {
             }
         }
 
-        // Once Mismatch ties or outnumbers active Insiders, Mismatch has survived the vote.
-        // A lone Ghost does not win on headcount — they must be voted out (word guess) or
-        // wait until all Insiders are eliminated.
-        if activeMismatches > 0, activeInsiders > 0 {
-            let activeOutsiders = activeMismatches + activeGhosts
-            if activeOutsiders >= activeInsiders {
-                if settings.mismatchGhostAlliance {
-                    return .outsiderSideWins
-                }
-                return .mismatchWins
-            }
-        }
-
         guard active.count >= 2 else { return nil }
 
         return nil

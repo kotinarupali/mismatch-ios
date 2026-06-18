@@ -66,6 +66,8 @@ final class GameSessionStore {
         session.currentInsiderWord = wordPair.insiderWord
         session.currentMismatchWord = wordPair.mismatchWord
         session.forcedSessionOutcome = nil
+        session.sessionEndScoreEvents = []
+        session.sessionWinBonusesApplied = false
         let seatingIds = normalizedSeatingOrderIds(for: session)
         session.seatingOrderPlayerIds = seatingIds
         session.passOrderPlayerIds = try randomPassOrder(from: seatingIds)
@@ -80,6 +82,56 @@ final class GameSessionStore {
         guard let index = session.players.firstIndex(where: { $0.id == playerId }) else { return }
         session.players[index].hasOpenedCard = true
         session.players[index].pickedCardIndex = cardIndex
+        currentSession = session
+    }
+
+    func canSwapGhostRole(from playerId: UUID) -> Bool {
+        guard let session = currentSession,
+              session.settings.ghostPickAgainEnabled,
+              session.settings.ghostEnabled,
+              session.players.first(where: { $0.id == playerId })?.assignment?.role == .ghost else {
+            return false
+        }
+
+        let unpickedOthers = session.players.filter {
+            $0.id != playerId && !$0.hasOpenedCard && $0.assignment?.role != .ghost
+        }
+        // Need at least two players still waiting to pick so Ghost can pass the role on.
+        return unpickedOthers.count >= 2
+    }
+
+    /// Moves the ghost role onto a random player who has not opened a card yet.
+    /// Returns the new assignment for the player who gave up ghost.
+    func swapGhostRoleAway(from playerId: UUID) -> RoleAssignment? {
+        guard var session = currentSession else { return nil }
+        guard canSwapGhostRole(from: playerId) else { return nil }
+        guard let ghostIndex = session.players.firstIndex(where: { $0.id == playerId }),
+              session.players[ghostIndex].assignment?.role == .ghost else { return nil }
+
+        let partnerIds = session.players.compactMap { player -> UUID? in
+            guard player.id != playerId,
+                  !player.hasOpenedCard,
+                  player.assignment?.role != .ghost else { return nil }
+            return player.id
+        }
+        guard let partnerId = try? CryptoRandom.shuffled(partnerIds).first,
+              let partnerIndex = session.players.firstIndex(where: { $0.id == partnerId }),
+              let ghostAssignment = session.players[ghostIndex].assignment,
+              let partnerAssignment = session.players[partnerIndex].assignment else {
+            return nil
+        }
+
+        session.players[ghostIndex].assignment = partnerAssignment
+        session.players[partnerIndex].assignment = ghostAssignment
+        currentSession = session
+        return partnerAssignment
+    }
+
+    func releaseCardPick(for playerId: UUID) {
+        guard var session = currentSession else { return }
+        guard let index = session.players.firstIndex(where: { $0.id == playerId }) else { return }
+        session.players[index].hasOpenedCard = false
+        session.players[index].pickedCardIndex = nil
         currentSession = session
     }
 
@@ -109,7 +161,7 @@ final class GameSessionStore {
         guard let session = currentSession else { return [] }
         return session.players.compactMap { player in
             guard player.hasOpenedCard, let index = player.pickedCardIndex else { return nil }
-            let name = player.isHost ? "You" : player.displayName
+            let name = player.displayName
             return ClaimedCard(index: index, playerName: name)
         }
     }
@@ -154,6 +206,17 @@ final class GameSessionStore {
             guard let index = session.players.firstIndex(where: { $0.id == claim.playerId }) else { continue }
             session.players[index].hasOpenedCard = true
             session.players[index].pickedCardIndex = claim.cardIndex
+        }
+
+        if let assignments = snapshot.assignments {
+            for assignment in assignments {
+                guard let index = session.players.firstIndex(where: { $0.id == assignment.id }) else { continue }
+                session.players[index].assignment = RoleAssignment(
+                    role: assignment.role,
+                    word: assignment.word,
+                    categoryHint: assignment.categoryHint
+                )
+            }
         }
 
         currentSession = session
@@ -247,7 +310,7 @@ final class GameSessionStore {
             guard let role = player.assignment?.role else { return nil }
             return PlayerRoleReveal(
                 id: player.id,
-                displayName: player.isHost ? "You" : player.displayName,
+                displayName: player.displayName,
                 avatarColor: player.avatarColor,
                 role: role,
                 isEliminated: player.isEliminated
@@ -265,6 +328,54 @@ final class GameSessionStore {
         session.state = .discussing
         let activeIds = session.players.filter { !$0.isEliminated }.map(\.id)
         session.discussionStartPlayerId = (try? CryptoRandom.shuffled(activeIds).first) ?? activeIds.first
+        currentSession = session
+    }
+
+    var hasRoleAssignments: Bool {
+        currentSession?.players.contains { $0.assignment != nil } ?? false
+    }
+
+    /// Clears card picks and round progress while keeping the current role deal intact.
+    func repickCardClaims() throws {
+        guard var session = currentSession else {
+            throw GameSessionStoreError.noActiveSession
+        }
+        guard session.players.contains(where: { $0.assignment != nil }) else {
+            throw GameSessionStoreError.noActiveSession
+        }
+
+        reverseScoreEvents(
+            session.rounds.flatMap(\.scoreEvents) + session.sessionEndScoreEvents,
+            in: &session
+        )
+
+        if session.sessionWinBonusesApplied {
+            session.gamesPlayedCount = max(0, session.gamesPlayedCount - 1)
+        }
+
+        let wordPairId = session.rounds.first?.wordPairId
+        session.players = session.players.map { player in
+            var updated = player
+            updated.hasOpenedCard = false
+            updated.pickedCardIndex = nil
+            updated.isEliminated = false
+            updated.cardToken = nil
+            updated.cardURL = nil
+            return updated
+        }
+
+        session.rounds = [Round(index: 0, wordPairId: wordPairId)]
+        session.currentRoundIndex = 0
+        session.passOrderPlayerIds = try randomPassOrder(from: normalizedSeatingOrderIds(for: session))
+        session.discussionStartPlayerId = nil
+        session.forcedSessionOutcome = nil
+        session.sessionEndScoreEvents = []
+        session.sessionWinBonusesApplied = false
+        session.sharedJoinURL = nil
+        session.joinSessionToken = nil
+        session.cloudHostKey = nil
+        session.cardDeliveryBackend = .local
+        session.state = .distributing
         currentSession = session
     }
 
@@ -404,6 +515,11 @@ final class GameSessionStore {
         return session.rounds.flatMap(\.scoreEvents) + session.sessionEndScoreEvents
     }
 
+    /// Score events for the active game only — round eliminations plus end-of-game bonuses.
+    func currentGameScoreEvents() -> [ScoreEvent] {
+        allScoreEvents()
+    }
+
     func sessionScoreboard(
         roundPoints: [UUID: Int]? = nil,
         showsRoundPoints: Bool = true,
@@ -414,7 +530,7 @@ final class GameSessionStore {
         let rows = session.players.map { player in
             SessionScoreRow(
                 id: player.id,
-                displayName: player.isHost ? "You" : player.displayName,
+                displayName: player.displayName,
                 avatarColor: player.avatarColor,
                 sessionScore: scoreOverride?[player.id] ?? player.sessionScore,
                 roundPoints: showsRoundPoints ? (roundLookup[player.id] ?? 0) : 0,
@@ -510,6 +626,13 @@ final class GameSessionStore {
     private func finishScoringForCurrentRound(ghostGuessCorrect: Bool?) {
         applyRoundScores(ghostGuessCorrect: ghostGuessCorrect)
         applySessionWinBonusesIfNeeded()
+    }
+
+    private func reverseScoreEvents(_ events: [ScoreEvent], in session: inout GameSession) {
+        for event in events {
+            guard let index = session.players.firstIndex(where: { $0.id == event.playerId }) else { continue }
+            session.players[index].sessionScore -= event.points
+        }
     }
 
     private func applyRoundScores(ghostGuessCorrect: Bool?) {

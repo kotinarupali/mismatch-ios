@@ -13,6 +13,7 @@ export interface SessionInit {
   showRoleOnCard: boolean;
   insiderWord?: string | null;
   votingEnabled?: boolean;
+  ghostPickAgainEnabled?: boolean;
 }
 
 interface SessionState extends SessionInit {
@@ -21,6 +22,7 @@ interface SessionState extends SessionInit {
   openedPlayerIds: string[];
   hostKey: string;
   votingEnabled: boolean;
+  ghostPickAgainEnabled: boolean;
   votingOpen: boolean;
   votingRound: number;
   eliminatedPlayerIds: string[];
@@ -45,6 +47,9 @@ export class CardSession implements DurableObject {
     if (url.pathname === "/claim" && request.method === "POST") {
       return this.claim(request);
     }
+    if (url.pathname === "/swap-ghost" && request.method === "POST") {
+      return this.swapGhostRole(request);
+    }
     if (url.pathname === "/vote" && request.method === "POST") {
       return this.submitVote(request);
     }
@@ -65,6 +70,7 @@ export class CardSession implements DurableObject {
     this.session = {
       ...body,
       votingEnabled: body.votingEnabled === true,
+      ghostPickAgainEnabled: body.ghostPickAgainEnabled !== false,
       hostKey,
       revision: 0,
       claimedIndices: {},
@@ -78,10 +84,13 @@ export class CardSession implements DurableObject {
     return json({ ok: true, revision: 0, hostKey });
   }
 
-  private snapshot(): Response {
+    private snapshot(request: Request): Response {
     if (!this.session) {
       return json({ error: "not_found" }, 404);
     }
+
+    const url = new URL(request.url);
+    const hostKey = url.searchParams.get("hostKey");
 
     const guestPlayers = this.session.players
       .filter((player) => !player.isHost)
@@ -120,6 +129,15 @@ export class CardSession implements DurableObject {
       faceDownCardCount: this.session.faceDownCardCount,
       showRoleOnCard: this.session.showRoleOnCard,
       revision: this.session.revision,
+      assignments:
+        hostKey && hostKey === this.session.hostKey
+          ? this.session.players.map((player) => ({
+              id: player.id,
+              role: player.role,
+              word: player.word ?? null,
+              categoryHint: player.categoryHint ?? null,
+            }))
+          : undefined,
       votingEnabled: this.session.votingEnabled,
       votingOpen: this.session.votingOpen,
       votingRound: this.session.votingRound,
@@ -174,6 +192,91 @@ export class CardSession implements DurableObject {
     if (player.role === "ghost" && this.session.insiderWord) {
       payload.insiderWord = this.session.insiderWord;
     }
+    if (player.role === "ghost") {
+      const unpickedOthers = this.session.players.filter(
+        (candidate) =>
+          candidate.id !== playerId &&
+          !this.session!.openedPlayerIds.includes(candidate.id) &&
+          candidate.role !== "ghost"
+      );
+      payload.canSwapGhostRole =
+        this.session.ghostPickAgainEnabled && unpickedOthers.length >= 2;
+    }
+
+    return json(payload);
+  }
+
+  private async swapGhostRole(request: Request): Promise<Response> {
+    if (!this.session) {
+      return json({ error: "not_found" }, 404);
+    }
+
+    const body = (await request.json()) as { playerId?: string };
+    const playerId = body.playerId;
+    if (!playerId) {
+      return json({ error: "invalid_request" }, 400);
+    }
+
+    const ghostIndex = this.session.players.findIndex((p) => p.id === playerId);
+    if (ghostIndex < 0) {
+      return json({ error: "unknown_player" }, 404);
+    }
+    if (this.session.players[ghostIndex].role !== "ghost") {
+      return json({ error: "swap_unavailable" }, 409);
+    }
+    if (!this.session.ghostPickAgainEnabled) {
+      return json({ error: "swap_unavailable" }, 409);
+    }
+
+    const partnerCandidates = this.session.players.filter(
+      (player) =>
+        player.id !== playerId &&
+        !this.session!.openedPlayerIds.includes(player.id) &&
+        player.role !== "ghost"
+    );
+    if (partnerCandidates.length < 2) {
+      return json({ error: "swap_unavailable" }, 409);
+    }
+
+    const partner =
+      partnerCandidates[Math.floor(Math.random() * partnerCandidates.length)];
+    const partnerIndex = this.session.players.findIndex((p) => p.id === partner.id);
+    if (partnerIndex < 0) {
+      return json({ error: "swap_unavailable" }, 409);
+    }
+
+    const ghostPlayer = this.session.players[ghostIndex];
+    const partnerPlayer = this.session.players[partnerIndex];
+    this.session.players[ghostIndex] = {
+      ...ghostPlayer,
+      role: partnerPlayer.role,
+      word: partnerPlayer.word ?? null,
+      categoryHint: partnerPlayer.categoryHint ?? null,
+    };
+    this.session.players[partnerIndex] = {
+      ...partnerPlayer,
+      role: "ghost",
+      word: null,
+      categoryHint: ghostPlayer.categoryHint ?? null,
+    };
+
+    this.session.openedPlayerIds = this.session.openedPlayerIds.filter((id) => id !== playerId);
+    for (const [index, ownerId] of Object.entries(this.session.claimedIndices)) {
+      if (ownerId === playerId) {
+        delete this.session.claimedIndices[Number(index)];
+      }
+    }
+    this.session.revision += 1;
+
+    const updated = this.session.players[ghostIndex];
+    const payload: Record<string, unknown> = {
+      role: updated.role,
+      showRoleOnCard: this.session.showRoleOnCard,
+      faceDownCardCount: this.session.faceDownCardCount,
+      revision: this.session.revision,
+    };
+    if (updated.word) payload.word = updated.word;
+    if (updated.categoryHint) payload.categoryHint = updated.categoryHint;
 
     return json(payload);
   }

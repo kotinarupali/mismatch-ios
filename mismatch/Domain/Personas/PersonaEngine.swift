@@ -101,7 +101,7 @@ enum PersonaEngine {
         return session.players.map { player in
             PlayerSessionStats(
                 playerId: player.id,
-                displayName: player.isHost ? "You" : player.displayName,
+                displayName: player.displayName,
                 avatarColor: player.avatarColor,
                 role: player.assignment?.role,
                 sessionScore: player.sessionScore,

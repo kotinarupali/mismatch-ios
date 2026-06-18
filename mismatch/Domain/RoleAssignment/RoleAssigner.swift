@@ -37,6 +37,9 @@ struct RoleAssigner: Sendable {
             updated.assignment = assignment(for: role, wordPair: wordPair, settings: settings)
             updated.hasOpenedCard = false
             updated.isEliminated = false
+            updated.pickedCardIndex = nil
+            updated.cardToken = nil
+            updated.cardURL = nil
             return updated
         }
     }

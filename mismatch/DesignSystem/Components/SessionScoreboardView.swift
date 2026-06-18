@@ -183,13 +183,13 @@ struct RoundScoreBreakdownView: View {
     private func breakdownRow(player: PlayerSlot, events: [ScoreEvent], total: Int) -> some View {
         HStack(alignment: .top, spacing: 12) {
             AvatarView(
-                name: player.isHost ? "You" : player.displayName,
+                name: player.displayName,
                 color: player.avatarColor,
                 size: 36
             )
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(player.isHost ? "You" : player.displayName)
+                Text(player.displayName)
                     .font(AppTypography.headline)
                     .foregroundStyle(AppColor.label)
 

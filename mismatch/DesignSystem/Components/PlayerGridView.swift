@@ -53,7 +53,7 @@ struct PlayerGridView: View {
                 }
 
                 AvatarView(
-                    name: player.isHost ? "You" : player.displayName,
+                    name: player.displayName,
                     color: player.avatarColor,
                     size: avatarSize
                 )
@@ -70,7 +70,7 @@ struct PlayerGridView: View {
                     }
                 }
 
-                Text(player.isHost ? "You" : player.displayName)
+                Text(player.displayName)
                     .font(style == .tile ? AppTypography.headline : AppTypography.caption)
                     .lineLimit(style == .tile ? 2 : 1)
                     .multilineTextAlignment(.center)
@@ -172,7 +172,7 @@ struct PlayerGridView: View {
     }
 
     private func accessibilityLabel(for player: PlayerSlot) -> String {
-        let name = player.isHost ? "You" : player.displayName
+        let name = player.displayName
         if player.isEliminated, let role = roleBadge(for: player) {
             return "\(name), eliminated, \(role.displayName)"
         }
