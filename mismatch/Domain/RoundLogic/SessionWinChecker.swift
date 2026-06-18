@@ -48,6 +48,21 @@ enum SessionWinChecker {
             }
         }
 
+        // Insiders start as the majority; once outsiders tie or outnumber them, insiders
+        // can no longer vote out every outsider — end the session for the outsider side.
+        if activeInsiders > 0 {
+            let activeOutsiders = activeMismatches + activeGhosts
+            if activeOutsiders > 0 && activeOutsiders >= activeInsiders {
+                if settings.mismatchGhostAlliance {
+                    return .outsiderSideWins
+                }
+                if activeMismatches > 0 {
+                    return .mismatchWins
+                }
+                return .ghostWins
+            }
+        }
+
         guard active.count >= 2 else { return nil }
 
         return nil

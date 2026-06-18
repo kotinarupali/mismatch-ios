@@ -111,14 +111,44 @@ struct GameSessionStoreTests {
 
 struct SessionWinCheckerTests {
 
-    @Test func gameContinuesAfterSingleInsiderEliminated() {
+    @Test func mismatchWinsWhenOutsidersTieInsiderCount() {
         let players = [
             PlayerSlot(displayName: "A", avatarColor: .red, assignment: RoleAssignment(role: .insider, word: "A"), isEliminated: true),
             PlayerSlot(displayName: "B", avatarColor: .blue, assignment: RoleAssignment(role: .insider, word: "A")),
             PlayerSlot(displayName: "C", avatarColor: .green, assignment: RoleAssignment(role: .mismatch, word: "B"))
         ]
-        let settings = GameSettings.default
-        #expect(SessionWinChecker.checkWinner(players: players, settings: settings) == nil)
+        #expect(SessionWinChecker.checkWinner(players: players, settings: .default) == .mismatchWins)
+    }
+
+    @Test func mismatchWinsWhenOutsidersOutnumberInsiders() {
+        let players = [
+            PlayerSlot(displayName: "A", avatarColor: .red, assignment: RoleAssignment(role: .insider, word: "A"), isEliminated: true),
+            PlayerSlot(displayName: "A2", avatarColor: .orange, assignment: RoleAssignment(role: .insider, word: "A"), isEliminated: true),
+            PlayerSlot(displayName: "B", avatarColor: .blue, assignment: RoleAssignment(role: .mismatch, word: "B")),
+            PlayerSlot(displayName: "C", avatarColor: .green, assignment: RoleAssignment(role: .mismatch, word: "B"))
+        ]
+        #expect(SessionWinChecker.checkWinner(players: players, settings: .default) == .mismatchWins)
+    }
+
+    @Test func gameContinuesWhileInsidersHoldMajority() {
+        let players = [
+            PlayerSlot(displayName: "A", avatarColor: .red, assignment: RoleAssignment(role: .insider, word: "A"), isEliminated: true),
+            PlayerSlot(displayName: "B", avatarColor: .blue, assignment: RoleAssignment(role: .insider, word: "A")),
+            PlayerSlot(displayName: "C", avatarColor: .green, assignment: RoleAssignment(role: .insider, word: "A")),
+            PlayerSlot(displayName: "D", avatarColor: .orange, assignment: RoleAssignment(role: .mismatch, word: "B"))
+        ]
+        #expect(SessionWinChecker.checkWinner(players: players, settings: .default) == nil)
+    }
+
+    @Test func allianceOutsidersWinWhenOutsidersTieInsiders() {
+        var settings = GameSettings.default
+        settings.mismatchGhostAlliance = true
+        let players = [
+            PlayerSlot(displayName: "A", avatarColor: .red, assignment: RoleAssignment(role: .insider, word: "A"), isEliminated: true),
+            PlayerSlot(displayName: "B", avatarColor: .blue, assignment: RoleAssignment(role: .insider, word: "A")),
+            PlayerSlot(displayName: "C", avatarColor: .green, assignment: RoleAssignment(role: .mismatch, word: "B"))
+        ]
+        #expect(SessionWinChecker.checkWinner(players: players, settings: settings) == .outsiderSideWins)
     }
 
     @Test func insidersWinWhenAllMismatchEliminated() {
