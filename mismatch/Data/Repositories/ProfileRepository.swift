@@ -93,7 +93,7 @@ final class ProfileRepository {
 
         for player in session.players {
             var profileId = player.profileId
-            if profileId == nil, !player.isHost {
+            if profileId == nil {
                 profileId = try findOrCreate(
                     name: player.displayName,
                     avatarColor: player.avatarColor

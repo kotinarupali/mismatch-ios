@@ -260,7 +260,6 @@ final class LobbyViewModel {
     private func ensureProfilesForAllPlayers() {
         for index in seatedPlayers.indices {
             guard seatedPlayers[index].profileId == nil else { continue }
-            guard !seatedPlayers[index].isHost else { continue }
 
             guard let profile = try? dependencies.profileRepository.findOrCreate(
                 name: seatedPlayers[index].displayName,
@@ -269,7 +268,9 @@ final class LobbyViewModel {
 
             seatedPlayers[index].profileId = profile.id
             seatedPlayers[index].avatarColor = profile.avatarColor
-            seatedPlayers[index].displayName = profile.name
+            if !seatedPlayers[index].isHost {
+                seatedPlayers[index].displayName = profile.name
+            }
         }
     }
 
@@ -523,6 +524,7 @@ final class LobbyViewModel {
                 if seatedPlayers[index].displayName == "You" || seatedPlayers[index].displayName.isEmpty {
                     seatedPlayers[index].displayName = hostName
                 }
+                ensureHostProfile()
                 return
             }
             let hostId = reservedHostId ?? UUID()
@@ -536,10 +538,36 @@ final class LobbyViewModel {
                 ),
                 at: 0
             )
+            ensureHostProfile()
         } else if let host = seatedPlayers.first(where: \.isHost) {
             reservedHostId = host.id
             seatedPlayers.removeAll(where: \.isHost)
         }
+    }
+
+    private func ensureHostProfile() {
+        guard let index = seatedPlayers.firstIndex(where: \.isHost) else { return }
+        let displayName = seatedPlayers[index].displayName
+
+        if let profileId = seatedPlayers[index].profileId {
+            if let profile = try? dependencies.profileRepository.fetch(id: profileId),
+               profile.name != displayName {
+                try? dependencies.profileRepository.update(
+                    id: profileId,
+                    name: displayName,
+                    avatarColor: seatedPlayers[index].avatarColor
+                )
+            }
+            return
+        }
+
+        guard let profile = try? dependencies.profileRepository.findOrCreate(
+            name: displayName,
+            avatarColor: seatedPlayers[index].avatarColor
+        ) else { return }
+
+        seatedPlayers[index].profileId = profile.id
+        seatedPlayers[index].avatarColor = profile.avatarColor
     }
 
     private func syncSession() {

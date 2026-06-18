@@ -603,6 +603,11 @@ struct HostPreferencesTests {
         let viewModel = LobbyViewModel(dependencies: dependencies)
 
         #expect(viewModel.seatedPlayers.first(where: \.isHost)?.displayName == "Klaus")
+        #expect(viewModel.seatedPlayers.first(where: \.isHost)?.profileId != nil)
+
+        let profiles = try dependencies.profileRepository.fetchAll()
+        #expect(profiles.count == 1)
+        #expect(profiles[0].name == "Klaus")
     }
 
     @Test @MainActor func savedPreferencesApplyToNewSession() {
@@ -1688,5 +1693,31 @@ struct ProfileRepositoryTests {
         #expect(updated?.stats.gamesPlayed == 1)
         #expect(updated?.stats.winsAsInsider == 1)
         #expect(updated?.stats.currentStreak == 1)
+    }
+
+    @Test func applySessionStatsCreatesHostProfileWhenMissing() throws {
+        let dependencies = try AppDependencies.makeForTesting()
+        let repository = dependencies.profileRepository
+
+        let hostId = UUID()
+        var session = GameSession(gamesPlayedCount: 1, profileStatsApplied: false)
+        session.players = [
+            PlayerSlot(
+                id: hostId,
+                displayName: "Klaus",
+                avatarColor: .blue,
+                isHost: true,
+                assignment: RoleAssignment(role: .insider, word: "A"),
+                sessionScore: 3
+            )
+        ]
+
+        try repository.applySessionStats(from: session, winnerPlayerIds: [hostId])
+
+        let profiles = try repository.fetchAll()
+        #expect(profiles.count == 1)
+        #expect(profiles[0].name == "Klaus")
+        #expect(profiles[0].stats.totalPoints == 3)
+        #expect(profiles[0].stats.winsAsInsider == 1)
     }
 }
