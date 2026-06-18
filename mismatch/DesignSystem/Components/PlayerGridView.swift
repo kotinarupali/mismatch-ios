@@ -10,6 +10,7 @@ struct PlayerGridView: View {
     let selectedPlayerId: UUID?
     var style: Style = .compact
     var showEliminatedRoleBadges: Bool = false
+    var discussionStarterId: UUID?
     let onSelect: (UUID) -> Void
 
     private var columns: [GridItem] {
@@ -37,6 +38,8 @@ struct PlayerGridView: View {
     private func playerCell(_ player: PlayerSlot) -> some View {
         let isEliminated = player.isEliminated
         let isSelected = selectedPlayerId == player.id && !isEliminated
+        let isDiscussionStarter = discussionStarterId == player.id && !isEliminated
+        let eliminatedOutsiderRole = outsiderRole(for: player)
 
         Button {
             guard !isEliminated else { return }
@@ -53,12 +56,27 @@ struct PlayerGridView: View {
                         Circle()
                             .strokeBorder(AppColor.accentSecondary, lineWidth: 3)
                             .frame(width: avatarSize + 8, height: avatarSize + 8)
+                    } else if isDiscussionStarter {
+                        Circle()
+                            .strokeBorder(AppColor.warning, lineWidth: 3)
+                            .frame(width: avatarSize + 8, height: avatarSize + 8)
+                    }
+                }
+                .overlay {
+                    if isEliminated, let role = eliminatedOutsiderRole {
+                        RoleIconBadge(role: role, size: style == .tile ? .large : .medium)
                     }
                 }
                 .overlay(alignment: .bottomTrailing) {
-                    if isEliminated, showEliminatedRoleBadges, let role = player.assignment?.role {
-                        RoleIconBadge(role: role)
+                    if isDiscussionStarter {
+                        Image(systemName: "mic.fill")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundStyle(.white)
+                            .frame(width: 22, height: 22)
+                            .background(AppColor.warning)
+                            .clipShape(Circle())
                             .offset(x: 4, y: 4)
+                            .accessibilityHidden(true)
                     }
                 }
 
@@ -89,6 +107,16 @@ struct PlayerGridView: View {
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
+    private func outsiderRole(for player: PlayerSlot) -> Role? {
+        guard player.isEliminated, showEliminatedRoleBadges, let role = player.assignment?.role else {
+            return nil
+        }
+        switch role {
+        case .mismatch, .ghost: return role
+        case .insider: return nil
+        }
+    }
+
     private func labelColor(isEliminated: Bool, isSelected: Bool) -> Color {
         if isEliminated { return AppColor.secondaryLabel.opacity(0.7) }
         return isSelected ? AppColor.label : AppColor.secondaryLabel
@@ -102,40 +130,12 @@ struct PlayerGridView: View {
 
     private func accessibilityLabel(for player: PlayerSlot) -> String {
         let name = player.isHost ? "You" : player.displayName
-        guard player.isEliminated, let role = player.assignment?.role else { return name }
-        return "\(name), eliminated, \(role.displayName)"
-    }
-}
-
-struct RoleIconBadge: View {
-    let role: Role
-
-    var body: some View {
-        Image(systemName: iconName)
-            .font(.system(size: 11, weight: .bold))
-            .foregroundStyle(.white)
-            .frame(width: 22, height: 22)
-            .background(badgeColor)
-            .clipShape(Circle())
-            .overlay {
-                Circle().strokeBorder(.white.opacity(0.35), lineWidth: 1)
-            }
-            .accessibilityLabel(role.displayName)
-    }
-
-    private var iconName: String {
-        switch role {
-        case .insider: "checkmark"
-        case .mismatch: "exclamationmark"
-        case .ghost: "questionmark"
+        if player.isEliminated, let role = outsiderRole(for: player) {
+            return "\(name), eliminated, \(role.displayName)"
         }
-    }
-
-    private var badgeColor: Color {
-        switch role {
-        case .insider: .green
-        case .mismatch: .orange
-        case .ghost: .purple
+        if discussionStarterId == player.id, !player.isEliminated {
+            return "\(name), starts discussion"
         }
+        return name
     }
 }

@@ -23,7 +23,16 @@ final class DiscussionViewModel {
     }
 
     var allPlayers: [PlayerSlot] {
-        dependencies.gameSessionStore.currentSession?.players ?? []
+        dependencies.gameSessionStore.seatingOrderPlayers()
+    }
+
+    var discussionStarterId: UUID? {
+        dependencies.gameSessionStore.discussionStarter?.id
+    }
+
+    var discussionStarterName: String? {
+        guard let player = dependencies.gameSessionStore.discussionStarter else { return nil }
+        return player.isHost ? "You" : player.displayName
     }
 
     var activePlayers: [PlayerSlot] {

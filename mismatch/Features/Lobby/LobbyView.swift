@@ -36,10 +36,6 @@ struct LobbyView: View {
                     .disabled(!viewModel.canAddPlayer)
                 }
 
-                if viewModel.hostIsPlaying {
-                    HostPlayerChip()
-                }
-
                 if let shortfallMessage = viewModel.playersShortfallMessage {
                     Text(shortfallMessage)
                         .font(AppTypography.caption)
@@ -47,15 +43,31 @@ struct LobbyView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
 
-                if !viewModel.playerNames.isEmpty {
-                    VStack(spacing: 8) {
-                        ForEach(Array(viewModel.playerNames.enumerated()), id: \.offset) { index, name in
-                            PlayerChip(
-                                name: name,
-                                color: viewModel.playerColors[index],
-                                onEdit: { viewModel.updatePlayer(at: index, name: $0) },
-                                onDelete: { viewModel.removePlayer(at: index) }
-                            )
+                if !viewModel.seatedPlayers.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Seating order")
+                                .font(AppTypography.body)
+                                .foregroundStyle(AppColor.label)
+                            Text("Arrange players as they sit in the circle.")
+                                .font(AppTypography.caption)
+                                .foregroundStyle(AppColor.secondaryLabel)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                        VStack(spacing: 8) {
+                            ForEach(Array(viewModel.seatedPlayers.enumerated()), id: \.element.id) { index, player in
+                                SeatingPlayerRow(
+                                    player: player,
+                                    seatNumber: index + 1,
+                                    canMoveUp: index > 0,
+                                    canMoveDown: index < viewModel.seatedPlayers.count - 1,
+                                    onEdit: { viewModel.updatePlayer(id: player.id, name: $0) },
+                                    onDelete: { viewModel.removePlayer(id: player.id) },
+                                    onMoveUp: { viewModel.moveSeatedPlayerUp(at: index) },
+                                    onMoveDown: { viewModel.moveSeatedPlayerDown(at: index) }
+                                )
+                            }
                         }
                     }
                 }
@@ -97,7 +109,7 @@ struct LobbyView: View {
                 Divider().overlay(AppColor.cardBorder).padding(.horizontal, 16)
                     SettingsToggleRow(icon: "eye.slash.fill", title: "Show role on card", isOn: $viewModel.showRoleOnCard)
                     Divider().overlay(AppColor.cardBorder).padding(.horizontal, 16)
-                    SettingsToggleRow(icon: "figure.wave", title: "Ghost", isOn: $viewModel.ghostEnabled)
+                    SettingsToggleRow(icon: "figure.wave", title: "Ghost", isOn: ghostEnabledBinding)
                     Divider().overlay(AppColor.cardBorder).padding(.horizontal, 16)
                     SettingsToggleRow(
                         icon: "person.2.fill",
@@ -115,7 +127,6 @@ struct LobbyView: View {
             }
             .padding(.top, 8)
             .onChange(of: viewModel.hostIsPlaying) { viewModel.refreshSession() }
-            .onChange(of: viewModel.ghostEnabled) { viewModel.refreshSession() }
             .onChange(of: viewModel.mismatchGhostAlliance) { viewModel.refreshSession() }
             .onChange(of: viewModel.discussionTimerEnabled) { viewModel.refreshSession() }
             .onChange(of: viewModel.showRoleOnCard) { viewModel.refreshSession() }
@@ -135,6 +146,13 @@ struct LobbyView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .tint(AppColor.secondaryLabel)
+    }
+
+    private var ghostEnabledBinding: Binding<Bool> {
+        Binding(
+            get: { viewModel.ghostEnabled },
+            set: { viewModel.setGhostEnabled($0) }
+        )
     }
 }
 

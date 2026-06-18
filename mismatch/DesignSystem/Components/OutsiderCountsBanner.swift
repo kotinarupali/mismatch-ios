@@ -14,11 +14,17 @@ struct OutsiderCountsBanner: View {
     }
 
     private func countChip(role: Role, count: Int) -> some View {
-        HStack(spacing: 8) {
-            RoleBadgeView(role: role)
-            Text("\(count) \(countSuffix)")
-                .font(AppTypography.headline)
-                .foregroundStyle(AppColor.label)
+        HStack(spacing: 10) {
+            RoleIconBadge(role: role, size: .medium)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(role.displayName)
+                    .font(AppTypography.caption)
+                    .foregroundStyle(AppColor.secondaryLabel)
+                Text("\(count) \(countSuffix)")
+                    .font(AppTypography.headline)
+                    .foregroundStyle(AppColor.label)
+            }
+            Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)

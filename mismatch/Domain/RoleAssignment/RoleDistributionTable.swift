@@ -9,6 +9,9 @@ struct RoleCounts: Equatable, Sendable {
 }
 
 enum RoleDistributionTable {
+    /// Minimum players before Ghost slots can appear in the distribution table.
+    static let minimumPlayerCountForGhost = 4
+
     /// Returns role counts for the given player count and ghost setting.
     /// When ghost is disabled, ghost slots become insiders.
     ///

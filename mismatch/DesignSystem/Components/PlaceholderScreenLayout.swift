@@ -156,33 +156,6 @@ struct SettingsPickerRow<Selection: Hashable, Content: View>: View {
     }
 }
 
-struct HostPlayerChip: View {
-    var body: some View {
-        HStack(spacing: 10) {
-            AvatarView(name: "You", color: .blue, size: 36)
-            VStack(alignment: .leading, spacing: 2) {
-                Text("You")
-                    .font(AppTypography.body)
-                    .foregroundStyle(AppColor.label)
-                Text("Host · playing")
-                    .font(AppTypography.caption)
-                    .foregroundStyle(AppColor.secondaryLabel)
-            }
-            Spacer()
-            Image(systemName: "crown.fill")
-                .foregroundStyle(AppColor.warning)
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
-        .background(AppColor.backgroundElevated.opacity(0.9))
-        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .strokeBorder(AppColor.warning.opacity(0.35), lineWidth: 1)
-        }
-    }
-}
-
 struct PlayerChip: View {
     let name: String
     let color: AvatarColor
@@ -259,6 +232,144 @@ struct PlayerChip: View {
 
     private func beginEditing() {
         draftName = name
+        isEditing = true
+        isNameFocused = true
+    }
+
+    private func commitEdit() {
+        let trimmed = draftName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        onEdit(trimmed)
+        isEditing = false
+    }
+}
+
+struct SeatingPlayerRow: View {
+    let player: LobbySeatedPlayer
+    let seatNumber: Int
+    let canMoveUp: Bool
+    let canMoveDown: Bool
+    let onEdit: (String) -> Void
+    let onDelete: () -> Void
+    let onMoveUp: () -> Void
+    let onMoveDown: () -> Void
+
+    @State private var isEditing = false
+    @State private var draftName = ""
+    @FocusState private var isNameFocused: Bool
+
+    private var displayName: String {
+        player.isHost ? "You" : player.displayName
+    }
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Text("\(seatNumber)")
+                .font(AppTypography.caption)
+                .foregroundStyle(AppColor.secondaryLabel)
+                .frame(width: 18)
+
+            AvatarView(name: displayName, color: player.avatarColor, size: 36)
+
+            if isEditing {
+                TextField("Player name", text: $draftName)
+                    .textFieldStyle(.plain)
+                    .font(AppTypography.body)
+                    .foregroundStyle(AppColor.label)
+                    .focused($isNameFocused)
+                    .onSubmit { commitEdit() }
+            } else {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(displayName)
+                        .font(AppTypography.body)
+                        .foregroundStyle(AppColor.label)
+                    if player.isHost {
+                        Text("Host")
+                            .font(AppTypography.caption)
+                            .foregroundStyle(AppColor.warning)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    guard !player.isHost else { return }
+                    beginEditing()
+                }
+            }
+
+            if isEditing {
+                Button(action: commitEdit) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(AppColor.accent)
+                }
+                .buttonStyle(.plain)
+                .disabled(draftName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+
+                Button {
+                    isEditing = false
+                    draftName = player.displayName
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(AppColor.secondaryLabel)
+                }
+                .buttonStyle(.plain)
+            } else {
+                VStack(spacing: 2) {
+                    Button(action: onMoveUp) {
+                        Image(systemName: "chevron.up.circle.fill")
+                            .foregroundStyle(canMoveUp ? AppColor.secondaryLabel : AppColor.secondaryLabel.opacity(0.25))
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(!canMoveUp)
+
+                    Button(action: onMoveDown) {
+                        Image(systemName: "chevron.down.circle.fill")
+                            .foregroundStyle(canMoveDown ? AppColor.secondaryLabel : AppColor.secondaryLabel.opacity(0.25))
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(!canMoveDown)
+                }
+
+                if player.isHost {
+                    Image(systemName: "crown.fill")
+                        .foregroundStyle(AppColor.warning)
+                } else {
+                    Button(action: beginEditing) {
+                        Image(systemName: "pencil.circle.fill")
+                            .foregroundStyle(AppColor.secondaryLabel)
+                    }
+                    .buttonStyle(.plain)
+
+                    Button(action: onDelete) {
+                        Image(systemName: "minus.circle.fill")
+                            .foregroundStyle(AppColor.accentSecondary)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .background(player.isHost ? AppColor.backgroundElevated.opacity(0.9) : AppColor.backgroundElevated)
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .overlay {
+            if player.isHost {
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .strokeBorder(AppColor.warning.opacity(0.35), lineWidth: 1)
+            }
+        }
+        .onAppear {
+            draftName = player.displayName
+        }
+        .onChange(of: player.displayName) { _, updated in
+            if !isEditing {
+                draftName = updated
+            }
+        }
+    }
+
+    private func beginEditing() {
+        draftName = player.displayName
         isEditing = true
         isNameFocused = true
     }

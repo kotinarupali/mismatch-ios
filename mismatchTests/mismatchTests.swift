@@ -11,6 +11,72 @@ struct WordPackLoaderTests {
         #expect(pack.isBuiltIn)
         #expect(pack.pairs.count == 130)
     }
+}
+
+struct WordPairUsageStoreTests {
+
+    @Test func tracksUsedPairsAndRemainingCount() {
+        let defaults = UserDefaults(suiteName: "WordPairUsageStoreTests")!
+        defaults.removePersistentDomain(forName: "WordPairUsageStoreTests")
+        let store = WordPairUsageStore(defaults: defaults)
+
+        #expect(store.stats(totalPairs: 5, packId: "general").remaining == 5)
+
+        store.markUsed("pair-1", packId: "general")
+        store.markUsed("pair-2", packId: "general")
+
+        let stats = store.stats(totalPairs: 5, packId: "general")
+        #expect(stats.used == 2)
+        #expect(stats.remaining == 3)
+    }
+
+    @Test func resetClearsUsedPairs() {
+        let defaults = UserDefaults(suiteName: "WordPairUsageStoreTestsReset")!
+        defaults.removePersistentDomain(forName: "WordPairUsageStoreTestsReset")
+        let store = WordPairUsageStore(defaults: defaults)
+
+        store.markUsed("pair-1", packId: "general")
+        store.reset(packId: "general")
+
+        #expect(store.stats(totalPairs: 5, packId: "general").used == 0)
+    }
+}
+
+struct WordPairSelectorTests {
+
+    @Test func nextPairSkipsPreviouslyUsedPairs() throws {
+        let defaults = UserDefaults(suiteName: "WordPairSelectorTests")!
+        defaults.removePersistentDomain(forName: "WordPairSelectorTests")
+        let loader = WordPackLoader()
+        let usageStore = WordPairUsageStore(defaults: defaults)
+        let selector = WordPairSelector(loader: loader, usageStore: usageStore)
+
+        let first = try selector.nextPair()
+        selector.markUsed(first)
+
+        let second = try selector.nextPair()
+        #expect(second.id != first.id)
+    }
+
+    @Test func nextPairResetsWhenAllPairsAreUsed() throws {
+        let defaults = UserDefaults(suiteName: "WordPairSelectorTestsReset")!
+        defaults.removePersistentDomain(forName: "WordPairSelectorTestsReset")
+        let loader = WordPackLoader()
+        let usageStore = WordPairUsageStore(defaults: defaults)
+        let selector = WordPairSelector(loader: loader, usageStore: usageStore)
+        let pack = try loader.loadBuiltIn()
+
+        for pair in pack.pairs {
+            usageStore.markUsed(pair.id, packId: "general")
+        }
+
+        let next = try selector.nextPair()
+        #expect(pack.pairs.contains(where: { $0.id == next.id }))
+        #expect(usageStore.stats(totalPairs: pack.pairs.count, packId: "general").used == 0)
+    }
+}
+
+struct GameSessionMinimumPlayerTests {
 
     @Test func gameSessionRequiresMinimumThreePlayers() {
         let session = GameSession(players: [
@@ -142,6 +208,13 @@ struct RoleDistributionTableTests {
         #expect(counts.insider == 4)
     }
 
+    @Test func tenPlayersGhostOn() {
+        let counts = RoleDistributionTable.counts(playerCount: 10, ghostEnabled: true)
+        #expect(counts.mismatch == 3)
+        #expect(counts.ghost == 2)
+        #expect(counts.insider == 5)
+    }
+
     @Test func distributionForMultiplePlayerCounts() {
         for count in [4, 6, 8, 10, 12, 16] {
             let counts = RoleDistributionTable.counts(playerCount: count, ghostEnabled: true)
@@ -204,7 +277,7 @@ struct GameSettingsTests {
 
 struct PassThePhoneOrderTests {
 
-    @Test @MainActor func distributeRolesRotatesFixedPassOrder() throws {
+    @Test @MainActor func distributeRolesRotatesSeatingOrder() throws {
         let store = GameSessionStore()
         store.createSession()
         let host = PlayerSlot(displayName: "Host", avatarColor: .blue, isHost: true)
@@ -216,24 +289,40 @@ struct PassThePhoneOrderTests {
             PlayerSlot(displayName: "P5", avatarColor: AvatarColor.forIndex(4)),
         ]
         store.setPlayers(players)
+        store.setSeatingOrder(players.map(\.id))
 
         let pair = WordPair(id: "1", insiderWord: "A", mismatchWord: "B", category: "Test")
         try store.distributeRoles(wordPair: pair)
 
         let order = store.passThePhoneOrder().map(\.id)
-        let fixedBase = [
-            players[1].id, players[2].id, players[3].id, players[4].id, host.id,
-        ]
+        let seating = players.map(\.id)
 
         #expect(order.count == 5)
-        #expect(Set(order) == Set(fixedBase))
+        #expect(Set(order) == Set(seating))
 
-        guard let start = fixedBase.firstIndex(of: order[0]) else {
-            Issue.record("Pass order must start from a player in the fixed sequence.")
+        guard let start = seating.firstIndex(of: order[0]) else {
+            Issue.record("Pass order must start from a player in the seating sequence.")
             return
         }
-        let rotated = Array(fixedBase[start...] + fixedBase[..<start])
+        let rotated = Array(seating[start...] + seating[..<start])
         #expect(order == rotated)
+    }
+
+    @Test @MainActor func startDiscussionPicksRandomActiveStarter() throws {
+        let store = GameSessionStore()
+        store.createSession()
+        store.setPlayers([
+            PlayerSlot(displayName: "A", avatarColor: .red, assignment: RoleAssignment(role: .insider, word: "A")),
+            PlayerSlot(displayName: "B", avatarColor: .blue, assignment: RoleAssignment(role: .mismatch, word: "B")),
+            PlayerSlot(displayName: "C", avatarColor: .green, assignment: RoleAssignment(role: .insider, word: "A")),
+        ])
+        store.setSeatingOrder(store.currentSession!.players.map(\.id))
+
+        store.startDiscussion()
+
+        let starterId = store.currentSession?.discussionStartPlayerId
+        #expect(starterId != nil)
+        #expect(store.discussionStarter != nil)
     }
 
     @Test @MainActor func claimedCardsTracksPickedSlots() throws {
@@ -264,5 +353,40 @@ struct PassThePhoneOrderTests {
         let counts = store.remainingOutsiderCounts()
         #expect(counts.mismatch == 1)
         #expect(counts.ghost == 1)
+    }
+}
+
+struct LobbyViewModelTests {
+
+    @Test @MainActor func autoEnablesGhostForTenPlayers() {
+        let dependencies = AppDependencies()
+        dependencies.gameSessionStore.createSession()
+        let viewModel = LobbyViewModel(dependencies: dependencies)
+
+        for index in 1...9 {
+            viewModel.newPlayerName = "P\(index)"
+            viewModel.addPlayer()
+        }
+
+        #expect(viewModel.totalPlayerCount == 10)
+        #expect(viewModel.ghostEnabled == true)
+        #expect(viewModel.projectedGhostCount == 2)
+    }
+
+    @Test @MainActor func keepsGhostOffWhenUserDisablesIt() {
+        let dependencies = AppDependencies()
+        dependencies.gameSessionStore.createSession()
+        let viewModel = LobbyViewModel(dependencies: dependencies)
+
+        for index in 1...9 {
+            viewModel.newPlayerName = "P\(index)"
+            viewModel.addPlayer()
+        }
+
+        viewModel.setGhostEnabled(false)
+        viewModel.refreshSession()
+
+        #expect(viewModel.ghostEnabled == false)
+        #expect(viewModel.projectedGhostCount == 0)
     }
 }

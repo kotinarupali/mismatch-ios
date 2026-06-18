@@ -22,7 +22,28 @@ final class GameSessionStore {
     func setPlayers(_ players: [PlayerSlot]) {
         guard var session = currentSession else { return }
         session.players = players
+        if session.seatingOrderPlayerIds.isEmpty {
+            session.seatingOrderPlayerIds = players.map(\.id)
+        } else {
+            let validIds = Set(players.map(\.id))
+            session.seatingOrderPlayerIds = session.seatingOrderPlayerIds.filter { validIds.contains($0) }
+            for player in players where !session.seatingOrderPlayerIds.contains(player.id) {
+                session.seatingOrderPlayerIds.append(player.id)
+            }
+        }
         currentSession = session
+    }
+
+    func setSeatingOrder(_ playerIds: [UUID]) {
+        guard var session = currentSession else { return }
+        let validIds = Set(session.players.map(\.id))
+        session.seatingOrderPlayerIds = playerIds.filter { validIds.contains($0) }
+        currentSession = session
+    }
+
+    func seatingOrderPlayers() -> [PlayerSlot] {
+        guard let session = currentSession else { return [] }
+        return orderedPlayers(from: session.seatingOrderPlayerIds, in: session.players)
     }
 
     func updateState(_ state: GameState) {
@@ -40,7 +61,10 @@ final class GameSessionStore {
         )
         session.players = assigned
         session.state = .distributing
-        session.passOrderPlayerIds = try passOrderPlayerIds(for: session.players)
+        let seatingIds = session.seatingOrderPlayerIds.isEmpty
+            ? session.players.map(\.id)
+            : session.seatingOrderPlayerIds
+        session.passOrderPlayerIds = try randomPassOrder(from: seatingIds)
         let round = Round(index: session.rounds.count, wordPairId: wordPair.id)
         session.rounds.append(round)
         session.currentRoundIndex = session.rounds.count - 1
@@ -98,6 +122,7 @@ final class GameSessionStore {
     }
 
     func startDiscussion() {
+        assignRandomDiscussionStarter()
         updateState(.discussing)
     }
 
@@ -130,6 +155,8 @@ final class GameSessionStore {
         session.rounds.append(round)
         session.currentRoundIndex = session.rounds.count - 1
         session.state = .discussing
+        let activeIds = session.players.filter { !$0.isEliminated }.map(\.id)
+        session.discussionStartPlayerId = (try? CryptoRandom.shuffled(activeIds).first) ?? activeIds.first
         currentSession = session
     }
 
@@ -139,6 +166,7 @@ final class GameSessionStore {
         session.rounds = []
         session.currentRoundIndex = 0
         session.passOrderPlayerIds = []
+        session.discussionStartPlayerId = nil
         session.players = session.players.map { player in
             var updated = player
             updated.assignment = nil
@@ -186,18 +214,30 @@ final class GameSessionStore {
         currentRound?.outcome
     }
 
-    private func passOrderPlayerIds(for players: [PlayerSlot]) throws -> [UUID] {
-        var ordered = players
-        if let hostIndex = ordered.firstIndex(where: \.isHost) {
-            let host = ordered.remove(at: hostIndex)
-            ordered.append(host)
-        }
+    var discussionStarter: PlayerSlot? {
+        guard let session = currentSession,
+              let id = session.discussionStartPlayerId else { return nil }
+        return session.players.first { $0.id == id && !$0.isEliminated }
+    }
 
-        let ids = ordered.map(\.id)
-        guard ids.count > 1 else { return ids }
+    private func assignRandomDiscussionStarter() {
+        guard var session = currentSession else { return }
+        let activeIds = session.players.filter { !$0.isEliminated }.map(\.id)
+        guard !activeIds.isEmpty else { return }
+        session.discussionStartPlayerId = (try? CryptoRandom.shuffled(activeIds).first) ?? activeIds.first
+        currentSession = session
+    }
 
-        let randomBytes = try CryptoRandom.randomBytes(count: MemoryLayout<UInt32>.size)
-        let startIndex = Int(randomBytes.withUnsafeBytes { $0.load(as: UInt32.self) } % UInt32(ids.count))
-        return Array(ids[startIndex...] + ids[..<startIndex])
+    private func orderedPlayers(from ids: [UUID], in players: [PlayerSlot]) -> [PlayerSlot] {
+        let lookup = Dictionary(uniqueKeysWithValues: players.map { ($0.id, $0) })
+        let ordered = ids.compactMap { lookup[$0] }
+        let remaining = players.filter { !ids.contains($0.id) }
+        return ordered + remaining
+    }
+
+    private func randomPassOrder(from seatingIds: [UUID]) throws -> [UUID] {
+        guard seatingIds.count > 1 else { return seatingIds }
+        let startIndex = try CryptoRandom.randomInt(in: 0..<seatingIds.count)
+        return Array(seatingIds[startIndex...] + seatingIds[..<startIndex])
     }
 }

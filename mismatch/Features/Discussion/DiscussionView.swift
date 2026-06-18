@@ -17,6 +17,30 @@ struct DiscussionView: View {
                     countSuffix: "left"
                 )
 
+                if let starterName = viewModel.discussionStarterName {
+                    HStack(spacing: 10) {
+                        Image(systemName: "mic.fill")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(.white)
+                            .frame(width: 28, height: 28)
+                            .background(AppColor.warning)
+                            .clipShape(Circle())
+
+                        Text("\(starterName) starts the discussion")
+                            .font(AppTypography.headline)
+                            .foregroundStyle(AppColor.label)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .padding(.vertical, 12)
+                    .padding(.horizontal, 14)
+                    .background(AppColor.card)
+                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .strokeBorder(AppColor.cardBorder, lineWidth: 1)
+                    }
+                }
+
                 if viewModel.timerEnabled {
                     TimerView(
                         timeLabel: viewModel.timerService.formattedTime,
@@ -29,6 +53,7 @@ struct DiscussionView: View {
                     selectedPlayerId: viewModel.selectedPlayerId,
                     style: .tile,
                     showEliminatedRoleBadges: true,
+                    discussionStarterId: viewModel.discussionStarterId,
                     onSelect: { viewModel.selectPlayer($0) }
                 )
 

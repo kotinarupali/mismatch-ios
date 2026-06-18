@@ -5,23 +5,27 @@ import Foundation
 final class HomeViewModel {
     private let dependencies: AppDependencies
 
-    var wordPackPairCount: Int?
-    var showInlineRules = false
+    var wordPairStats: WordPairStats?
+    var showGameRules = false
 
     init(dependencies: AppDependencies) {
         self.dependencies = dependencies
     }
 
     func onAppear() {
-        loadWordPackCount()
+        loadWordPairStats()
         if !UserDefaults.standard.bool(forKey: UserDefaultsKeys.hasSeenInlineRules) {
-            showInlineRules = true
+            showGameRules = true
         }
     }
 
-    func dismissInlineRules() {
+    func openGameRules() {
+        showGameRules = true
+    }
+
+    func dismissGameRules() {
         UserDefaults.standard.set(true, forKey: UserDefaultsKeys.hasSeenInlineRules)
-        showInlineRules = false
+        showGameRules = false
     }
 
     func hostGameTapped() {
@@ -30,7 +34,7 @@ final class HomeViewModel {
         dependencies.router.navigate(to: .lobby)
     }
 
-    private func loadWordPackCount() {
-        wordPackPairCount = try? dependencies.wordPackLoader.loadBuiltIn().pairs.count
+    private func loadWordPairStats() {
+        wordPairStats = try? dependencies.wordPairSelector.stats()
     }
 }

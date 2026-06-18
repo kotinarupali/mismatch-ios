@@ -21,6 +21,13 @@ enum CryptoRandom {
         }
         return result
     }
+
+    static func randomInt(in range: Range<Int>) throws -> Int {
+        let count = range.count
+        guard count > 0 else { return range.lowerBound }
+        let randomBytes = try randomBytes(count: MemoryLayout<UInt32>.size)
+        return range.lowerBound + Int(randomBytes.withUnsafeBytes { $0.load(as: UInt32.self) } % UInt32(count))
+    }
 }
 
 enum CryptoRandomError: Error {

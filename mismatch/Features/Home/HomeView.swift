@@ -8,6 +8,27 @@ struct HomeView: View {
             PartyRoomBackground(style: .home)
 
             VStack(spacing: 0) {
+                HStack {
+                    Spacer()
+                    Button {
+                        viewModel.openGameRules()
+                    } label: {
+                        Label("How to Play", systemImage: "book.fill")
+                            .font(AppTypography.caption)
+                            .foregroundStyle(AppColor.secondaryLabel)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 8)
+                            .background(AppColor.card.opacity(0.85))
+                            .clipShape(Capsule())
+                            .overlay {
+                                Capsule().strokeBorder(AppColor.cardBorder, lineWidth: 1)
+                            }
+                    }
+                    .buttonStyle(.plain)
+                }
+                .padding(.horizontal, 24)
+                .padding(.top, 16)
+
                 Spacer()
 
                 VStack(spacing: 16) {
@@ -32,24 +53,35 @@ struct HomeView: View {
                         .foregroundStyle(AppColor.secondaryLabel)
                         .padding(.horizontal, 24)
 
-                    if let count = viewModel.wordPackPairCount {
-                        Text("\(count) word pairs ready")
-                            .font(AppTypography.caption)
-                            .foregroundStyle(AppColor.secondaryLabel)
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 8)
-                            .background(AppColor.card.opacity(0.85))
-                            .clipShape(Capsule())
-                            .overlay {
-                                Capsule().strokeBorder(AppColor.cardBorder, lineWidth: 1)
-                            }
+                    if let stats = viewModel.wordPairStats {
+                        VStack(spacing: 6) {
+                            Text("\(stats.used) played · \(stats.remaining) remaining")
+                                .font(AppTypography.caption)
+                                .foregroundStyle(AppColor.label)
+                            Text("of \(stats.total) word pairs")
+                                .font(AppTypography.caption)
+                                .foregroundStyle(AppColor.secondaryLabel)
+                        }
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 10)
+                        .background(AppColor.card.opacity(0.85))
+                        .clipShape(Capsule())
+                        .overlay {
+                            Capsule().strokeBorder(AppColor.cardBorder, lineWidth: 1)
+                        }
                     }
                 }
 
                 Spacer()
 
-                PrimaryButton(title: "Host a Game") {
-                    viewModel.hostGameTapped()
+                VStack(spacing: 12) {
+                    SecondaryButton(title: "How to Play") {
+                        viewModel.openGameRules()
+                    }
+
+                    PrimaryButton(title: "Host a Game") {
+                        viewModel.hostGameTapped()
+                    }
                 }
                 .padding(.horizontal, 24)
                 .padding(.bottom, 40)
@@ -58,14 +90,10 @@ struct HomeView: View {
         .toolbar(.hidden, for: .navigationBar)
         .preferredColorScheme(.dark)
         .onAppear { viewModel.onAppear() }
-        .alert("How to Play", isPresented: $viewModel.showInlineRules) {
-            Button("Let's go") { viewModel.dismissInlineRules() }
-        } message: {
-            Text("""
-            • Most players share a secret word — one has a similar wrong word.
-            • Discuss, then vote to eliminate who seems off.
-            • Find the Mismatch before they blend in.
-            """)
+        .sheet(isPresented: $viewModel.showGameRules, onDismiss: {
+            viewModel.dismissGameRules()
+        }) {
+            GameRulesSheet()
         }
     }
 }

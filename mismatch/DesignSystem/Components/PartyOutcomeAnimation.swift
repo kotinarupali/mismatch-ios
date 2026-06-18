@@ -3,33 +3,7 @@ import SwiftUI
 struct PartyOutcomeAnimation: View {
     let insidersWon: Bool
 
-    @State private var celebrate = false
-    @State private var clink = false
-    @State private var confettiWave = 0
-    @State private var lossRun = false
-    @State private var lossSplat = false
-    @State private var lossCry = false
-    @State private var lossImpact = false
-
-    private let confettiPieces: [ConfettiPiece] = (0..<96).map { index in
-        ConfettiPiece(
-            id: index,
-            xRatio: Double.random(in: 0...1),
-            phase: Double.random(in: 0...1),
-            speed: Double.random(in: 0.35...0.9),
-            drift: Double.random(in: -40...40),
-            spin: Double.random(in: 0...360),
-            spinSpeed: Double.random(in: 120...420),
-            color: [
-                AppColor.accent, AppColor.accentSecondary, AppColor.warning,
-                AppColor.success, Color(red: 1, green: 0.85, blue: 0.2),
-                Color(red: 1, green: 0.4, blue: 0.55), .white
-            ].randomElement() ?? AppColor.accent,
-            width: CGFloat.random(in: 7...14),
-            height: CGFloat.random(in: 10...22),
-            isCircle: Bool.random()
-        )
-    }
+    @State private var animate = false
 
     var body: some View {
         GeometryReader { geo in
@@ -47,96 +21,44 @@ struct PartyOutcomeAnimation: View {
         .onAppear {
             if insidersWon {
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
-                celebrate = true
-                withAnimation(.easeInOut(duration: 0.28).repeatCount(5, autoreverses: true)) {
-                    clink = true
-                }
-                Timer.scheduledTimer(withTimeInterval: 0.9, repeats: true) { timer in
-                    confettiWave += 1
-                    if confettiWave > 8 {
-                        timer.invalidate()
-                    }
-                }
             } else {
                 UINotificationFeedbackGenerator().notificationOccurred(.error)
-                lossRun = true
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.42) {
-                    UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
-                    lossImpact = true
-                    lossSplat = true
-                }
-                withAnimation(.easeInOut(duration: 1.1).repeatForever(autoreverses: true)) {
-                    lossCry = true
-                }
+            }
+            withAnimation(.easeInOut(duration: 0.55).repeatForever(autoreverses: true)) {
+                animate = true
             }
         }
     }
 
     @ViewBuilder
     private func insiderWinCelebration(in size: CGSize) -> some View {
-        TimelineView(.animation) { timeline in
-            let time = timeline.date.timeIntervalSinceReferenceDate
+        ZStack {
+            RadialGradient(
+                colors: [
+                    AppColor.success.opacity(animate ? 0.28 : 0.14),
+                    AppColor.warning.opacity(animate ? 0.16 : 0.08),
+                    .clear
+                ],
+                center: .center,
+                startRadius: 24,
+                endRadius: size.width * 0.72
+            )
 
-            ZStack {
-                RadialGradient(
-                    colors: [
-                        AppColor.success.opacity(celebrate ? 0.35 : 0.15),
-                        AppColor.warning.opacity(celebrate ? 0.2 : 0.08),
-                        .clear
-                    ],
-                    center: .center,
-                    startRadius: 20,
-                    endRadius: size.width * 0.75
-                )
-
-                ForEach(confettiPieces) { piece in
-                    confettiShape(piece)
-                        .position(confettiPosition(for: piece, time: time, in: size))
-                        .rotationEffect(.degrees(piece.spin + time * piece.spinSpeed))
+            VStack(spacing: 22) {
+                HStack(alignment: .bottom, spacing: 18) {
+                    CartoonPandaView(mood: .dancing, size: 92, phase: 0, animate: animate)
+                    CartoonPandaView(mood: .dancing, size: 108, phase: 0.35, animate: animate)
+                    CartoonPandaView(mood: .dancing, size: 92, phase: 0.7, animate: animate)
                 }
 
-                burstConfetti(in: size)
-
-                VStack(spacing: 18) {
-                    HStack(spacing: 0) {
-                        cheersGlass(tilt: clink ? 18 : -10, mirrored: false)
-                        Image(systemName: "sparkles")
-                            .font(.system(size: 28, weight: .bold))
-                            .foregroundStyle(AppColor.warning)
-                            .scaleEffect(clink ? 1.35 : 0.7)
-                            .opacity(clink ? 1 : 0.4)
-                            .offset(y: clink ? -6 : 0)
-                        cheersGlass(tilt: clink ? -18 : 10, mirrored: true)
-                    }
-                    .offset(y: celebrate ? -4 : 8)
-                    .animation(.spring(response: 0.35, dampingFraction: 0.45), value: clink)
-
-                    HStack(spacing: 20) {
-                        Image(systemName: "party.popper.fill")
-                            .font(.system(size: 44))
-                            .foregroundStyle(AppColor.heroGradient)
-                            .rotationEffect(.degrees(celebrate ? -12 : 12))
-                        Image(systemName: "trophy.fill")
-                            .font(.system(size: 52))
-                            .foregroundStyle(AppColor.warning)
-                            .scaleEffect(celebrate ? 1.15 : 0.95)
-                            .shadow(color: AppColor.warning.opacity(0.6), radius: 14, y: 4)
-                        Image(systemName: "party.popper.fill")
-                            .font(.system(size: 44))
-                            .foregroundStyle(AppColor.heroGradient)
-                            .scaleEffect(x: -1, y: 1)
-                            .rotationEffect(.degrees(celebrate ? 12 : -12))
-                    }
-
-                    Text("Cheers!")
-                        .font(AppTypography.display)
-                        .foregroundStyle(AppColor.label)
-                        .shadow(color: AppColor.warning.opacity(0.45), radius: 10, y: 2)
-                        .scaleEffect(celebrate ? 1.06 : 0.94)
-                }
-                .padding(.top, size.height * 0.08)
-                .frame(maxHeight: .infinity, alignment: .top)
+                Text("Panda party!")
+                    .font(AppTypography.display)
+                    .foregroundStyle(AppColor.label)
+                    .shadow(color: AppColor.warning.opacity(0.35), radius: 8, y: 2)
+                    .scaleEffect(animate ? 1.05 : 0.96)
             }
+            .padding(.top, size.height * 0.1)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
     }
 
@@ -148,259 +70,259 @@ struct PartyOutcomeAnimation: View {
             ZStack {
                 RadialGradient(
                     colors: [
-                        Color(red: 0.15, green: 0.12, blue: 0.28).opacity(0.55),
-                        Color(red: 0.08, green: 0.1, blue: 0.18).opacity(0.35),
+                        Color(red: 0.14, green: 0.16, blue: 0.28).opacity(0.5),
+                        Color(red: 0.08, green: 0.1, blue: 0.18).opacity(0.3),
                         .clear
                     ],
                     center: .top,
-                    startRadius: 10,
-                    endRadius: size.width * 0.85
+                    startRadius: 12,
+                    endRadius: size.width * 0.8
                 )
 
-                rainDrops(time: time, in: size)
+                softRain(time: time, in: size)
 
-                VStack(spacing: 28) {
-                    wallSplatScene(in: size)
-                    cryingMartini(time: time)
-                    Text("Oof.")
+                VStack(spacing: 26) {
+                    HStack(alignment: .bottom, spacing: 28) {
+                        CartoonPandaView(mood: .crying, size: 96, phase: 0, animate: animate, time: time)
+                        CartoonPandaView(mood: .crying, size: 112, phase: 0.5, animate: animate, time: time)
+                    }
+
+                    Text("Sniff…")
                         .font(AppTypography.display)
                         .foregroundStyle(AppColor.secondaryLabel)
-                        .opacity(lossSplat ? 1 : 0)
-                        .scaleEffect(lossSplat ? 1 : 0.6)
-                        .animation(.spring(response: 0.4, dampingFraction: 0.6), value: lossSplat)
+                        .opacity(animate ? 1 : 0.75)
+                        .offset(y: animate ? 0 : 4)
                 }
-                .padding(.top, size.height * 0.06)
+                .padding(.top, size.height * 0.1)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             }
         }
     }
 
     @ViewBuilder
-    private func wallSplatScene(in size: CGSize) -> some View {
-        let wallX = size.width * 0.62
-        let runX = lossRun ? wallX - 54 : size.width * 0.08
-
-        ZStack {
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(Color.white.opacity(0.08))
-                .frame(width: 14, height: 130)
-                .overlay(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(Color.white.opacity(0.04))
-                        .frame(width: 28, height: 130)
-                }
-                .position(x: wallX, y: 72)
-                .offset(x: lossImpact ? 3 : 0)
-                .animation(.spring(response: 0.12, dampingFraction: 0.35), value: lossImpact)
-
-            if lossImpact {
-                ForEach(0..<8, id: \.self) { index in
-                    Image(systemName: "star.fill")
-                        .font(.system(size: 10))
-                        .foregroundStyle(AppColor.warning.opacity(0.85))
-                        .offset(
-                            x: cos(Double(index) * .pi / 4) * 28,
-                            y: sin(Double(index) * .pi / 4) * 22
-                        )
-                        .position(x: wallX - 8, y: 72)
-                        .opacity(lossSplat ? 0.35 : 1)
-                        .scaleEffect(lossSplat ? 0.4 : 1.2)
-                        .animation(.easeOut(duration: 0.5), value: lossSplat)
-                }
-            }
-
-            splatCartoon
-                .position(x: runX, y: lossSplat ? 108 : 72)
-                .animation(lossSplat ? .easeIn(duration: 0.35) : .easeOut(duration: 0.42), value: lossRun)
-                .animation(.spring(response: 0.22, dampingFraction: 0.55), value: lossSplat)
-        }
-        .frame(height: 150)
-        .frame(maxWidth: size.width * 0.92)
-    }
-
-    private var splatCartoon: some View {
-        ZStack {
-            if lossSplat {
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(Color(red: 1, green: 0.82, blue: 0.35))
-                    .frame(width: 88, height: 18)
-                    .overlay {
-                        HStack(spacing: 14) {
-                            Circle().fill(.black.opacity(0.7)).frame(width: 5, height: 5)
-                            Circle().fill(.black.opacity(0.7)).frame(width: 5, height: 5)
-                            splatMouth
-                        }
-                    }
-                    .rotationEffect(.degrees(-4))
-            } else {
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [Color(red: 1, green: 0.88, blue: 0.45), Color(red: 1, green: 0.72, blue: 0.28)],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
-                    .frame(width: 56, height: 56)
-                    .overlay {
-                        VStack(spacing: 6) {
-                            HStack(spacing: 14) {
-                                sadEye
-                                sadEye
-                            }
-                            splatMouth
-                        }
-                        .offset(y: 2)
-                    }
-                    .scaleEffect(lossRun ? 1 : 0.85)
-            }
-        }
-    }
-
-    private var sadEye: some View {
-        Capsule()
-            .fill(.black.opacity(0.75))
-            .frame(width: 8, height: 10)
-            .overlay(alignment: .bottom) {
-                Circle()
-                    .fill(Color.cyan.opacity(0.85))
-                    .frame(width: 4, height: 4)
-                    .offset(y: lossCry ? 10 : 4)
-                    .opacity(lossCry ? 0.9 : 0)
-            }
-    }
-
-    private var splatMouth: some View {
-        Capsule()
-            .fill(.black.opacity(0.65))
-            .frame(width: 18, height: 4)
-            .offset(y: 4)
-    }
-
-    @ViewBuilder
-    private func cryingMartini(time: TimeInterval) -> some View {
-        ZStack {
-            Image(systemName: "wineglass")
-                .font(.system(size: 64, weight: .regular))
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [Color(red: 0.75, green: 0.85, blue: 0.95), Color(red: 0.45, green: 0.58, blue: 0.78)],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
-                .rotationEffect(.degrees(lossCry ? -8 : 8))
-                .offset(y: lossCry ? 2 : -2)
-                .animation(.easeInOut(duration: 1.1).repeatForever(autoreverses: true), value: lossCry)
-
-            HStack(spacing: 22) {
-                fallingTear(time: time, phase: 0)
-                fallingTear(time: time, phase: 0.45)
-            }
-            .offset(y: 18)
-
-            Text("×")
-                .font(.system(size: 22, weight: .bold, design: .rounded))
-                .foregroundStyle(AppColor.secondaryLabel.opacity(0.8))
-                .offset(y: -28)
-                .opacity(lossCry ? 1 : 0.2)
-        }
-    }
-
-    @ViewBuilder
-    private func fallingTear(time: TimeInterval, phase: Double) -> some View {
-        let progress = (time * 0.9 + phase).truncatingRemainder(dividingBy: 1)
-        Teardrop()
-            .fill(Color.cyan.opacity(0.75))
-            .frame(width: 10, height: 14)
-            .offset(y: progress * 36)
-            .opacity(progress > 0.85 ? 0 : 0.85)
-    }
-
-    @ViewBuilder
-    private func rainDrops(time: TimeInterval, in size: CGSize) -> some View {
-        ForEach(0..<14, id: \.self) { index in
-            let phase = Double(index) * 0.17
-            let progress = (time * 0.35 + phase).truncatingRemainder(dividingBy: 1)
-            Circle()
-                .fill(Color.white.opacity(0.08))
-                .frame(width: 3, height: 10)
+    private func softRain(time: TimeInterval, in size: CGSize) -> some View {
+        ForEach(0..<10, id: \.self) { index in
+            let phase = Double(index) * 0.19
+            let progress = (time * 0.28 + phase).truncatingRemainder(dividingBy: 1)
+            Capsule()
+                .fill(Color.white.opacity(0.06))
+                .frame(width: 2, height: 14)
                 .position(
-                    x: size.width * (0.08 + Double(index) * 0.065),
+                    x: size.width * (0.1 + Double(index) * 0.085),
                     y: progress * size.height
                 )
         }
     }
+}
 
-    @ViewBuilder
-    private func cheersGlass(tilt: Double, mirrored: Bool) -> some View {
-        Image(systemName: "wineglass.fill")
-            .font(.system(size: 42))
-            .foregroundStyle(
-                LinearGradient(
-                    colors: [Color(red: 1, green: 0.92, blue: 0.55), AppColor.warning],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-            )
-            .shadow(color: AppColor.warning.opacity(0.5), radius: 8, y: 4)
-            .rotationEffect(.degrees(tilt))
-            .scaleEffect(x: mirrored ? -1 : 1, y: 1)
+private struct CartoonPandaView: View {
+    enum Mood {
+        case dancing
+        case crying
     }
 
-    @ViewBuilder
-    private func confettiShape(_ piece: ConfettiPiece) -> some View {
-        Group {
-            if piece.isCircle {
-                Circle().fill(piece.color)
+    let mood: Mood
+    var size: CGFloat
+    var phase: Double
+    var animate: Bool
+    var time: TimeInterval = 0
+
+    private var bounce: CGFloat { animate ? 1 : 0 }
+    private var sway: Double { sin((time + phase) * 4.2) * (mood == .dancing ? 8 : 3) }
+
+    var body: some View {
+        let lift = mood == .dancing ? -10 * bounce : 2 * bounce
+        let squash = mood == .dancing ? 1 + 0.06 * bounce : 1 - 0.04 * bounce
+
+        VStack(spacing: size * 0.04) {
+            if mood == .dancing {
+                dancingArms
+            }
+
+            ZStack {
+                pandaHead
+                if mood == .crying {
+                    cryingTears
+                }
+            }
+
+            if mood == .dancing {
+                dancingLegs
             } else {
-                RoundedRectangle(cornerRadius: 2, style: .continuous).fill(piece.color)
+                cryingArms
             }
         }
-        .frame(width: piece.width, height: piece.height)
-        .shadow(color: piece.color.opacity(0.35), radius: 2, y: 1)
+        .offset(y: lift)
+        .scaleEffect(x: 1, y: squash)
+        .rotationEffect(.degrees(sway))
+        .animation(.easeInOut(duration: 0.55).delay(phase * 0.12), value: animate)
     }
 
-    private func confettiPosition(for piece: ConfettiPiece, time: TimeInterval, in size: CGSize) -> CGPoint {
-        let travel = size.height + 120
-        let progress = (time * piece.speed + piece.phase).truncatingRemainder(dividingBy: 1)
-        let y = -60 + progress * travel
-        let sway = sin((time * 2.5) + piece.phase * 10) * piece.drift
-        let x = piece.xRatio * size.width + sway
-        return CGPoint(x: x, y: y)
+    private var pandaHead: some View {
+        ZStack {
+            Circle()
+                .fill(Color.white)
+                .frame(width: size, height: size)
+                .shadow(color: .black.opacity(0.12), radius: 6, y: 4)
+
+            HStack(spacing: size * 0.28) {
+                pandaEar
+                pandaEar
+            }
+            .offset(y: -size * 0.42)
+
+            HStack(spacing: size * 0.22) {
+                eyePatch(mood: mood)
+                eyePatch(mood: mood)
+            }
+            .offset(y: -size * 0.04)
+
+            Ellipse()
+                .fill(Color.black.opacity(0.85))
+                .frame(width: size * 0.16, height: size * 0.11)
+                .offset(y: size * 0.18)
+
+            mouth
+                .offset(y: size * 0.28)
+        }
+    }
+
+    private var pandaEar: some View {
+        Circle()
+            .fill(Color.black.opacity(0.88))
+            .frame(width: size * 0.24, height: size * 0.24)
     }
 
     @ViewBuilder
-    private func burstConfetti(in size: CGSize) -> some View {
-        ForEach(0..<(confettiWave * 12), id: \.self) { index in
-            let piece = confettiPieces[index % confettiPieces.count]
-            RoundedRectangle(cornerRadius: 2, style: .continuous)
-                .fill(piece.color)
-                .frame(width: piece.width * 1.2, height: piece.height * 1.2)
-                .rotationEffect(.degrees(Double(index) * 23))
-                .position(x: size.width * 0.5, y: size.height * 0.22)
-                .offset(
-                    x: cos(Double(index) * 0.55) * (celebrate ? 140 : 20),
-                    y: sin(Double(index) * 0.55) * (celebrate ? 100 : 10)
-                )
-                .opacity(celebrate ? 0 : 0.95)
-                .animation(.easeOut(duration: 0.85), value: confettiWave)
+    private func eyePatch(mood: Mood) -> some View {
+        ZStack {
+            Circle()
+                .fill(Color.black.opacity(0.88))
+                .frame(width: size * 0.26, height: size * 0.26)
+
+            switch mood {
+            case .dancing:
+                Circle()
+                    .fill(Color.white)
+                    .frame(width: size * 0.09, height: size * 0.09)
+                    .offset(x: size * 0.03, y: -size * 0.02)
+                Circle()
+                    .fill(Color.black)
+                    .frame(width: size * 0.045, height: size * 0.045)
+                    .offset(x: size * 0.04, y: -size * 0.015)
+            case .crying:
+                Capsule()
+                    .fill(Color.white.opacity(0.9))
+                    .frame(width: size * 0.08, height: size * 0.05)
+                    .offset(y: size * 0.02)
+                sadBrow
+            }
         }
+    }
+
+    private var sadBrow: some View {
+        Capsule()
+            .fill(Color.black.opacity(0.75))
+            .frame(width: size * 0.12, height: size * 0.025)
+            .rotationEffect(.degrees(18))
+            .offset(x: -size * 0.02, y: -size * 0.1)
+    }
+
+    @ViewBuilder
+    private var mouth: some View {
+        switch mood {
+        case .dancing:
+            Arc(startAngle: .degrees(200), endAngle: .degrees(-20), clockwise: false)
+                .stroke(Color.black.opacity(0.75), lineWidth: size * 0.035)
+                .frame(width: size * 0.28, height: size * 0.16)
+        case .crying:
+            Arc(startAngle: .degrees(20), endAngle: .degrees(160), clockwise: false)
+                .stroke(Color.black.opacity(0.75), lineWidth: size * 0.035)
+                .frame(width: size * 0.22, height: size * 0.12)
+        }
+    }
+
+    private var dancingArms: some View {
+        HStack(spacing: size * 0.72) {
+            danceArm(left: true)
+            danceArm(left: false)
+        }
+        .offset(y: size * 0.08)
+    }
+
+    private func danceArm(left: Bool) -> some View {
+        let angle = Double(left ? -1 : 1) * (animate ? 38 : 12)
+        return Capsule()
+            .fill(Color.black.opacity(0.88))
+            .frame(width: size * 0.11, height: size * 0.34)
+            .rotationEffect(.degrees(angle))
+            .offset(y: animate ? -size * 0.08 : 0)
+    }
+
+    private var dancingLegs: some View {
+        HStack(spacing: size * 0.18) {
+            danceLeg(left: true)
+            danceLeg(left: false)
+        }
+        .offset(y: -size * 0.06)
+    }
+
+    private func danceLeg(left: Bool) -> some View {
+        let angle = Double(left ? -1 : 1) * (animate ? 14 : -8)
+        return Capsule()
+            .fill(Color.black.opacity(0.88))
+            .frame(width: size * 0.12, height: size * 0.28)
+            .rotationEffect(.degrees(angle))
+    }
+
+    private var cryingArms: some View {
+        HStack(spacing: size * 0.52) {
+            Capsule()
+                .fill(Color.black.opacity(0.88))
+                .frame(width: size * 0.1, height: size * 0.26)
+                .rotationEffect(.degrees(animate ? 24 : 32))
+            Capsule()
+                .fill(Color.black.opacity(0.88))
+                .frame(width: size * 0.1, height: size * 0.26)
+                .rotationEffect(.degrees(animate ? -24 : -32))
+        }
+        .offset(y: -size * 0.08)
+    }
+
+    private var cryingTears: some View {
+        HStack(spacing: size * 0.34) {
+            fallingTear(phase: phase)
+            fallingTear(phase: phase + 0.35)
+        }
+        .offset(y: size * 0.12)
+    }
+
+    private func fallingTear(phase: Double) -> some View {
+        let progress = (time * 1.1 + phase).truncatingRemainder(dividingBy: 1)
+        return Teardrop()
+            .fill(Color.cyan.opacity(0.8))
+            .frame(width: size * 0.08, height: size * 0.11)
+            .offset(y: progress * size * 0.42)
+            .opacity(progress > 0.82 ? 0 : 0.9)
     }
 }
 
-private struct ConfettiPiece: Identifiable {
-    let id: Int
-    let xRatio: Double
-    let phase: Double
-    let speed: Double
-    let drift: Double
-    let spin: Double
-    let spinSpeed: Double
-    let color: Color
-    let width: CGFloat
-    let height: CGFloat
-    let isCircle: Bool
+private struct Arc: Shape {
+    var startAngle: Angle
+    var endAngle: Angle
+    var clockwise: Bool
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.addArc(
+            center: CGPoint(x: rect.midX, y: rect.midY),
+            radius: min(rect.width, rect.height) / 2,
+            startAngle: startAngle,
+            endAngle: endAngle,
+            clockwise: clockwise
+        )
+        return path
+    }
 }
 
 private struct Teardrop: Shape {

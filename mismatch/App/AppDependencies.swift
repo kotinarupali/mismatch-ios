@@ -4,6 +4,8 @@ import SwiftUI
 final class AppDependencies {
     let gameSessionStore: GameSessionStore
     let wordPackLoader: WordPackLoader
+    let wordPairUsageStore: WordPairUsageStore
+    let wordPairSelector: WordPairSelector
     let router: AppRouter
     let timerService: TimerService
     let localCardTokenStore: LocalCardTokenStore
@@ -12,6 +14,8 @@ final class AppDependencies {
     init() {
         gameSessionStore = GameSessionStore()
         wordPackLoader = WordPackLoader()
+        wordPairUsageStore = WordPairUsageStore()
+        wordPairSelector = WordPairSelector(loader: wordPackLoader, usageStore: wordPairUsageStore)
         router = AppRouter()
         timerService = TimerService()
         localCardTokenStore = LocalCardTokenStore()
@@ -21,6 +25,8 @@ final class AppDependencies {
     init(
         gameSessionStore: GameSessionStore,
         wordPackLoader: WordPackLoader,
+        wordPairUsageStore: WordPairUsageStore,
+        wordPairSelector: WordPairSelector,
         router: AppRouter,
         timerService: TimerService,
         localCardTokenStore: LocalCardTokenStore,
@@ -28,6 +34,8 @@ final class AppDependencies {
     ) {
         self.gameSessionStore = gameSessionStore
         self.wordPackLoader = wordPackLoader
+        self.wordPairUsageStore = wordPairUsageStore
+        self.wordPairSelector = wordPairSelector
         self.router = router
         self.timerService = timerService
         self.localCardTokenStore = localCardTokenStore
