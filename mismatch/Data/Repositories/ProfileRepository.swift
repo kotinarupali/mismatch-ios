@@ -40,6 +40,29 @@ final class ProfileRepository {
         return mapProfile(entity)
     }
 
+    func findByName(_ name: String) throws -> PlayerProfile? {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+
+        let profiles = try fetchAll()
+        return profiles.first { $0.name == trimmed }
+    }
+
+    @discardableResult
+    func findOrCreate(name: String, avatarColor: AvatarColor? = nil) throws -> PlayerProfile {
+        if let existing = try findByName(name) {
+            return existing
+        }
+
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            throw ProfileRepositoryError.invalidName
+        }
+
+        let color = avatarColor ?? AvatarColor.forIndex(try fetchAll().count)
+        return try create(name: trimmed, avatarColor: color)
+    }
+
     func update(id: UUID, name: String, avatarColor: AvatarColor) throws {
         guard let entity = try fetchEntity(id: id) else {
             throw ProfileRepositoryError.notFound
@@ -69,7 +92,14 @@ final class ProfileRepository {
         let hasScoringActivity = session.players.contains { $0.sessionScore > 0 }
 
         for player in session.players {
-            guard let profileId = player.profileId else { continue }
+            var profileId = player.profileId
+            if profileId == nil, !player.isHost {
+                profileId = try findOrCreate(
+                    name: player.displayName,
+                    avatarColor: player.avatarColor
+                ).id
+            }
+            guard let profileId else { continue }
             guard let entity = try fetchEntity(id: profileId) else { continue }
 
             entity.totalPoints += player.sessionScore

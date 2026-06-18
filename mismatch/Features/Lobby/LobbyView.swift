@@ -13,28 +13,8 @@ struct LobbyView: View {
             roomStyle: .lobby
         ) {
             VStack(spacing: 20) {
-                HStack(spacing: 10) {
-                    TextField("Player name", text: $viewModel.newPlayerName)
-                        .textFieldStyle(.plain)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 14)
-                        .background(AppColor.card)
-                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                        .overlay {
-                            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .strokeBorder(AppColor.cardBorder, lineWidth: 1)
-                        }
-                        .foregroundStyle(AppColor.label)
-                        .onSubmit { viewModel.addPlayer() }
-
-                    Button {
-                        viewModel.addPlayer()
-                    } label: {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.system(size: 36))
-                            .foregroundStyle(AppColor.heroGradient)
-                    }
-                    .disabled(!viewModel.canAddPlayer)
+                SecondaryButton(title: "Add Player") {
+                    viewModel.openAddPlayerPicker()
                 }
 
                 if let shortfallMessage = viewModel.playersShortfallMessage {
@@ -59,7 +39,7 @@ struct LobbyView: View {
                             Text("Seating order")
                                 .font(AppTypography.body)
                                 .foregroundStyle(AppColor.label)
-                            Text("Arrange players as they sit in the circle. Tap + to link a saved profile.")
+                            Text("Arrange players as they sit in the circle. Tap a seat to swap players.")
                                 .font(AppTypography.caption)
                                 .foregroundStyle(AppColor.secondaryLabel)
                         }
@@ -76,7 +56,7 @@ struct LobbyView: View {
                                     onDelete: { viewModel.removePlayer(id: player.id) },
                                     onMoveUp: { viewModel.moveSeatedPlayerUp(at: index) },
                                     onMoveDown: { viewModel.moveSeatedPlayerDown(at: index) },
-                                    onLinkProfile: { viewModel.openProfilePicker(for: player.id) }
+                                    onChangePlayer: { viewModel.openChangePlayerPicker(for: player.id) }
                                 )
                             }
                         }
@@ -103,11 +83,13 @@ struct LobbyView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(AppColor.background.opacity(0.9), for: .navigationBar)
         .toolbarColorScheme(.dark, for: .navigationBar)
-        .sheet(isPresented: $viewModel.showProfilePicker) {
-            ProfilePickerSheet(
-                dependencies: dependencies,
-                linkedProfileId: viewModel.linkedProfileIdForPicker,
-                onSelect: { viewModel.completeProfileSelection($0) }
+        .sheet(isPresented: $viewModel.showPlayerPicker) {
+            LobbyPlayerPickerSheet(
+                profiles: viewModel.availableProfilesForPicker(),
+                excludedProfileIds: viewModel.excludedProfileIdsForPicker,
+                allowsHostSelection: viewModel.playerPickerAllowsHostSelection,
+                onSelectProfile: { viewModel.addPlayer(from: $0) },
+                onAddNewPlayer: { viewModel.addNewPlayer(named: $0) }
             )
         }
     }

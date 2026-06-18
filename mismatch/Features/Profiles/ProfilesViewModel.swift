@@ -7,9 +7,6 @@ final class ProfilesViewModel {
 
     var profiles: [PlayerProfile] = []
     var errorMessage: String?
-    var showCreateProfile = false
-    var newProfileName = ""
-    var newProfileColor: AvatarColor = .blue
 
     init(dependencies: AppDependencies) {
         self.dependencies = dependencies
@@ -25,25 +22,6 @@ final class ProfilesViewModel {
             errorMessage = nil
         } catch {
             errorMessage = "Could not load profiles."
-        }
-    }
-
-    func openCreateProfile() {
-        newProfileName = ""
-        newProfileColor = AvatarColor.forIndex(profiles.count)
-        showCreateProfile = true
-    }
-
-    func createProfile() {
-        let trimmed = newProfileName.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return }
-
-        do {
-            _ = try dependencies.profileRepository.create(name: trimmed, avatarColor: newProfileColor)
-            showCreateProfile = false
-            reload()
-        } catch {
-            errorMessage = "Could not create profile."
         }
     }
 

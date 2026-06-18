@@ -9,7 +9,7 @@ struct ProfilesListView: View {
 
             ScrollView {
                 VStack(spacing: 20) {
-                    Text("Stats saved on this device")
+                    Text("Players are saved automatically when you add them in the lobby. Stats stay on this device.")
                         .font(AppTypography.caption)
                         .foregroundStyle(AppColor.secondaryLabel)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -33,10 +33,6 @@ struct ProfilesListView: View {
                             }
                         }
                     }
-
-                    SecondaryButton(title: "Add Profile") {
-                        viewModel.openCreateProfile()
-                    }
                 }
                 .padding(.horizontal, 24)
                 .padding(.vertical, 20)
@@ -50,17 +46,14 @@ struct ProfilesListView: View {
             ProfileDetailView(viewModel: viewModel.detailViewModel(for: profileId))
         }
         .onAppear { viewModel.onAppear() }
-        .sheet(isPresented: $viewModel.showCreateProfile) {
-            CreateProfileSheet(viewModel: viewModel)
-        }
     }
 
     private var emptyState: some View {
         VStack(spacing: 8) {
-            Text("No profiles yet")
+            Text("No players yet")
                 .font(AppTypography.headline)
                 .foregroundStyle(AppColor.label)
-            Text("Create profiles for regular players, then link them in the lobby to track wins and points.")
+            Text("Host a game and add guests in the lobby — they'll show up here automatically.")
                 .font(AppTypography.caption)
                 .foregroundStyle(AppColor.secondaryLabel)
                 .multilineTextAlignment(.center)

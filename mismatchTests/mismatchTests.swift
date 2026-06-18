@@ -495,8 +495,7 @@ struct LobbyViewModelTests {
         let viewModel = LobbyViewModel(dependencies: dependencies)
 
         for index in 1...9 {
-            viewModel.newPlayerName = "P\(index)"
-            viewModel.addPlayer()
+            viewModel.addNewPlayer(named: "P\(index)")
         }
 
         #expect(viewModel.totalPlayerCount == 10)
@@ -510,8 +509,7 @@ struct LobbyViewModelTests {
         let viewModel = LobbyViewModel(dependencies: dependencies)
 
         for index in 1...9 {
-            viewModel.newPlayerName = "P\(index)"
-            viewModel.addPlayer()
+            viewModel.addNewPlayer(named: "P\(index)")
         }
 
         viewModel.setGhostEnabled(false)
@@ -526,8 +524,7 @@ struct LobbyViewModelTests {
         dependencies.gameSessionStore.createSession()
         let viewModel = LobbyViewModel(dependencies: dependencies)
 
-        viewModel.newPlayerName = "Alice"
-        viewModel.addPlayer()
+        viewModel.addNewPlayer(named: "Alice")
         guard let guestId = viewModel.seatedPlayers.first(where: { !$0.isHost })?.id else {
             Issue.record("Expected a guest player.")
             return
@@ -1065,6 +1062,42 @@ struct ProfileRepositoryTests {
 
         try repository.delete(id: created.id)
         #expect(try repository.fetch(id: created.id) == nil)
+    }
+
+    @Test func findOrCreateReturnsExistingProfileForExactNameMatch() throws {
+        let dependencies = try AppDependencies.makeForTesting()
+        let repository = dependencies.profileRepository
+
+        let created = try repository.create(name: "Alex", avatarColor: .orange)
+        let resolved = try repository.findOrCreate(name: "Alex", avatarColor: .blue)
+
+        #expect(resolved.id == created.id)
+        #expect(try repository.fetchAll().count == 1)
+    }
+
+    @Test func findOrCreateTreatsDifferentCasingAsSeparateProfiles() throws {
+        let dependencies = try AppDependencies.makeForTesting()
+        let repository = dependencies.profileRepository
+
+        _ = try repository.create(name: "Alex", avatarColor: .orange)
+        let resolved = try repository.findOrCreate(name: "alex", avatarColor: .blue)
+
+        #expect(resolved.name == "alex")
+        #expect(try repository.fetchAll().count == 2)
+    }
+
+    @Test @MainActor func addingLobbyPlayerCreatesProfileAutomatically() throws {
+        let dependencies = AppDependencies()
+        let viewModel = LobbyViewModel(dependencies: dependencies)
+
+        viewModel.addNewPlayer(named: "Freya")
+
+        #expect(viewModel.seatedPlayers.count == 1)
+        #expect(viewModel.seatedPlayers[0].profileId != nil)
+
+        let profiles = try dependencies.profileRepository.fetchAll()
+        #expect(profiles.count == 1)
+        #expect(profiles[0].name == "Freya")
     }
 
     @Test func applySessionStatsUpdatesLinkedProfile() throws {

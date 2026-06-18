@@ -22,11 +22,10 @@ final class LobbyViewModel {
     var distributionMode: DistributionMode
     var cloudGuestVotingEnabled: Bool
     var seatedPlayers: [LobbySeatedPlayer]
-    var newPlayerName: String = ""
     var isDistributing = false
     var errorMessage: String?
-    var showProfilePicker = false
-    var profilePickerPlayerId: UUID?
+    var showPlayerPicker = false
+    var playerPickerTargetId: UUID?
     private var ghostDisabledByUser = false
     private var reservedHostId: UUID?
 
@@ -67,7 +66,6 @@ final class LobbyViewModel {
 
         seatedPlayers = Self.loadSeatedPlayers(from: dependencies.gameSessionStore.currentSession)
         reservedHostId = dependencies.gameSessionStore.currentSession?.players.first(where: \.isHost)?.id
-        newPlayerName = ""
         isDistributing = false
         errorMessage = nil
 
@@ -92,45 +90,105 @@ final class LobbyViewModel {
         }
     }
 
-    func openProfilePicker(for playerId: UUID) {
-        profilePickerPlayerId = playerId
-        showProfilePicker = true
+    func openAddPlayerPicker() {
+        playerPickerTargetId = nil
+        showPlayerPicker = true
     }
 
-    func linkProfile(_ profile: PlayerProfile, to playerId: UUID) {
+    func openChangePlayerPicker(for playerId: UUID) {
+        playerPickerTargetId = playerId
+        showPlayerPicker = true
+    }
+
+    func dismissPlayerPicker() {
+        showPlayerPicker = false
+        playerPickerTargetId = nil
+    }
+
+    func addPlayer(from profile: PlayerProfile) {
+        guard !isProfileSeated(profile.id, excludingPlayerId: playerPickerTargetId) else {
+            errorMessage = "\(profile.name) is already in this game."
+            return
+        }
+
+        if let targetId = playerPickerTargetId {
+            assignProfile(profile, to: targetId)
+        } else {
+            seatedPlayers.append(
+                LobbySeatedPlayer(
+                    id: UUID(),
+                    displayName: profile.name,
+                    isHost: false,
+                    avatarColor: profile.avatarColor,
+                    profileId: profile.id
+                )
+            )
+        }
+
+        errorMessage = nil
+        dismissPlayerPicker()
+        syncSession()
+    }
+
+    func addNewPlayer(named name: String) {
+        do {
+            let profile = try dependencies.profileRepository.findOrCreate(
+                name: name,
+                avatarColor: AvatarColor.forIndex(seatedPlayers.count)
+            )
+            addPlayer(from: profile)
+        } catch {
+            errorMessage = "Could not add player."
+        }
+    }
+
+    func availableProfilesForPicker() -> [PlayerProfile] {
+        (try? dependencies.profileRepository.fetchAll()) ?? []
+    }
+
+    var excludedProfileIdsForPicker: Set<UUID> {
+        let seated = Set(seatedPlayers.compactMap(\.profileId))
+        guard let targetId = playerPickerTargetId,
+              let currentProfileId = seatedPlayers.first(where: { $0.id == targetId })?.profileId else {
+            return seated
+        }
+        return seated.subtracting([currentProfileId])
+    }
+
+    var playerPickerAllowsHostSelection: Bool {
+        guard let targetId = playerPickerTargetId else { return false }
+        return seatedPlayers.first(where: { $0.id == targetId })?.isHost == true
+    }
+
+    private func assignProfile(_ profile: PlayerProfile, to playerId: UUID) {
         guard let index = seatedPlayers.firstIndex(where: { $0.id == playerId }) else { return }
         seatedPlayers[index].profileId = profile.id
         seatedPlayers[index].avatarColor = profile.avatarColor
         if !seatedPlayers[index].isHost {
             seatedPlayers[index].displayName = profile.name
         }
-        syncSession()
     }
 
-    func unlinkProfile(from playerId: UUID) {
-        guard let index = seatedPlayers.firstIndex(where: { $0.id == playerId }) else { return }
-        seatedPlayers[index].profileId = nil
-        syncSession()
-    }
-
-    func dismissProfilePicker() {
-        showProfilePicker = false
-        profilePickerPlayerId = nil
-    }
-
-    func completeProfileSelection(_ profile: PlayerProfile?) {
-        guard let playerId = profilePickerPlayerId else { return }
-        if let profile {
-            linkProfile(profile, to: playerId)
-        } else {
-            unlinkProfile(from: playerId)
+    private func isProfileSeated(_ profileId: UUID, excludingPlayerId: UUID?) -> Bool {
+        seatedPlayers.contains { player in
+            player.profileId == profileId && player.id != excludingPlayerId
         }
-        dismissProfilePicker()
     }
 
-    var linkedProfileIdForPicker: UUID? {
-        guard let playerId = profilePickerPlayerId else { return nil }
-        return seatedPlayers.first(where: { $0.id == playerId })?.profileId
+    private func ensureProfilesForAllPlayers() {
+        for index in seatedPlayers.indices {
+            guard seatedPlayers[index].profileId == nil else { continue }
+            guard !seatedPlayers[index].isHost else { continue }
+
+            guard let profile = try? dependencies.profileRepository.findOrCreate(
+                name: seatedPlayers[index].displayName,
+                avatarColor: seatedPlayers[index].avatarColor
+            ) else { continue }
+
+            seatedPlayers[index].profileId = profile.id
+            seatedPlayers[index].avatarColor = profile.avatarColor
+            seatedPlayers[index].displayName = profile.name
+        }
     }
 
     var totalPlayerCount: Int {
@@ -146,7 +204,7 @@ final class LobbyViewModel {
     }
 
     var canAddPlayer: Bool {
-        !newPlayerName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        true
     }
 
     var canContinue: Bool {
@@ -227,18 +285,7 @@ final class LobbyViewModel {
     }
 
     func addPlayer() {
-        let trimmed = newPlayerName.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return }
-        seatedPlayers.append(
-            LobbySeatedPlayer(
-                id: UUID(),
-                displayName: trimmed,
-                isHost: false,
-                avatarColor: AvatarColor.forIndex(seatedPlayers.count)
-            )
-        )
-        newPlayerName = ""
-        syncSession()
+        openAddPlayerPicker()
     }
 
     func removePlayer(id: UUID) {
@@ -251,9 +298,23 @@ final class LobbyViewModel {
         guard !trimmed.isEmpty,
               let index = seatedPlayers.firstIndex(where: { $0.id == id && !$0.isHost }) else { return }
 
-        var updatedPlayers = seatedPlayers
-        updatedPlayers[index].displayName = trimmed
-        seatedPlayers = updatedPlayers
+        seatedPlayers[index].displayName = trimmed
+
+        if let profileId = seatedPlayers[index].profileId {
+            try? dependencies.profileRepository.update(
+                id: profileId,
+                name: trimmed,
+                avatarColor: seatedPlayers[index].avatarColor
+            )
+        } else if let profile = try? dependencies.profileRepository.findOrCreate(
+            name: trimmed,
+            avatarColor: seatedPlayers[index].avatarColor
+        ) {
+            seatedPlayers[index].profileId = profile.id
+            seatedPlayers[index].avatarColor = profile.avatarColor
+            seatedPlayers[index].displayName = profile.name
+        }
+
         syncSession()
     }
 
@@ -281,6 +342,7 @@ final class LobbyViewModel {
 
     func distributeRolesTapped() {
         guard canContinue else { return }
+        ensureProfilesForAllPlayers()
         syncSession()
         isDistributing = true
         errorMessage = nil

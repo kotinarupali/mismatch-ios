@@ -1,57 +1,18 @@
 import SwiftUI
 
-struct CreateProfileSheet: View {
-    @Bindable var viewModel: ProfilesViewModel
+struct LobbyPlayerPickerSheet: View {
+    let profiles: [PlayerProfile]
+    let excludedProfileIds: Set<UUID>
+    let allowsHostSelection: Bool
+    let onSelectProfile: (PlayerProfile) -> Void
+    let onAddNewPlayer: (String) -> Void
+
     @Environment(\.dismiss) private var dismiss
+    @State private var newPlayerName = ""
 
-    var body: some View {
-        NavigationStack {
-            ZStack {
-                AppColor.background.ignoresSafeArea()
-
-                VStack(spacing: 20) {
-                    TextField("Player name", text: $viewModel.newProfileName)
-                        .textFieldStyle(.plain)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 14)
-                        .background(AppColor.card)
-                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                        .foregroundStyle(AppColor.label)
-
-                    AvatarColorPicker(selection: $viewModel.newProfileColor)
-
-                    PrimaryButton(
-                        title: "Create Profile",
-                        isEnabled: !viewModel.newProfileName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                    ) {
-                        viewModel.createProfile()
-                        dismiss()
-                    }
-
-                    Spacer()
-                }
-                .padding(24)
-            }
-            .navigationTitle("New Profile")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
-                        .foregroundStyle(AppColor.accent)
-                }
-            }
-        }
-        .preferredColorScheme(.dark)
+    private var availableProfiles: [PlayerProfile] {
+        profiles.filter { !excludedProfileIds.contains($0.id) }
     }
-}
-
-struct ProfilePickerSheet: View {
-    let dependencies: AppDependencies
-    let linkedProfileId: UUID?
-    let onSelect: (PlayerProfile?) -> Void
-
-    @Environment(\.dismiss) private var dismiss
-    @State private var profiles: [PlayerProfile] = []
 
     var body: some View {
         NavigationStack {
@@ -59,36 +20,67 @@ struct ProfilePickerSheet: View {
                 AppColor.background.ignoresSafeArea()
 
                 ScrollView {
-                    VStack(spacing: 12) {
-                        if profiles.isEmpty {
-                            Text("Create profiles from the home screen first.")
-                                .font(AppTypography.body)
-                                .foregroundStyle(AppColor.secondaryLabel)
-                                .multilineTextAlignment(.center)
-                                .padding(.vertical, 20)
-                        } else {
-                            ForEach(profiles) { profile in
-                                Button {
-                                    onSelect(profile)
-                                    dismiss()
-                                } label: {
-                                    pickerRow(profile, isSelected: profile.id == linkedProfileId)
+                    VStack(spacing: 20) {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("New player")
+                                .font(AppTypography.headline)
+                                .foregroundStyle(AppColor.label)
+
+                            HStack(spacing: 10) {
+                                TextField("Player name", text: $newPlayerName)
+                                    .textFieldStyle(.plain)
+                                    .padding(.horizontal, 14)
+                                    .padding(.vertical, 14)
+                                    .background(AppColor.card)
+                                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                                    .foregroundStyle(AppColor.label)
+                                    .onSubmit { addNewPlayer() }
+
+                                Button(action: addNewPlayer) {
+                                    Image(systemName: "plus.circle.fill")
+                                        .font(.system(size: 36))
+                                        .foregroundStyle(AppColor.heroGradient)
                                 }
                                 .buttonStyle(.plain)
+                                .disabled(newPlayerName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                             }
+
+                            Text("New names are saved automatically for next time.")
+                                .font(AppTypography.caption)
+                                .foregroundStyle(AppColor.secondaryLabel)
                         }
 
-                        if linkedProfileId != nil {
-                            SecondaryButton(title: "Unlink Profile") {
-                                onSelect(nil)
-                                dismiss()
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("Saved players")
+                                .font(AppTypography.headline)
+                                .foregroundStyle(AppColor.label)
+
+                            if availableProfiles.isEmpty {
+                                Text("No saved players yet — add someone above.")
+                                    .font(AppTypography.body)
+                                    .foregroundStyle(AppColor.secondaryLabel)
+                                    .multilineTextAlignment(.center)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 12)
+                            } else {
+                                VStack(spacing: 8) {
+                                    ForEach(availableProfiles) { profile in
+                                        Button {
+                                            onSelectProfile(profile)
+                                            dismiss()
+                                        } label: {
+                                            pickerRow(profile)
+                                        }
+                                        .buttonStyle(.plain)
+                                    }
+                                }
                             }
                         }
                     }
                     .padding(24)
                 }
             }
-            .navigationTitle("Link Profile")
+            .navigationTitle(allowsHostSelection ? "Choose Player" : "Add Player")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -96,36 +88,38 @@ struct ProfilePickerSheet: View {
                         .foregroundStyle(AppColor.accent)
                 }
             }
-            .task {
-                profiles = (try? dependencies.profileRepository.fetchAll()) ?? []
-            }
         }
         .preferredColorScheme(.dark)
     }
 
-    private func pickerRow(_ profile: PlayerProfile, isSelected: Bool) -> some View {
+    private func addNewPlayer() {
+        let trimmed = newPlayerName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        onAddNewPlayer(trimmed)
+        dismiss()
+    }
+
+    private func pickerRow(_ profile: PlayerProfile) -> some View {
         HStack(spacing: 12) {
             AvatarView(name: profile.name, color: profile.avatarColor, size: 40)
             VStack(alignment: .leading, spacing: 2) {
                 Text(profile.name)
                     .font(AppTypography.headline)
                     .foregroundStyle(AppColor.label)
-                Text("\(profile.stats.totalPoints) pts")
+                Text("\(profile.stats.totalPoints) pts · \(profile.stats.gamesPlayed) games")
                     .font(AppTypography.caption)
                     .foregroundStyle(AppColor.secondaryLabel)
             }
             Spacer()
-            if isSelected {
-                Image(systemName: "checkmark.circle.fill")
-                    .foregroundStyle(AppColor.accent)
-            }
+            Image(systemName: "plus.circle.fill")
+                .foregroundStyle(AppColor.accent)
         }
         .padding(12)
-        .background(isSelected ? AppColor.cardSelected : AppColor.card)
+        .background(AppColor.card)
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .strokeBorder(isSelected ? AppColor.accent.opacity(0.6) : AppColor.cardBorder, lineWidth: 1)
+                .strokeBorder(AppColor.cardBorder, lineWidth: 1)
         }
     }
 }

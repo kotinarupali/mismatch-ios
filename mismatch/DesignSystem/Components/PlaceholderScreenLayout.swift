@@ -268,7 +268,7 @@ struct SeatingPlayerRow: View {
     let onDelete: () -> Void
     let onMoveUp: () -> Void
     let onMoveDown: () -> Void
-    let onLinkProfile: () -> Void
+    let onChangePlayer: () -> Void
 
     @State private var isEditing = false
     @State private var draftName = ""
@@ -308,10 +308,6 @@ struct SeatingPlayerRow: View {
                         Text("Host")
                             .font(AppTypography.caption)
                             .foregroundStyle(AppColor.warning)
-                    } else if player.profileId != nil {
-                        Text("Profile linked")
-                            .font(AppTypography.caption)
-                            .foregroundStyle(AppColor.accent)
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -340,12 +336,12 @@ struct SeatingPlayerRow: View {
                 }
                 .buttonStyle(.plain)
             } else {
-                Button(action: onLinkProfile) {
-                    Image(systemName: player.profileId == nil ? "person.crop.circle.badge.plus" : "person.crop.circle.fill")
-                        .foregroundStyle(player.profileId == nil ? AppColor.secondaryLabel : AppColor.accent)
+                Button(action: onChangePlayer) {
+                    Image(systemName: "person.crop.circle")
+                        .foregroundStyle(AppColor.secondaryLabel)
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(player.profileId == nil ? "Link profile" : "Change linked profile")
+                .accessibilityLabel("Change player")
 
                 VStack(spacing: 2) {
                     Button(action: onMoveUp) {
