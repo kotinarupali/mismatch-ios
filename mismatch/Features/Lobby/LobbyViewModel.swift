@@ -196,7 +196,10 @@ final class LobbyViewModel {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty,
               let index = seatedPlayers.firstIndex(where: { $0.id == id && !$0.isHost }) else { return }
-        seatedPlayers[index].displayName = trimmed
+
+        var updatedPlayers = seatedPlayers
+        updatedPlayers[index].displayName = trimmed
+        seatedPlayers = updatedPlayers
         syncSession()
     }
 

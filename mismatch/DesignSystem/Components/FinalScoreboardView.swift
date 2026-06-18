@@ -14,6 +14,10 @@ struct FinalScoreboardRow: Identifiable, Equatable, Sendable {
 struct FinalScoreboardView: View {
     let rows: [FinalScoreboardRow]
 
+    private let avatarSize: CGFloat = 44
+    private let crownSlotHeight: CGFloat = 18
+    private let columnWidth: CGFloat = 44
+
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Final scores")
@@ -37,32 +41,8 @@ struct FinalScoreboardView: View {
     }
 
     private func scoreRow(_ row: FinalScoreboardRow) -> some View {
-        HStack(spacing: 12) {
-            VStack(spacing: 0) {
-                Group {
-                    if row.isWinner {
-                        Image(systemName: "crown.fill")
-                            .font(.system(size: 18, weight: .bold))
-                            .foregroundStyle(AppColor.warning)
-                            .shadow(color: AppColor.warning.opacity(0.5), radius: 5, y: 2)
-                    } else {
-                        Color.clear
-                    }
-                }
-                .frame(height: 20)
-                .padding(.bottom, 2)
-
-                ZStack {
-                    AvatarView(name: row.displayName, color: row.avatarColor, size: 44)
-
-                    RoleGlyphView(role: row.role, size: 17)
-                        .shadow(color: .black.opacity(0.4), radius: 1.5, y: 1)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-                        .offset(x: 3, y: 3)
-                        .accessibilityHidden(true)
-                }
-                .frame(width: 44, height: 44)
-            }
+        HStack(alignment: .center, spacing: 12) {
+            playerColumn(row)
 
             Text(row.displayName)
                 .font(AppTypography.headline)
@@ -101,6 +81,29 @@ struct FinalScoreboardView: View {
         .accessibilityLabel(accessibilityLabel(for: row))
     }
 
+    private func playerColumn(_ row: FinalScoreboardRow) -> some View {
+        VStack(spacing: 4) {
+            ZStack {
+                if row.isWinner {
+                    Image(systemName: "crown.fill")
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundStyle(AppColor.warning)
+                        .shadow(color: AppColor.warning.opacity(0.5), radius: 5, y: 2)
+                }
+            }
+            .frame(width: columnWidth, height: crownSlotHeight)
+
+            ZStack(alignment: .bottomTrailing) {
+                AvatarView(name: row.displayName, color: row.avatarColor, size: avatarSize)
+
+                RoleOverlayMark(role: row.role, size: 14)
+                    .padding(2)
+            }
+            .frame(width: avatarSize, height: avatarSize)
+        }
+        .frame(width: columnWidth, alignment: .center)
+    }
+
     private func accessibilityLabel(for row: FinalScoreboardRow) -> String {
         var label = "\(row.displayName), \(row.role.displayName), \(row.sessionScore) points"
         if row.pointsGained > 0 {
@@ -118,22 +121,42 @@ struct FinalScoreboardView: View {
         rows: [
             FinalScoreboardRow(
                 id: UUID(),
-                displayName: "Alex",
+                displayName: "A",
                 avatarColor: .green,
                 role: .insider,
-                sessionScore: 10,
+                sessionScore: 5,
                 pointsGained: 4,
                 rank: 1,
                 isWinner: true
             ),
             FinalScoreboardRow(
                 id: UUID(),
-                displayName: "Jordan",
-                avatarColor: .orange,
-                role: .mismatch,
-                sessionScore: 4,
-                pointsGained: 1,
+                displayName: "B",
+                avatarColor: .yellow,
+                role: .insider,
+                sessionScore: 5,
+                pointsGained: 4,
                 rank: 2,
+                isWinner: true
+            ),
+            FinalScoreboardRow(
+                id: UUID(),
+                displayName: "C",
+                avatarColor: .teal,
+                role: .ghost,
+                sessionScore: 1,
+                pointsGained: 0,
+                rank: 3,
+                isWinner: false
+            ),
+            FinalScoreboardRow(
+                id: UUID(),
+                displayName: "You",
+                avatarColor: .blue,
+                role: .mismatch,
+                sessionScore: 0,
+                pointsGained: 0,
+                rank: 4,
                 isWinner: false
             )
         ]

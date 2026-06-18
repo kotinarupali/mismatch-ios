@@ -185,6 +185,11 @@ struct PlayerChip: View {
                     .foregroundStyle(AppColor.label)
                     .focused($isNameFocused)
                     .onSubmit { commitEdit() }
+                    .onChange(of: isNameFocused) { _, isFocused in
+                        if !isFocused, isEditing {
+                            commitEdit()
+                        }
+                    }
             } else {
                 Text(name)
                     .font(AppTypography.body)
@@ -205,6 +210,7 @@ struct PlayerChip: View {
                 Button {
                     isEditing = false
                     draftName = name
+                    isNameFocused = false
                 } label: {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundStyle(AppColor.secondaryLabel)
@@ -249,6 +255,7 @@ struct PlayerChip: View {
         guard !trimmed.isEmpty else { return }
         onEdit(trimmed)
         isEditing = false
+        isNameFocused = false
     }
 }
 
@@ -286,6 +293,11 @@ struct SeatingPlayerRow: View {
                     .foregroundStyle(AppColor.label)
                     .focused($isNameFocused)
                     .onSubmit { commitEdit() }
+                    .onChange(of: isNameFocused) { _, isFocused in
+                        if !isFocused, isEditing {
+                            commitEdit()
+                        }
+                    }
             } else {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(displayName)
@@ -316,6 +328,7 @@ struct SeatingPlayerRow: View {
                 Button {
                     isEditing = false
                     draftName = player.displayName
+                    isNameFocused = false
                 } label: {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundStyle(AppColor.secondaryLabel)
@@ -387,6 +400,7 @@ struct SeatingPlayerRow: View {
         guard !trimmed.isEmpty else { return }
         onEdit(trimmed)
         isEditing = false
+        isNameFocused = false
     }
 }
 

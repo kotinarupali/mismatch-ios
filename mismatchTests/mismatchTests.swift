@@ -492,6 +492,27 @@ struct LobbyViewModelTests {
         #expect(viewModel.ghostEnabled == false)
         #expect(viewModel.projectedGhostCount == 0)
     }
+
+    @Test @MainActor func updatePlayerPersistsRenamedGuest() {
+        let dependencies = AppDependencies()
+        dependencies.gameSessionStore.createSession()
+        let viewModel = LobbyViewModel(dependencies: dependencies)
+
+        viewModel.newPlayerName = "Alice"
+        viewModel.addPlayer()
+        guard let guestId = viewModel.seatedPlayers.first(where: { !$0.isHost })?.id else {
+            Issue.record("Expected a guest player.")
+            return
+        }
+
+        viewModel.updatePlayer(id: guestId, name: "Alicia")
+
+        #expect(viewModel.seatedPlayers.first(where: { $0.id == guestId })?.displayName == "Alicia")
+        #expect(
+            dependencies.gameSessionStore.currentSession?.players.first(where: { $0.id == guestId })?.displayName
+                == "Alicia"
+        )
+    }
 }
 
 struct WordGuessMatcherTests {

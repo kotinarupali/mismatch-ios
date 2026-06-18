@@ -129,6 +129,37 @@ struct RoleIconBadge: View {
     }
 }
 
+/// Compact role marker for avatar overlays — bold SF Symbol, no badge circle.
+struct RoleOverlayMark: View {
+    let role: Role
+    var size: CGFloat = 15
+
+    var body: some View {
+        Image(systemName: symbolName)
+            .font(.system(size: size, weight: .bold))
+            .foregroundStyle(.white)
+            .shadow(color: .black.opacity(0.9), radius: 0, x: 0, y: 1)
+            .shadow(color: roleColor.opacity(0.9), radius: 2, y: 0)
+            .accessibilityLabel(role.displayName)
+    }
+
+    private var symbolName: String {
+        switch role {
+        case .insider: "checkmark"
+        case .mismatch: "xmark"
+        case .ghost: "moon.stars.fill"
+        }
+    }
+
+    private var roleColor: Color {
+        switch role {
+        case .insider: BrandPalette.insiderMid
+        case .mismatch: BrandPalette.mismatchMid
+        case .ghost: BrandPalette.ghostMid
+        }
+    }
+}
+
 /// Role artwork without the circular badge — for compact overlays on avatars.
 struct RoleGlyphView: View {
     let role: Role
