@@ -59,7 +59,7 @@ final class ProfileRepository {
             throw ProfileRepositoryError.invalidName
         }
 
-        let color = avatarColor ?? AvatarColor.forIndex(try fetchAll().count)
+        let color = try avatarColor ?? AvatarColor.forIndex(fetchAll().count)
         return try create(name: trimmed, avatarColor: color)
     }
 
