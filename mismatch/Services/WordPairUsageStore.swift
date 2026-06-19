@@ -27,6 +27,13 @@ final class WordPairUsageStore: Sendable {
         defaults.removeObject(forKey: storageKey(packId: packId))
     }
 
+    func resetAll() {
+        let prefix = UserDefaultsKeys.usedWordPairIdsPrefix
+        for key in defaults.dictionaryRepresentation().keys where key.hasPrefix(prefix) {
+            defaults.removeObject(forKey: key)
+        }
+    }
+
     func stats(totalPairs: Int, packId: String) -> WordPairStats {
         let usedCount = usedPairIds(packId: packId).count
         let clampedUsed = min(usedCount, totalPairs)

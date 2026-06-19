@@ -64,6 +64,19 @@ struct WordPairUsageStoreTests {
 
         #expect(store.stats(totalPairs: 5, packId: "general").used == 0)
     }
+
+    @Test func resetAllClearsEveryPack() {
+        let defaults = UserDefaults(suiteName: "WordPairUsageStoreTestsResetAll")!
+        defaults.removePersistentDomain(forName: "WordPairUsageStoreTestsResetAll")
+        let store = WordPairUsageStore(defaults: defaults)
+
+        store.markUsed("pair-1", packId: "general")
+        store.markUsed("pair-2", packId: "pop_culture")
+        store.resetAll()
+
+        #expect(store.stats(totalPairs: 5, packId: "general").used == 0)
+        #expect(store.stats(totalPairs: 5, packId: "pop_culture").used == 0)
+    }
 }
 
 struct WordPairSelectorTests {
@@ -1597,6 +1610,17 @@ struct ProfileRepositoryTests {
         #expect(try repository.fetch(id: created.id) == nil)
     }
 
+    @Test func deleteAllRemovesEveryProfile() throws {
+        let dependencies = try AppDependencies.makeForTesting()
+        let repository = dependencies.profileRepository
+
+        _ = try repository.create(name: "Alex", avatarColor: .blue)
+        _ = try repository.create(name: "Blake", avatarColor: .green)
+
+        try repository.deleteAll()
+        #expect(try repository.fetchAll().isEmpty)
+    }
+
     @Test func findOrCreateReturnsExistingProfileForExactNameMatch() throws {
         let dependencies = try AppDependencies.makeForTesting()
         let repository = dependencies.profileRepository
@@ -1671,7 +1695,7 @@ struct ProfileRepositoryTests {
         let profile = try repository.create(name: "Jordan", avatarColor: .green)
 
         let insiderId = UUID()
-        var session = GameSession(gamesPlayedCount: 1, profileStatsApplied: false)
+        var session = GameSession(gamesPlayedCount: 1, profileStatsSyncedGamesCount: 0)
         session.players = [
             PlayerSlot(
                 id: insiderId,
@@ -1700,7 +1724,7 @@ struct ProfileRepositoryTests {
         let repository = dependencies.profileRepository
 
         let hostId = UUID()
-        var session = GameSession(gamesPlayedCount: 1, profileStatsApplied: false)
+        var session = GameSession(gamesPlayedCount: 1, profileStatsSyncedGamesCount: 0)
         session.players = [
             PlayerSlot(
                 id: hostId,
@@ -1719,5 +1743,165 @@ struct ProfileRepositoryTests {
         #expect(profiles[0].name == "Klaus")
         #expect(profiles[0].stats.totalPoints == 3)
         #expect(profiles[0].stats.winsAsInsider == 1)
+    }
+
+    @Test func applyCompletedGameStatsRecordsGhostWin() throws {
+        let dependencies = try AppDependencies.makeForTesting()
+        let repository = dependencies.profileRepository
+        let profile = try repository.create(name: "Ghost Player", avatarColor: .purple)
+
+        let ghostId = UUID()
+        let players = [
+            PlayerSlot(
+                id: ghostId,
+                displayName: "Ghost Player",
+                avatarColor: .purple,
+                assignment: RoleAssignment(role: .ghost),
+                profileId: profile.id
+            )
+        ]
+
+        try repository.applyCompletedGameStats(
+            players: players,
+            winnerPlayerIds: [ghostId],
+            pointsByPlayer: [ghostId: 4],
+            hostDisplayName: "Host"
+        )
+
+        let updated = try repository.fetch(id: profile.id)
+        #expect(updated?.stats.winsAsGhost == 1)
+        #expect(updated?.stats.currentStreak == 1)
+        #expect(updated?.stats.totalPoints == 4)
+        #expect(updated?.stats.gamesPlayed == 1)
+    }
+
+    @Test func applyCompletedGameStatsResolvesHostYouDisplayName() throws {
+        let dependencies = try AppDependencies.makeForTesting()
+        let repository = dependencies.profileRepository
+        let profile = try repository.create(name: "Klaus", avatarColor: .blue)
+
+        let hostId = UUID()
+        let players = [
+            PlayerSlot(
+                id: hostId,
+                displayName: "You",
+                avatarColor: .blue,
+                isHost: true,
+                assignment: RoleAssignment(role: .insider, word: "A"),
+                profileId: profile.id
+            )
+        ]
+
+        try repository.applyCompletedGameStats(
+            players: players,
+            winnerPlayerIds: [hostId],
+            pointsByPlayer: [hostId: 3],
+            hostDisplayName: "Klaus"
+        )
+
+        let updated = try repository.fetch(id: profile.id)
+        #expect(updated?.stats.winsAsInsider == 1)
+        #expect(updated?.stats.gamesPlayed == 1)
+    }
+
+    @Test @MainActor func syncProfileStatsBeforePlayAgainPreservesEachGame() throws {
+        let dependencies = try AppDependencies.makeForTesting()
+        let repository = dependencies.profileRepository
+        let store = dependencies.gameSessionStore
+        let profile = try repository.create(name: "Jordan", avatarColor: .green)
+
+        var settings = GameSettings.default
+        settings.ghostEnabled = false
+        store.createSession(settings: settings)
+
+        let playerId = UUID()
+        store.setPlayers([
+            PlayerSlot(
+                id: playerId,
+                displayName: "Jordan",
+                avatarColor: .green,
+                profileId: profile.id
+            ),
+            PlayerSlot(displayName: "Alex", avatarColor: .orange),
+            PlayerSlot(displayName: "Sam", avatarColor: .yellow),
+        ])
+
+        let pair = WordPair(id: "1", insiderWord: "Apple", mismatchWord: "Apricot", category: "Fruit")
+        try store.distributeRoles(wordPair: pair)
+
+        let insiderIds = store.currentSession!.players
+            .filter { $0.assignment?.role == .insider }
+            .map(\.id)
+        store.eliminate(playerId: insiderIds[0])
+        store.continueAfterElimination()
+        store.eliminate(playerId: insiderIds[1])
+
+        #expect(store.gamesPlayedCount == 1)
+        dependencies.syncCompletedGameProfileStatsIfNeeded()
+        #expect(store.currentSession?.profileStatsSyncedGamesCount == 1)
+
+        let afterGameOne = try repository.fetch(id: profile.id)
+        #expect(afterGameOne?.stats.gamesPlayed == 1)
+
+        store.resetRoundForPlayAgain()
+        try store.distributeRoles(wordPair: pair)
+
+        let insiderIds2 = store.currentSession!.players
+            .filter { $0.assignment?.role == .insider }
+            .map(\.id)
+        store.eliminate(playerId: insiderIds2[0])
+        store.continueAfterElimination()
+        store.eliminate(playerId: insiderIds2[1])
+
+        dependencies.syncCompletedGameProfileStatsIfNeeded()
+
+        let afterGameTwo = try repository.fetch(id: profile.id)
+        #expect(afterGameTwo?.stats.gamesPlayed == 2)
+    }
+
+    @Test @MainActor func losingGameResetsStreak() throws {
+        let dependencies = try AppDependencies.makeForTesting()
+        let repository = dependencies.profileRepository
+        let winnerProfile = try repository.create(name: "Winner", avatarColor: .green)
+        let loserProfile = try repository.create(name: "Loser", avatarColor: .orange)
+
+        let winnerId = UUID()
+        let loserId = UUID()
+        let players = [
+            PlayerSlot(
+                id: winnerId,
+                displayName: "Winner",
+                avatarColor: .green,
+                assignment: RoleAssignment(role: .insider, word: "A"),
+                profileId: winnerProfile.id
+            ),
+            PlayerSlot(
+                id: loserId,
+                displayName: "Loser",
+                avatarColor: .orange,
+                assignment: RoleAssignment(role: .mismatch, word: "B"),
+                profileId: loserProfile.id
+            ),
+        ]
+
+        try repository.applyCompletedGameStats(
+            players: players,
+            winnerPlayerIds: [winnerId],
+            pointsByPlayer: [winnerId: 4, loserId: 1],
+            hostDisplayName: "Host"
+        )
+
+        try repository.applyCompletedGameStats(
+            players: players,
+            winnerPlayerIds: [loserId],
+            pointsByPlayer: [winnerId: 1, loserId: 4],
+            hostDisplayName: "Host"
+        )
+
+        let winner = try repository.fetch(id: winnerProfile.id)
+        let loser = try repository.fetch(id: loserProfile.id)
+        #expect(winner?.stats.currentStreak == 0)
+        #expect(loser?.stats.currentStreak == 1)
+        #expect(loser?.stats.winsAsMismatch == 1)
     }
 }

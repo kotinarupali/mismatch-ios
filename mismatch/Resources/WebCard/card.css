@@ -610,3 +610,47 @@ body {
 .success-copy {
   color: var(--success);
 }
+
+.vote-casts {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.vote-casts-title {
+  margin: 0 0 8px;
+  font-weight: 600;
+}
+
+.vote-cast-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.vote-cast-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9375rem;
+}
+
+.vote-cast-voter {
+  color: var(--label);
+  font-weight: 600;
+}
+
+.vote-cast-arrow {
+  color: var(--secondary-label);
+  opacity: 0.8;
+}
+
+.vote-cast-target {
+  color: var(--accent);
+  font-weight: 600;
+}

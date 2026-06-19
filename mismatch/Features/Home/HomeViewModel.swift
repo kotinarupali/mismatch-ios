@@ -8,6 +8,7 @@ final class HomeViewModel {
     var wordPairStats: WordPairStats?
     var showGameRules = false
     var showGameSettings = false
+    var showClearDataConfirmation = false
     private(set) var preferences: HostPreferences
 
     init(dependencies: AppDependencies) {
@@ -62,6 +63,15 @@ final class HomeViewModel {
 
     func openProfiles() {
         dependencies.router.navigate(to: .profiles)
+    }
+
+    func clearDataAndResetWords() {
+        dependencies.wordPairUsageStore.resetAll()
+        try? dependencies.profileRepository.deleteAll()
+        dependencies.gameSessionStore.reset()
+        dependencies.profilesViewModel.reload()
+        loadWordPairStats()
+        showClearDataConfirmation = false
     }
 
     private func persistPreferences() {

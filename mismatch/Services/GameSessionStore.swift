@@ -435,7 +435,6 @@ final class GameSessionStore {
         session.cardDeliveryBackend = .local
         session.sessionEndScoreEvents = []
         session.sessionWinBonusesApplied = false
-        session.profileStatsApplied = false
         session.summaryScoreByPlayer = [:]
         session.summaryLastGamePointsByPlayer = [:]
         session.players = session.players.map { player in
@@ -651,9 +650,16 @@ final class GameSessionStore {
         }
     }
 
-    func markProfileStatsApplied() {
+    var hasPendingProfileStatsSync: Bool {
+        guard let session = currentSession else { return false }
+        return session.profileStatsSyncedGamesCount < session.gamesPlayedCount
+            && session.sessionWinBonusesApplied
+            && session.players.contains { $0.assignment != nil }
+    }
+
+    func markProfileStatsSyncedForCompletedGame() {
         guard var session = currentSession else { return }
-        session.profileStatsApplied = true
+        session.profileStatsSyncedGamesCount += 1
         currentSession = session
     }
 

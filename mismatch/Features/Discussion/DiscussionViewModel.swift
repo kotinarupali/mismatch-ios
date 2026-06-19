@@ -14,9 +14,11 @@ final class DiscussionViewModel {
     var showPlayerRolePicker = false
     var playerToReveal: PlayerSlot?
     var guestVoteTallies: [UUID: Int] = [:]
+    var guestVoteCasts: [RemoteCardSessionSnapshot.VoteCast] = []
     var isStartingRevote = false
 
     private var votePollTask: Task<Void, Never>?
+    private var lastVoteSnapshotRevision: Int?
 
     init(dependencies: AppDependencies) {
         self.dependencies = dependencies
@@ -41,7 +43,14 @@ final class DiscussionViewModel {
     }
 
     var showsGuestVoteTallies: Bool {
-        cloudGuestVotingEnabled && !guestVoteTallies.isEmpty
+        cloudGuestVotingEnabled && (!guestVoteTallies.isEmpty || !guestVoteCasts.isEmpty)
+    }
+
+    var guestVoteCastsLabel: String? {
+        guard !guestVoteCasts.isEmpty else { return nil }
+        return guestVoteCasts
+            .map { "\($0.voterName) → \($0.targetName)" }
+            .joined(separator: " · ")
     }
 
     var guestVoteTie: GuestVoteTie? {
@@ -227,9 +236,9 @@ final class DiscussionViewModel {
         stopGuestVotePolling()
         votePollTask = Task { [weak self] in
             while !Task.isCancelled {
-                try? await Task.sleep(for: .milliseconds(500))
-                guard let self, self.cloudGuestVotingEnabled else { continue }
+                guard let self, self.cloudGuestVotingEnabled else { break }
                 await self.refreshGuestVoteTallies()
+                try? await Task.sleep(for: .milliseconds(400))
             }
         }
     }
@@ -251,6 +260,7 @@ final class DiscussionViewModel {
             action: .open,
             eliminatedPlayerIds: eliminatedIds
         )
+        lastVoteSnapshotRevision = nil
         await refreshGuestVoteTallies()
     }
 
@@ -267,6 +277,8 @@ final class DiscussionViewModel {
             eliminatedPlayerIds: eliminatedIds
         )
         guestVoteTallies = [:]
+        guestVoteCasts = []
+        lastVoteSnapshotRevision = nil
     }
 
     private func refreshGuestVoteTallies() async {
@@ -274,7 +286,10 @@ final class DiscussionViewModel {
         guard let snapshot = try? await dependencies.remoteCardSessionClient.fetchSnapshot(token: token) else {
             return
         }
+        guard snapshot.revision != lastVoteSnapshotRevision else { return }
+        lastVoteSnapshotRevision = snapshot.revision
         guestVoteTallies = snapshot.voteTalliesByPlayerId
+        guestVoteCasts = snapshot.voteCasts ?? []
     }
 
     private func startRevote() async {
@@ -296,6 +311,7 @@ final class DiscussionViewModel {
                 revoteExcludedPlayerIds: tie.tiedPlayerIds
             )
             selectedPlayerId = nil
+            lastVoteSnapshotRevision = nil
             await refreshGuestVoteTallies()
         } catch {
             // Keep current tallies; host can retry or pick manually.

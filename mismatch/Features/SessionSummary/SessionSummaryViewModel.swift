@@ -120,18 +120,6 @@ final class SessionSummaryViewModel {
     }
 
     private func applyProfileStatsIfNeeded() {
-        guard let session = dependencies.gameSessionStore.currentSession,
-              !session.profileStatsApplied else { return }
-
-        let winners = dependencies.gameSessionStore.sessionWinnerPlayerIds()
-        do {
-            try dependencies.profileRepository.applySessionStats(
-                from: session,
-                winnerPlayerIds: winners
-            )
-            dependencies.gameSessionStore.markProfileStatsApplied()
-        } catch {
-            // Profiles are optional — ignore write failures during summary.
-        }
+        dependencies.syncCompletedGameProfileStatsIfNeeded()
     }
 }

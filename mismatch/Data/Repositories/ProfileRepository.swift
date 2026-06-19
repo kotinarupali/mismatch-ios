@@ -86,29 +86,31 @@ final class ProfileRepository {
         try modelContext.save()
     }
 
-    /// Applies session results to linked profiles. Call once per session summary.
-    func applySessionStats(from session: GameSession, winnerPlayerIds: Set<UUID>) throws {
-        let completedGames = session.gamesPlayedCount
-        let hasScoringActivity = session.players.contains { $0.sessionScore > 0 }
+    func deleteAll() throws {
+        let entities = try modelContext.fetch(FetchDescriptor<PlayerProfileEntity>())
+        for entity in entities {
+            modelContext.delete(entity)
+        }
+        if !entities.isEmpty {
+            try modelContext.save()
+        }
+    }
 
-        for player in session.players {
-            var profileId = player.profileId
-            if profileId == nil {
-                profileId = try findOrCreate(
-                    name: player.displayName,
-                    avatarColor: player.avatarColor
-                ).id
+    /// Applies results from a single completed game to linked profiles.
+    func applyCompletedGameStats(
+        players: [PlayerSlot],
+        winnerPlayerIds: Set<UUID>,
+        pointsByPlayer: [UUID: Int],
+        hostDisplayName: String
+    ) throws {
+        for player in players {
+            guard let profileId = try resolveProfileId(for: player, hostDisplayName: hostDisplayName),
+                  let entity = try fetchEntity(id: profileId) else {
+                continue
             }
-            guard let profileId else { continue }
-            guard let entity = try fetchEntity(id: profileId) else { continue }
 
-            entity.totalPoints += player.sessionScore
-
-            if completedGames > 0 {
-                entity.gamesPlayed += completedGames
-            } else if hasScoringActivity, player.sessionScore > 0 {
-                entity.gamesPlayed += 1
-            }
+            entity.totalPoints += pointsByPlayer[player.id] ?? 0
+            entity.gamesPlayed += 1
 
             let won = winnerPlayerIds.contains(player.id)
             if won, let role = player.assignment?.role {
@@ -119,12 +121,41 @@ final class ProfileRepository {
                 }
                 entity.currentStreak += 1
                 entity.bestStreak = max(entity.bestStreak, entity.currentStreak)
-            } else if completedGames > 0 || hasScoringActivity {
+            } else {
                 entity.currentStreak = 0
             }
         }
 
         try modelContext.save()
+    }
+
+    /// Legacy entry point — applies one completed game using session state.
+    func applySessionStats(from session: GameSession, winnerPlayerIds: Set<UUID>) throws {
+        let pointsByPlayer = ScoringEngine.pointsByPlayer(
+            from: session.rounds.flatMap(\.scoreEvents) + session.sessionEndScoreEvents
+        )
+        try applyCompletedGameStats(
+            players: session.players,
+            winnerPlayerIds: winnerPlayerIds,
+            pointsByPlayer: pointsByPlayer,
+            hostDisplayName: session.players.first(where: \.isHost)?.displayName ?? "Host"
+        )
+    }
+
+    private func resolveProfileId(for player: PlayerSlot, hostDisplayName: String) throws -> UUID? {
+        if let profileId = player.profileId, let entity = try fetchEntity(id: profileId) {
+            return entity.id
+        }
+
+        let displayName = resolvedDisplayName(for: player, hostDisplayName: hostDisplayName)
+        return try findOrCreate(name: displayName, avatarColor: player.avatarColor).id
+    }
+
+    private func resolvedDisplayName(for player: PlayerSlot, hostDisplayName: String) -> String {
+        if player.isHost, player.displayName == "You" || player.displayName.isEmpty {
+            return hostDisplayName
+        }
+        return player.displayName
     }
 
     private func fetchEntity(id: UUID) throws -> PlayerProfileEntity? {

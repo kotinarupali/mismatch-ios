@@ -70,6 +70,32 @@ struct HomeSettingsSheet: View {
                                     .padding(.bottom, 12)
                             }
                         }
+
+                        SettingsCard {
+                            VStack(alignment: .leading, spacing: 10) {
+                                Label("Data", systemImage: "externaldrive.fill")
+                                    .font(AppTypography.body)
+                                    .foregroundStyle(AppColor.label)
+
+                                Text("Removes all player profiles and resets word-pack usage so every pair can appear again. Your name and timer defaults are kept.")
+                                    .font(AppTypography.caption)
+                                    .foregroundStyle(AppColor.secondaryLabel)
+                                    .fixedSize(horizontal: false, vertical: true)
+
+                                Button {
+                                    viewModel.showClearDataConfirmation = true
+                                } label: {
+                                    Text("Clear Data & Reset Words")
+                                        .font(AppTypography.body)
+                                        .foregroundStyle(AppColor.accentSecondary)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .padding(.vertical, 4)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
+                        }
                     }
                     .padding(.horizontal, 24)
                     .padding(.vertical, 20)
@@ -84,6 +110,14 @@ struct HomeSettingsSheet: View {
                     Button("Done") { dismiss() }
                         .foregroundStyle(AppColor.accent)
                 }
+            }
+            .confirmDialog(
+                isPresented: $viewModel.showClearDataConfirmation,
+                title: "Clear data and reset words?",
+                message: "All player profiles and their stats will be deleted. Every word pair will be marked unused again. This cannot be undone.",
+                confirmTitle: "Clear & Reset"
+            ) {
+                viewModel.clearDataAndResetWords()
             }
         }
         .preferredColorScheme(.dark)

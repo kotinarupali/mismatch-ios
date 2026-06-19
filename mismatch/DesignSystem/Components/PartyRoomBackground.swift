@@ -141,9 +141,6 @@ struct PartyRoomBackground: View {
                 // String lights across the ceiling
                 stringLights(width: width)
 
-                // Pennant bunting
-                bunting(width: width)
-
                 // Subtle confetti
                 confettiLayer(in: geo.size)
 
@@ -198,30 +195,6 @@ struct PartyRoomBackground: View {
         }
         .frame(height: 100)
         .frame(maxHeight: .infinity, alignment: .top)
-    }
-
-    private func bunting(width: CGFloat) -> some View {
-        HStack(spacing: 0) {
-            ForEach(0..<14, id: \.self) { index in
-                Triangle()
-                    .fill(buntingColor(index).opacity(0.72))
-                    .frame(width: 22, height: 16)
-                    .rotation3DEffect(.degrees(180), axis: (x: 1, y: 0, z: 0))
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.top, 88)
-        .frame(maxHeight: .infinity, alignment: .top)
-    }
-
-    private func buntingColor(_ index: Int) -> Color {
-        switch index % 5 {
-        case 0: BrandPalette.mismatchMid
-        case 1: BrandPalette.insiderMid
-        case 2: BrandPalette.ghostMid
-        case 3: BrandPalette.sadMid
-        default: AppColor.accentSecondary
-        }
     }
 
     private func bokehLayer(in size: CGSize) -> some View {
@@ -279,17 +252,6 @@ struct PartyRoomBackground: View {
                     .padding(.horizontal, 12)
                     .offset(y: -18)
             }
-    }
-}
-
-private struct Triangle: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.move(to: CGPoint(x: rect.midX, y: rect.minY))
-        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
-        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
-        path.closeSubpath()
-        return path
     }
 }
 

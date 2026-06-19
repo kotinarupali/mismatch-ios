@@ -324,18 +324,6 @@ final class LobbyViewModel {
         return "\(GameProgressCopy.gamesPlayedLabel(gamesPlayed)) · \(playerLine)"
     }
 
-    var rulesSummary: String {
-        var parts = [selectedWordPackSummary, distributionMode.displayName]
-        if hostIsPlaying { parts.append("You're playing") }
-        if ghostEnabled { parts.append("Ghost") }
-        if ghostEnabled && ghostPickAgainEnabled { parts.append("Ghost pick again") }
-        if mismatchGhostAlliance { parts.append("Alliance") }
-        if showRoleOnCard { parts.append("Roles on card") }
-        if discussionTimerEnabled { parts.append("\(timerMinutes) min timer") }
-        if distributionMode == .cloudQR, cloudGuestVotingEnabled { parts.append("Guest voting") }
-        return parts.joined(separator: " · ")
-    }
-
     var showsCloudGuestVotingToggle: Bool {
         distributionMode == .cloudQR && CloudCardConfig.isConfigured
     }
@@ -480,7 +468,11 @@ final class LobbyViewModel {
         guard let session = dependencies.gameSessionStore.currentSession else { return }
 
         do {
-            let result = try await dependencies.remoteCardSessionClient.createSession(from: session)
+            let hostName = dependencies.hostPreferencesStore.load().resolvedHostDisplayName
+            let result = try await dependencies.remoteCardSessionClient.createSession(
+                from: session,
+                hostDisplayName: hostName
+            )
             dependencies.gameSessionStore.setSharedJoinURL(
                 result.joinURL,
                 sessionToken: result.sessionToken,

@@ -64,6 +64,7 @@
   function boot() {
     fetchSession()
       .then(function (session) {
+        noteRevision(session);
         if (routeSession(session)) return;
 
         if (!session.players || session.players.length === 0) {
@@ -103,11 +104,23 @@
       .then(function (r) {
         if (!r.ok) throw new Error('not_found');
         return r.json();
-      })
-      .then(function (session) {
-        lastRevision = session.revision;
-        return session;
       });
+  }
+
+  function noteRevision(session) {
+    if (session && session.revision != null) {
+      lastRevision = session.revision;
+    }
+  }
+
+  function sessionChanged(next) {
+    return next.votingRound !== votingRound || next.revision !== lastRevision;
+  }
+
+  function handleSessionUpdate(next) {
+    noteRevision(next);
+    if (routeSession(next)) return true;
+    return false;
   }
 
   function findPlayer(session, playerId) {
@@ -142,6 +155,7 @@
 
   function renderPick(session, force) {
     if (claiming && !force) return;
+    noteRevision(session);
 
     const player = findPlayer(session, selectedPlayerId);
     if (!player) {
@@ -221,15 +235,38 @@
 
     startPolling(function () {
       fetchSession().then(function (next) {
-        if (routeSession(next)) return;
-        if (lastRevision !== next.revision) {
+        if (sessionChanged(next)) {
+          if (handleSessionUpdate(next)) return;
           renderPick(next, true);
         }
       }).catch(function () {});
     });
   }
 
+  function renderVoteCasts(session) {
+    const casts = session.voteCasts || [];
+    if (!casts.length) return '';
+
+    let items = '';
+    casts.forEach(function (cast) {
+      items += '<li class="vote-cast-item">' +
+        '<span class="vote-cast-voter">' + escapeHtml(cast.voterName) + '</span>' +
+        '<span class="vote-cast-arrow" aria-hidden="true">→</span>' +
+        '<span class="vote-cast-target">' + escapeHtml(cast.targetName) + '</span>' +
+        '</li>';
+    });
+
+    return (
+      '<div class="vote-casts">' +
+        '<p class="sub vote-casts-title">Votes so far</p>' +
+        '<ul class="vote-cast-list">' + items + '</ul>' +
+      '</div>'
+    );
+  }
+
   function renderVote(session) {
+    noteRevision(session);
+
     const player = findPlayer(session, selectedPlayerId);
     if (!player) {
       renderWhoAreYou(session);
@@ -267,6 +304,7 @@
       '</div>' +
       '<h2 class="headline">' + (isRevote ? 'Revote' : 'Cast your vote') + '</h2>' +
       status +
+      renderVoteCasts(session) +
       '<div class="player-list vote-list">' + list + '</div>',
       'Vote on your phone'
     );
@@ -291,8 +329,8 @@
           boot();
           return;
         }
-        if (next.votingRound !== votingRound || next.revision !== lastRevision) {
-          routeSession(next);
+        if (sessionChanged(next)) {
+          handleSessionUpdate(next);
         }
       }).catch(function () {});
     });

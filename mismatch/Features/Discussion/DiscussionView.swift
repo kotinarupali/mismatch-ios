@@ -34,6 +34,12 @@ struct DiscussionView: View {
                 )
 
                 if viewModel.showsGuestVoteTallies {
+                    if let castsLabel = viewModel.guestVoteCastsLabel {
+                        Text(castsLabel)
+                            .font(AppTypography.caption)
+                            .foregroundStyle(AppColor.secondaryLabel)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
                     Text("Numbers show guest votes from phones.")
                         .font(AppTypography.caption)
                         .foregroundStyle(AppColor.secondaryLabel)

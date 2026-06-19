@@ -26,6 +26,13 @@ struct RemoteCardSessionSnapshot: Decodable, Sendable {
         let playerName: String
     }
 
+    struct VoteCast: Decodable, Sendable, Equatable {
+        let voterId: UUID
+        let voterName: String
+        let targetId: UUID
+        let targetName: String
+    }
+
     let players: [Player]
     let claimedCards: [ClaimedCard]
     let faceDownCardCount: Int
@@ -36,6 +43,7 @@ struct RemoteCardSessionSnapshot: Decodable, Sendable {
     let votingOpen: Bool?
     let votingRound: Int?
     let voteTallies: [String: Int]?
+    let voteCasts: [VoteCast]?
 
     init(
         players: [Player],
@@ -47,7 +55,8 @@ struct RemoteCardSessionSnapshot: Decodable, Sendable {
         votingEnabled: Bool? = nil,
         votingOpen: Bool? = nil,
         votingRound: Int? = nil,
-        voteTallies: [String: Int]? = nil
+        voteTallies: [String: Int]? = nil,
+        voteCasts: [VoteCast]? = nil
     ) {
         self.players = players
         self.claimedCards = claimedCards
@@ -59,6 +68,7 @@ struct RemoteCardSessionSnapshot: Decodable, Sendable {
         self.votingOpen = votingOpen
         self.votingRound = votingRound
         self.voteTallies = voteTallies
+        self.voteCasts = voteCasts
     }
 
     var voteTalliesByPlayerId: [UUID: Int] {
@@ -91,7 +101,7 @@ final class RemoteCardSessionClient {
         CloudCardConfig.isConfigured
     }
 
-    func createSession(from gameSession: GameSession) async throws -> SharedCardSessionStartResult {
+    func createSession(from gameSession: GameSession, hostDisplayName: String) async throws -> SharedCardSessionStartResult {
         guard let baseURL = CloudCardConfig.baseURL else {
             throw RemoteCardSessionError.notConfigured
         }
@@ -100,7 +110,9 @@ final class RemoteCardSessionClient {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try JSONEncoder().encode(makeCreatePayload(from: gameSession))
+        request.httpBody = try JSONEncoder().encode(
+            makeCreatePayload(from: gameSession, hostDisplayName: hostDisplayName)
+        )
 
         let (data, response) = try await session.data(for: request)
         try validate(response: response)
@@ -201,13 +213,14 @@ final class RemoteCardSessionClient {
         _ = try? await session.data(for: request)
     }
 
-    private func makeCreatePayload(from gameSession: GameSession) -> CreatePayload {
+    private func makeCreatePayload(from gameSession: GameSession, hostDisplayName: String) -> CreatePayload {
         let faceDownCardCount = CardPickRules.faceDownCardCount(playerCount: gameSession.players.count)
         let players = gameSession.players.compactMap { player -> CreatePayload.Player? in
             guard let assignment = player.assignment else { return nil }
+            let displayName = player.isHost ? hostDisplayName : player.displayName
             return CreatePayload.Player(
                 id: player.id.uuidString,
-                displayName: player.isHost ? "Host" : player.displayName,
+                displayName: displayName,
                 isHost: player.isHost,
                 role: assignment.role.rawValue,
                 word: assignment.word,

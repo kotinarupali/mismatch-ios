@@ -113,7 +113,7 @@ export class CardSession implements DurableObject {
 
     const voteTargets = this.session.players.map((player) => ({
       id: player.id,
-      displayName: player.isHost ? "Host" : player.displayName,
+      displayName: player.displayName,
       isHost: player.isHost,
       isEliminated: this.session!.eliminatedPlayerIds.includes(player.id),
     }));
@@ -122,6 +122,17 @@ export class CardSession implements DurableObject {
     for (const targetId of Object.values(this.session.votes)) {
       voteTallies[targetId] = (voteTallies[targetId] ?? 0) + 1;
     }
+
+    const voteCasts = Object.entries(this.session.votes).map(([voterId, targetId]) => {
+      const voter = this.session!.players.find((p) => p.id === voterId);
+      const target = this.session!.players.find((p) => p.id === targetId);
+      return {
+        voterId,
+        voterName: voter?.displayName ?? "Player",
+        targetId,
+        targetName: target?.displayName ?? "Player",
+      };
+    });
 
     return json({
       players: guestPlayers,
@@ -144,6 +155,7 @@ export class CardSession implements DurableObject {
       revoteExcludedPlayerIds: this.session.revoteExcludedPlayerIds,
       voteTargets,
       voteTallies,
+      voteCasts,
     });
   }
 

@@ -113,6 +113,7 @@ final class AppDependencies {
     func showSessionSummary() {
         timerService.stop()
         stopCardDelivery()
+        syncCompletedGameProfileStatsIfNeeded()
         gameSessionStore.markSessionEnded()
         router.replaceWithSessionSummary()
     }
@@ -128,9 +129,32 @@ final class AppDependencies {
     func playAgainSameGroup() async {
         timerService.stop()
         stopCardDelivery()
+        syncCompletedGameProfileStatsIfNeeded()
         gameSessionStore.resetRoundForPlayAgain()
         lobbyViewModel.reloadFromSession()
         await dealRolesAndNavigateToDistribution()
+    }
+
+    func syncCompletedGameProfileStatsIfNeeded() {
+        guard gameSessionStore.hasPendingProfileStatsSync,
+              let session = gameSessionStore.currentSession else { return }
+
+        let winners = gameSessionStore.sessionWinnerPlayerIds()
+        let points = ScoringEngine.pointsByPlayer(from: gameSessionStore.currentGameScoreEvents())
+        let hostName = hostPreferencesStore.load().resolvedHostDisplayName
+
+        do {
+            try profileRepository.applyCompletedGameStats(
+                players: session.players,
+                winnerPlayerIds: winners,
+                pointsByPlayer: points,
+                hostDisplayName: hostName
+            )
+            gameSessionStore.markProfileStatsSyncedForCompletedGame()
+            profilesViewModel.reload()
+        } catch {
+            // Profiles are optional — ignore write failures during sync.
+        }
     }
 
     func newGameNight() {
@@ -168,7 +192,11 @@ final class AppDependencies {
         guard let session = gameSessionStore.currentSession else { return }
 
         do {
-            let result = try await remoteCardSessionClient.createSession(from: session)
+            let hostName = hostPreferencesStore.load().resolvedHostDisplayName
+            let result = try await remoteCardSessionClient.createSession(
+                from: session,
+                hostDisplayName: hostName
+            )
             gameSessionStore.setSharedJoinURL(
                 result.joinURL,
                 sessionToken: result.sessionToken,

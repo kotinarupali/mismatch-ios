@@ -21,7 +21,8 @@ struct GameSession: Identifiable, Codable, Equatable, Sendable {
     var sessionEndScoreEvents: [ScoreEvent]
     var sessionWinBonusesApplied: Bool
     var gamesPlayedCount: Int
-    var profileStatsApplied: Bool
+    /// Number of completed games whose win/streak/points have been synced to profiles.
+    var profileStatsSyncedGamesCount: Int
     var lastCompletedGamePointsByPlayer: [UUID: Int]
     var summaryScoreByPlayer: [UUID: Int]
     var summaryLastGamePointsByPlayer: [UUID: Int]
@@ -47,7 +48,7 @@ struct GameSession: Identifiable, Codable, Equatable, Sendable {
         sessionEndScoreEvents: [ScoreEvent] = [],
         sessionWinBonusesApplied: Bool = false,
         gamesPlayedCount: Int = 0,
-        profileStatsApplied: Bool = false,
+        profileStatsSyncedGamesCount: Int = 0,
         lastCompletedGamePointsByPlayer: [UUID: Int] = [:],
         summaryScoreByPlayer: [UUID: Int] = [:],
         summaryLastGamePointsByPlayer: [UUID: Int] = [:]
@@ -72,7 +73,7 @@ struct GameSession: Identifiable, Codable, Equatable, Sendable {
         self.sessionEndScoreEvents = sessionEndScoreEvents
         self.sessionWinBonusesApplied = sessionWinBonusesApplied
         self.gamesPlayedCount = gamesPlayedCount
-        self.profileStatsApplied = profileStatsApplied
+        self.profileStatsSyncedGamesCount = profileStatsSyncedGamesCount
         self.lastCompletedGamePointsByPlayer = lastCompletedGamePointsByPlayer
         self.summaryScoreByPlayer = summaryScoreByPlayer
         self.summaryLastGamePointsByPlayer = summaryLastGamePointsByPlayer
