@@ -2,9 +2,10 @@ import Foundation
 
 enum CardPickRules {
     static let minimumFaceDownCards = 3
-    static let maximumFaceDownCards = 6
+    /// One pick slot per player — matches the 16-player lobby cap.
+    static let maximumFaceDownCards = 16
 
-    /// Cosmetic pick grid size — scales with player count, capped at 6.
+    /// Pick grid size scales with player count so every player can claim a slot.
     static func faceDownCardCount(playerCount: Int) -> Int {
         min(maximumFaceDownCards, max(minimumFaceDownCards, playerCount))
     }

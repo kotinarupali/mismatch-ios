@@ -548,7 +548,8 @@ struct CardPickRulesTests {
     @Test func scalesWithPlayerCount() {
         #expect(CardPickRules.faceDownCardCount(playerCount: 3) == 3)
         #expect(CardPickRules.faceDownCardCount(playerCount: 5) == 5)
-        #expect(CardPickRules.faceDownCardCount(playerCount: 8) == 6)
+        #expect(CardPickRules.faceDownCardCount(playerCount: 8) == 8)
+        #expect(CardPickRules.faceDownCardCount(playerCount: 16) == 16)
     }
 }
 
@@ -1094,7 +1095,7 @@ struct GhostRoleSwapTests {
         #expect(store.swapGhostRoleAway(from: ghostId) == nil)
     }
 
-    @Test @MainActor func ghostCannotSwapWhenOnlyOnePlayerHasNotPicked() {
+    @Test @MainActor func ghostCanSwapWhenOnlyOnePlayerHasNotPicked() {
         let store = GameSessionStore()
         store.createSession()
         let ghostId = UUID()
@@ -1106,8 +1107,11 @@ struct GhostRoleSwapTests {
             PlayerSlot(id: ghostId, displayName: "Ghost", avatarColor: .purple, assignment: RoleAssignment(role: .ghost)),
         ])
 
-        #expect(store.canSwapGhostRole(from: ghostId) == false)
-        #expect(store.swapGhostRoleAway(from: ghostId) == nil)
+        #expect(store.canSwapGhostRole(from: ghostId) == true)
+
+        let swapped = store.swapGhostRoleAway(from: ghostId)
+        #expect(swapped?.role == .insider)
+        #expect(store.currentSession?.players.first { $0.id == unpickedInsiderId }?.assignment?.role == .ghost)
     }
 
     @Test @MainActor func ghostCannotSwapWhenNoUnpickedPlayersRemain() {

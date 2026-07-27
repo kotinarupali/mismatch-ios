@@ -489,6 +489,29 @@ body {
   color: var(--ghost);
 }
 
+.ghost-reveal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.ghost-icon {
+  font-size: 3rem;
+  line-height: 1;
+  color: var(--ghost);
+  filter: drop-shadow(0 2px 8px rgba(173, 122, 250, 0.35));
+}
+
+.ghost-title {
+  font-family: var(--font-rounded);
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--ghost);
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+
 .reveal-copy {
   font-size: 1rem;
   color: var(--secondary);

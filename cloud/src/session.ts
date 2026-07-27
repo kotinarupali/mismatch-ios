@@ -212,7 +212,7 @@ export class CardSession implements DurableObject {
           candidate.role !== "ghost"
       );
       payload.canSwapGhostRole =
-        this.session.ghostPickAgainEnabled && unpickedOthers.length >= 2;
+        this.session.ghostPickAgainEnabled && unpickedOthers.length >= 1;
     }
 
     return json(payload);
@@ -255,7 +255,7 @@ export class CardSession implements DurableObject {
         !this.session!.openedPlayerIds.includes(player.id) &&
         player.role !== "ghost"
     );
-    if (partnerCandidates.length < 2) {
+    if (partnerCandidates.length < 1) {
       return json({ error: "swap_unavailable" }, 409);
     }
 

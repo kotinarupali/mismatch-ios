@@ -138,14 +138,12 @@ struct CardPickView: View {
     }
 
     private var ghostTruthReveal: some View {
-        Group {
-            if showRoleOnCard {
-                RoleBadgeView(role: displayAssignment.role)
-            }
+        VStack(spacing: 12) {
+            RoleIconBadge(role: .ghost, size: .hero)
 
-            Text("No word — bluff from context")
-                .font(AppTypography.body)
-                .foregroundStyle(AppColor.secondaryLabel)
+            Text("Ghost")
+                .font(AppTypography.title)
+                .foregroundStyle(AppColor.label)
 
             if let hint = displayAssignment.categoryHint {
                 Text("Hint: \(hint)")

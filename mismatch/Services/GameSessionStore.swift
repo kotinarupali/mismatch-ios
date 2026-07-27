@@ -96,8 +96,8 @@ final class GameSessionStore {
         let unpickedOthers = session.players.filter {
             $0.id != playerId && !$0.hasOpenedCard && $0.assignment?.role != .ghost
         }
-        // Need at least two players still waiting to pick so Ghost can pass the role on.
-        return unpickedOthers.count >= 2
+        // Need at least one other player still waiting to pick so Ghost can pass the role on.
+        return unpickedOthers.count >= 1
     }
 
     /// Moves the ghost role onto a random player who has not opened a card yet.

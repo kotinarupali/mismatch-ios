@@ -456,15 +456,18 @@
     stopPolling();
     let body = '<div class="revealed">';
 
-    if (data.showRoleOnCard) {
+    if (data.showRoleOnCard && data.role !== 'ghost') {
       body += '<div class="badge ' + data.role + '">' + capitalize(data.role) + '</div>';
     }
 
     if (data.role === 'ghost') {
-      body += '<p class="reveal-copy">No word — bluff from context</p>';
+      body += '<div class="ghost-reveal">';
+      body += '<div class="ghost-icon" aria-hidden="true">☾</div>';
+      body += '<h2 class="ghost-title">Ghost</h2>';
       if (data.categoryHint) {
         body += '<p class="hint">Hint: ' + escapeHtml(data.categoryHint) + '</p>';
       }
+      body += '</div>';
       if (data.canSwapGhostRole) {
         body += '<button type="button" class="secondary-btn" id="ghost-repick">Pick again for another role</button>';
       }
