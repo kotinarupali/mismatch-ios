@@ -25,12 +25,7 @@
     return (
       '<div class="screen">' +
         '<header class="brand">' +
-          '<div class="brand-mark" aria-hidden="true">' +
-            '<span class="brand-tile brand-tile-mismatch"></span>' +
-            '<span class="brand-tile brand-tile-insider"></span>' +
-            '<span class="brand-tile brand-tile-sad"></span>' +
-            '<span class="brand-tile brand-tile-ghost"></span>' +
-          '</div>' +
+          '<img class="brand-mark" src="/art/app-icon.jpg" alt="">' +
           '<h1 class="brand-title">Sus Out</h1>' +
           '<p class="brand-sub">' + escapeHtml(sub) + '</p>' +
         '</header>' +
@@ -92,7 +87,11 @@
           renderWhoAreYou(session);
         }
       })
-      .catch(function () {
+      .catch(function (err) {
+        if (sessionEnded(err)) {
+          gameOver();
+          return;
+        }
         app.innerHTML = screenShell(
           '<p class="error">Could not reach the game server. Check your internet connection and try again.</p>'
         );
@@ -113,9 +112,48 @@
     const query = '?deviceToken=' + encodeURIComponent(deviceToken());
     return fetch('/api/session/' + encodeURIComponent(sessionToken) + query, { cache: 'no-store' })
       .then(function (r) {
-        if (!r.ok) throw new Error('not_found');
-        return r.json();
+        if (r.status === 404) throw new Error('not_found');
+        if (!r.ok) throw new Error('failed');
+        return r.json().then(function (session) {
+          if (session && session.ended) throw new Error('not_found');
+          return session;
+        });
       });
+  }
+
+  function sessionEnded(err) {
+    return err && err.message === 'not_found';
+  }
+
+  function onSessionFailure(err) {
+    if (sessionEnded(err)) gameOver();
+    else showError();
+  }
+
+  function onPollFailure(err) {
+    if (sessionEnded(err)) gameOver();
+  }
+
+  function gameOver() {
+    stopPolling();
+    assignment = null;
+    clearStoredSession();
+    app.innerHTML = screenShell(
+      '<h2 class="headline">This game is over</h2>' +
+      '<p class="sub">The host ended it. This page is closed.</p>',
+      'Game over'
+    );
+  }
+
+  function clearStoredSession() {
+    try {
+      var keys = [];
+      for (var i = 0; i < localStorage.length; i++) {
+        var key = localStorage.key(i);
+        if (key && key.indexOf(sessionToken) !== -1) keys.push(key);
+      }
+      keys.forEach(function (key) { localStorage.removeItem(key); });
+    } catch (e) {}
   }
 
   function stillHolds(session) {
@@ -140,7 +178,7 @@
       '<button type="button" class="secondary-btn" id="pick-again">Tap your name</button>'
     );
     document.getElementById('pick-again').onclick = function () {
-      fetchSession().then(renderWhoAreYou).catch(showError);
+      fetchSession().then(renderWhoAreYou).catch(onSessionFailure);
     };
   }
 
@@ -198,12 +236,13 @@
                 renderWhoAreYou(next, 'That name is already on another phone.');
               });
             }
+            if (r.status === 404) throw new Error('not_found');
             if (!r.ok) throw new Error('failed');
             selectedPlayerId = playerId;
             localStorage.setItem('mismatch_player_' + sessionToken, selectedPlayerId);
             return fetchSession().then(renderPick);
           })
-          .catch(showError);
+          .catch(onSessionFailure);
       };
     });
   }
@@ -296,7 +335,7 @@
           if (handleSessionUpdate(next)) return;
           renderPick(next, true);
         }
-      }).catch(function () {});
+      }).catch(onPollFailure);
     });
   }
 
@@ -378,7 +417,7 @@
           stopPolling();
           renderReveal(next.myCard);
         }
-      }).catch(showError);
+      }).catch(onSessionFailure);
     };
 
     app.querySelectorAll('.vote-btn').forEach(function (btn) {
@@ -400,7 +439,7 @@
         if (sessionChanged(next)) {
           handleSessionUpdate(next);
         }
-      }).catch(function () {});
+      }).catch(onPollFailure);
     });
   }
 
@@ -417,6 +456,7 @@
       })
     })
       .then(function (r) {
+        if (r.status === 404) throw new Error('not_found');
         if (!r.ok) throw new Error('failed');
         return r.json();
       })
@@ -424,9 +464,9 @@
         myVoteTargetId = targetPlayerId;
         saveVote(targetPlayerId);
         if (payload.revision != null) lastRevision = payload.revision;
-        fetchSession().then(renderVote).catch(showError);
+        fetchSession().then(renderVote).catch(onSessionFailure);
       })
-      .catch(showError);
+      .catch(onSessionFailure);
   }
 
   function voteStorageKey() {
@@ -469,6 +509,7 @@
             throw new Error('taken');
           });
         }
+        if (r.status === 404) throw new Error('not_found');
         if (!r.ok) throw new Error('failed');
         return r.json();
       })
@@ -491,9 +532,11 @@
           fetchSession().then(function (session) {
             if (stillHolds(session)) renderPick(session, true);
             else lostCard();
-          }).catch(showError);
+          }).catch(onSessionFailure);
         } else if (err.message === 'taken') {
-          fetchSession().then(function (session) { renderPick(session, true); }).catch(showError);
+          fetchSession().then(function (session) { renderPick(session, true); }).catch(onSessionFailure);
+        } else if (sessionEnded(err)) {
+          gameOver();
         } else {
           showError();
         }
@@ -594,7 +637,7 @@
         banner.onclick = function () { renderVote(session); };
         app.querySelector('.panel').prepend(banner);
       }
-    }).catch(function () {});
+    }).catch(onPollFailure);
 
     startPolling(function () {
       fetchSession().then(function (session) {
@@ -613,7 +656,7 @@
             app.querySelector('.panel').prepend(banner);
           }
         }
-      }).catch(function () {});
+      }).catch(onPollFailure);
     });
 
     const repick = document.getElementById('ghost-repick');
@@ -626,6 +669,7 @@
           body: JSON.stringify({ playerId: selectedPlayerId, deviceToken: deviceToken() })
         })
           .then(function (r) {
+            if (r.status === 404) throw new Error('not_found');
             if (!r.ok) throw new Error('failed');
             return r.json();
           })
@@ -633,9 +677,9 @@
             savePassedGhostCardIndex(passedIndex);
             assignment = null;
             localStorage.removeItem('mismatch_assignment_' + sessionToken + '_' + selectedPlayerId);
-            fetchSession().then(function (session) { renderPick(session, true); }).catch(showError);
+            fetchSession().then(function (session) { renderPick(session, true); }).catch(onSessionFailure);
           })
-          .catch(showError);
+          .catch(onSessionFailure);
       };
     }
   }

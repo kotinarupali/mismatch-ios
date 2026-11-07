@@ -961,6 +961,9 @@ struct WordGuessMatcherTests {
         #expect(WordGuessMatcher.matches("  Apple ", secret: "apple"))
         #expect(WordGuessMatcher.matches("PARIS", secret: "paris"))
         #expect(WordGuessMatcher.matches("New  York", secret: "new york"))
+        #expect(WordGuessMatcher.matches("NewYork", secret: "new york"))
+        #expect(WordGuessMatcher.matches("spider man", secret: "Spider-Man"))
+        #expect(WordGuessMatcher.matches("ileana dcruz", secret: "Ileana D'Cruz"))
         #expect(WordGuessMatcher.matches("wrong", secret: "apple") == false)
     }
 }
@@ -1448,6 +1451,142 @@ struct CloudCardDistributionTests {
         let released = store.currentSession?.players.first { $0.id == guestId }
         #expect(released?.hasOpenedCard == false)
         #expect(released?.pickedCardIndex == nil)
+    }
+
+    @Test @MainActor func hostPickStaysWhenSnapshotOmitsHost() {
+        let store = GameSessionStore()
+        store.createSession()
+        let hostId = UUID()
+        let guestId = UUID()
+        store.setPlayers([
+            PlayerSlot(
+                id: hostId,
+                displayName: "You",
+                avatarColor: .blue,
+                isHost: true,
+                assignment: RoleAssignment(role: .insider, word: "Bus"),
+                hasOpenedCard: true,
+                pickedCardIndex: 4
+            ),
+            PlayerSlot(id: guestId, displayName: "Alex", avatarColor: .green)
+        ])
+
+        let snapshot = RemoteCardSessionSnapshot(
+            players: [
+                .init(id: guestId, displayName: "Alex", hasOpenedCard: true)
+            ],
+            claimedCards: [
+                .init(cardIndex: 1, playerId: guestId, playerName: "Alex")
+            ],
+            faceDownCardCount: 12,
+            showRoleOnCard: false,
+            revision: 3
+        )
+
+        store.applyRemoteCardSnapshot(snapshot)
+
+        let host = store.currentSession?.players.first { $0.id == hostId }
+        #expect(host?.hasOpenedCard == true)
+        #expect(host?.pickedCardIndex == 4)
+        #expect(store.claimedCards().contains { $0.index == 4 && $0.playerName == "You" })
+    }
+
+    @Test @MainActor func openedHostKeepsSeenWordWhenGhostRepickSaysGhost() {
+        let store = GameSessionStore()
+        store.createSession()
+        let hostId = UUID()
+        let repickId = UUID()
+        let waitingId = UUID()
+        store.setPlayers([
+            PlayerSlot(
+                id: hostId,
+                displayName: "You",
+                avatarColor: .blue,
+                isHost: true,
+                assignment: RoleAssignment(role: .insider, word: "Bus"),
+                hasOpenedCard: true,
+                pickedCardIndex: 0
+            ),
+            PlayerSlot(
+                id: repickId,
+                displayName: "Alex",
+                avatarColor: .purple,
+                assignment: RoleAssignment(role: .ghost),
+                hasOpenedCard: true,
+                pickedCardIndex: 1
+            ),
+            PlayerSlot(
+                id: waitingId,
+                displayName: "Sam",
+                avatarColor: .orange,
+                assignment: RoleAssignment(role: .mismatch, word: "Subway")
+            )
+        ])
+
+        let snapshot = RemoteCardSessionSnapshot(
+            players: [
+                .init(id: repickId, displayName: "Alex", hasOpenedCard: false),
+                .init(id: waitingId, displayName: "Sam", hasOpenedCard: false)
+            ],
+            claimedCards: [],
+            faceDownCardCount: 3,
+            showRoleOnCard: false,
+            revision: 4,
+            assignments: [
+                .init(id: hostId, role: .ghost, word: nil, categoryHint: nil),
+                .init(id: repickId, role: .insider, word: "Bus", categoryHint: nil),
+                .init(id: waitingId, role: .mismatch, word: "Subway", categoryHint: nil)
+            ]
+        )
+
+        store.applyRemoteCardSnapshot(snapshot)
+
+        let host = store.currentSession?.players.first { $0.id == hostId }
+        #expect(host?.assignment?.role == .insider)
+        #expect(host?.assignment?.word == "Bus")
+
+        let alex = store.currentSession?.players.first { $0.id == repickId }
+        #expect(alex?.hasOpenedCard == false)
+        #expect(alex?.assignment?.role == .insider)
+        #expect(alex?.assignment?.word == "Bus")
+    }
+
+    @Test @MainActor func unopenedHostCanStillReceiveGhost() {
+        let store = GameSessionStore()
+        store.createSession()
+        let hostId = UUID()
+        store.setPlayers([
+            PlayerSlot(
+                id: hostId,
+                displayName: "You",
+                avatarColor: .blue,
+                isHost: true,
+                assignment: RoleAssignment(role: .insider, word: "Bus")
+            ),
+            PlayerSlot(
+                id: UUID(),
+                displayName: "Alex",
+                avatarColor: .purple,
+                assignment: RoleAssignment(role: .ghost)
+            )
+        ])
+
+        let snapshot = RemoteCardSessionSnapshot(
+            players: [],
+            claimedCards: [],
+            faceDownCardCount: 3,
+            showRoleOnCard: false,
+            revision: 2,
+            assignments: [
+                .init(id: hostId, role: .ghost, word: nil, categoryHint: nil)
+            ]
+        )
+
+        store.applyRemoteCardSnapshot(snapshot)
+
+        let host = store.currentSession?.players.first { $0.id == hostId }
+        #expect(host?.assignment?.role == .ghost)
+        #expect(host?.assignment?.word == nil)
     }
 
     @Test func voteTalliesDecodeByPlayerId() {

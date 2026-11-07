@@ -13,15 +13,50 @@ struct CardPickView: View {
     var claimedCards: [ClaimedCard] = []
     var nextPlayerName: String? = nil
     var showsInstructions: Bool = true
+    var lockedCardIndex: Int? = nil
     var canGhostRoleSwap: Bool = false
     var onGhostRoleSwap: (() -> RoleAssignment?)?
+    var onCardSeen: ((Int) -> Void)? = nil
     let onComplete: (Int, Bool) -> Void
 
-    @State private var phase: Phase = .pick
+    @State private var phase: Phase
     @State private var selectedCardIndex: Int?
     @State private var isSeekingNewRole = false
     @State private var swappedAssignment: RoleAssignment?
+    @State private var revealedAssignment: RoleAssignment?
     @State private var passedGhostCardIndex: Int?
+
+    init(
+        cardCount: Int,
+        showRoleOnCard: Bool,
+        assignment: RoleAssignment,
+        insiderWord: String? = nil,
+        claimedCards: [ClaimedCard] = [],
+        nextPlayerName: String? = nil,
+        showsInstructions: Bool = true,
+        lockedCardIndex: Int? = nil,
+        canGhostRoleSwap: Bool = false,
+        onGhostRoleSwap: (() -> RoleAssignment?)? = nil,
+        onCardSeen: ((Int) -> Void)? = nil,
+        onComplete: @escaping (Int, Bool) -> Void
+    ) {
+        self.cardCount = cardCount
+        self.showRoleOnCard = showRoleOnCard
+        self.assignment = assignment
+        self.insiderWord = insiderWord
+        self.claimedCards = claimedCards
+        self.nextPlayerName = nextPlayerName
+        self.showsInstructions = showsInstructions
+        self.lockedCardIndex = lockedCardIndex
+        self.canGhostRoleSwap = canGhostRoleSwap
+        self.onGhostRoleSwap = onGhostRoleSwap
+        self.onCardSeen = onCardSeen
+        self.onComplete = onComplete
+        let locked = lockedCardIndex != nil
+        _phase = State(initialValue: locked ? .revealed : .pick)
+        _selectedCardIndex = State(initialValue: lockedCardIndex)
+        _revealedAssignment = State(initialValue: locked ? assignment : nil)
+    }
 
     private enum Phase {
         case pick
@@ -29,7 +64,7 @@ struct CardPickView: View {
     }
 
     private var displayAssignment: RoleAssignment {
-        swappedAssignment ?? assignment
+        swappedAssignment ?? revealedAssignment ?? assignment
     }
 
     private var unpickedCardCount: Int {
@@ -96,6 +131,8 @@ struct CardPickView: View {
                     } else {
                         Button {
                             selectedCardIndex = index
+                            revealedAssignment = swappedAssignment ?? assignment
+                            onCardSeen?(index)
                             withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) {
                                 phase = .revealed
                             }

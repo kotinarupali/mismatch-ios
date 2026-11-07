@@ -23,8 +23,12 @@ struct MyCardView: View {
                             assignment: assignment,
                             insiderWord: viewModel.insiderWord,
                             claimedCards: sessionStore.claimedCards(),
+                            lockedCardIndex: viewModel.lockedCardIndex,
                             canGhostRoleSwap: viewModel.canGhostRoleSwap,
                             onGhostRoleSwap: { viewModel.swapGhostRole() },
+                            onCardSeen: { cardIndex in
+                                viewModel.hostSawCard(cardIndex: cardIndex)
+                            },
                             onComplete: { cardIndex, attemptedGhostRoleSwap in
                                 viewModel.markOpened(
                                     cardIndex: cardIndex,
@@ -51,6 +55,9 @@ struct MyCardView: View {
             }
             .onAppear {
                 viewModel.startCloudClaimRefresh()
+                if let index = viewModel.lockedCardIndex {
+                    viewModel.hostSawCard(cardIndex: index)
+                }
             }
             .onDisappear {
                 viewModel.stopCloudClaimRefresh()

@@ -12,7 +12,9 @@
     .loading { opacity: 0.85; text-align: center; padding: 48px 24px; }
     .error { color: #f87171; text-align: center; padding: 24px; }
   </style>
-  <link rel="stylesheet" href="/card.css">
+  <link rel="icon" href="/art/app-icon.jpg">
+  <link rel="apple-touch-icon" href="/art/app-icon.jpg">
+  <link rel="stylesheet" href="/card.css?v=8">
 </head>
 <body>
   <div class="room-bg" aria-hidden="true"></div>
@@ -24,6 +26,6 @@
   <script>
     window.SESSION_TOKEN = "{{TOKEN}}";
   </script>
-  <script src="/card.js?v=3" defer onerror="document.getElementById('app').innerHTML='<p class=&quot;error&quot;>Could not load game scripts. Copy the link from the host and open it in Safari.</p>';"></script>
+  <script src="/card.js?v=5" defer onerror="document.getElementById('app').innerHTML='<p class=&quot;error&quot;>Could not load game scripts. Copy the link from the host and open it in Safari.</p>';"></script>
 </body>
 </html>

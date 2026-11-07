@@ -1,5 +1,5 @@
 import { CardSession } from "./session";
-import { joinPageHtml, staticAsset } from "./webAssets";
+import { gameOverHtml, joinPageHtml, staticAsset } from "./webAssets";
 
 export { CardSession };
 
@@ -77,6 +77,16 @@ export default {
       return cors(response);
     }
 
+    const hostCardMatch = url.pathname.match(/^\/api\/sessions\/([^/]+)\/host-card\/?$/);
+    if (hostCardMatch && request.method === "POST") {
+      const token = hostCardMatch[1];
+      const stub = env.CARD_SESSION.get(env.CARD_SESSION.idFromName(token));
+      const response = await stub.fetch(
+        new Request("https://do/host-card", { method: "POST", body: request.body })
+      );
+      return cors(response);
+    }
+
     const releaseMatch = url.pathname.match(/^\/api\/sessions\/([^/]+)\/release\/?$/);
     if (releaseMatch && request.method === "POST") {
       const token = releaseMatch[1];
@@ -104,6 +114,20 @@ export default {
     const joinMatch = url.pathname.match(/^\/join\/([^/]+)\/?$/);
     if (joinMatch && request.method === "GET") {
       const token = joinMatch[1];
+      const stub = env.CARD_SESSION.get(env.CARD_SESSION.idFromName(token));
+      const snapshot = await stub.fetch(new Request("https://do/snapshot"));
+      const payload = snapshot.ok
+        ? ((await snapshot.json()) as { ended?: boolean })
+        : { ended: true };
+      if (!snapshot.ok || payload.ended) {
+        return new Response(gameOverHtml(), {
+          status: 410,
+          headers: {
+            "Content-Type": "text/html; charset=utf-8",
+            "Cache-Control": "no-store",
+          },
+        });
+      }
       return new Response(joinPageHtml(token), {
         headers: {
           "Content-Type": "text/html; charset=utf-8",

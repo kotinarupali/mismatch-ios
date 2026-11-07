@@ -14,7 +14,7 @@ struct QRGridView: View {
         PlaceholderScreenLayout(
             title: "Scan to Join",
             subtitle: viewModel.statusMessage,
-            showsBrandLogo: true,
+            artwork: PartyArt.appIcon,
             roomStyle: .distribution
         ) {
             VStack(spacing: 16) {

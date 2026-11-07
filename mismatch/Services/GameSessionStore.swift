@@ -131,6 +131,14 @@ final class GameSessionStore {
         return partnerAssignment
     }
 
+    /// Drops the face-down slot after a Ghost re-pick, while keeping the opened flag so a remote update cannot replace the role.
+    func clearPickedCardIndex(for playerId: UUID) {
+        guard var session = currentSession else { return }
+        guard let index = session.players.firstIndex(where: { $0.id == playerId }) else { return }
+        session.players[index].pickedCardIndex = nil
+        currentSession = session
+    }
+
     func releaseCardPick(for playerId: UUID) {
         guard var session = currentSession else { return }
         guard let index = session.players.firstIndex(where: { $0.id == playerId }) else { return }
@@ -219,7 +227,6 @@ final class GameSessionStore {
         }
 
         if let assignments = snapshot.assignments {
-            let hostId = session.players.first(where: \.isHost)?.id
             for assignment in assignments {
                 guard let index = session.players.firstIndex(where: { $0.id == assignment.id }) else { continue }
                 let incoming = RoleAssignment(
@@ -229,11 +236,8 @@ final class GameSessionStore {
                 )
                 let current = session.players[index].assignment
                 if current == incoming { continue }
-                // Host may swap locally before the cloud POST completes; ignore stale ghost payloads.
-                if assignment.id == hostId,
-                   !session.players[index].hasOpenedCard,
-                   current?.role != .ghost,
-                   incoming.role == .ghost {
+                // A card someone already saw stays put. A late Ghost re-pick must not replace it.
+                if session.players[index].hasOpenedCard {
                     continue
                 }
                 session.players[index].assignment = incoming

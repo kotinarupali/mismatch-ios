@@ -16,12 +16,22 @@ export interface SessionInit {
   ghostPickAgainEnabled?: boolean;
 }
 
+interface GhostSwapRecord {
+  fromPlayerId: string;
+  toPlayerId: string;
+  previousRole: string;
+  previousWord: string | null;
+  previousHint: string | null;
+}
+
 interface SessionState extends SessionInit {
   revision: number;
   claimedIndices: Record<number, string>;
   openedPlayerIds: string[];
   /** First phone to tap a name. The word is returned only to this token. */
   deviceTokens: Record<string, string>;
+  /** Latest Ghost re-pick, so a host who already saw their word can be restored. */
+  lastGhostSwap: GhostSwapRecord | null;
   hostKey: string;
   votingEnabled: boolean;
   ghostPickAgainEnabled: boolean;
@@ -55,6 +65,9 @@ export class CardSession implements DurableObject {
     if (url.pathname === "/release" && request.method === "POST") {
       return this.releasePlayer(request);
     }
+    if (url.pathname === "/host-card" && request.method === "POST") {
+      return this.hostCard(request);
+    }
     if (url.pathname === "/swap-ghost" && request.method === "POST") {
       return this.swapGhostRole(request);
     }
@@ -83,6 +96,7 @@ export class CardSession implements DurableObject {
       claimedIndices: {},
       openedPlayerIds: [],
       deviceTokens: {},
+      lastGhostSwap: null,
       votingOpen: false,
       votingRound: 0,
       eliminatedPlayerIds: [],
@@ -93,12 +107,21 @@ export class CardSession implements DurableObject {
   }
 
     private snapshot(request: Request): Response {
-    if (!this.session) {
-      return json({ error: "not_found" }, 404);
-    }
-
     const url = new URL(request.url);
     const hostKey = url.searchParams.get("hostKey");
+    if (!this.session) {
+      if (hostKey) {
+        return json({ error: "not_found" }, 404);
+      }
+      return json({
+        ended: true,
+        players: [],
+        claimedCards: [],
+        faceDownCardCount: 0,
+        showRoleOnCard: false,
+        revision: 0,
+      });
+    }
 
     const guestPlayers = this.session.players
       .filter((player) => !player.isHost)
@@ -278,6 +301,88 @@ export class CardSession implements DurableObject {
     return json({ ok: true, revision: this.session.revision });
   }
 
+  /** The host looks at their card in the app, so the server must count them as opened. */
+  private async hostCard(request: Request): Promise<Response> {
+    if (!this.session) {
+      return json({ error: "not_found" }, 404);
+    }
+
+    const body = (await request.json()) as {
+      hostKey?: string;
+      playerId?: string;
+      cardIndex?: number;
+      role?: string;
+      word?: string | null;
+      categoryHint?: string | null;
+    };
+    if (!body.hostKey || body.hostKey !== this.session.hostKey) {
+      return json({ error: "forbidden" }, 403);
+    }
+    const playerId = body.playerId;
+    const cardIndex = body.cardIndex;
+    const hostIndex = this.session.players.findIndex((player) => player.id === playerId && player.isHost);
+    if (!playerId || hostIndex < 0 || cardIndex === undefined) {
+      return json({ error: "unknown_player" }, 404);
+    }
+    if (cardIndex < 0 || cardIndex >= this.session.faceDownCardCount) {
+      return json({ error: "card_taken", revision: this.session.revision }, 409);
+    }
+
+    const seenRole = body.role;
+    const seenWord = body.word ?? null;
+    const seenHint = body.categoryHint ?? null;
+    const swap = this.session.lastGhostSwap;
+    const host = this.session.players[hostIndex];
+    if (
+      swap &&
+      swap.toPlayerId === playerId &&
+      host.role === "ghost" &&
+      seenRole &&
+      seenRole !== "ghost" &&
+      swap.previousRole === seenRole &&
+      (swap.previousWord ?? null) === seenWord
+    ) {
+      const takerIndex = this.session.players.findIndex((player) => player.id === swap.fromPlayerId);
+      const takerOpened = this.session.openedPlayerIds.includes(swap.fromPlayerId);
+      if (takerIndex >= 0 && !takerOpened) {
+        const taker = this.session.players[takerIndex];
+        this.session.players[takerIndex] = {
+          ...taker,
+          role: "ghost",
+          word: null,
+          categoryHint: host.categoryHint ?? null,
+        };
+        this.session.players[hostIndex] = {
+          ...host,
+          role: seenRole,
+          word: seenWord,
+          categoryHint: seenHint,
+        };
+        this.session.lastGhostSwap = null;
+      }
+    }
+
+    const current = this.session.players[hostIndex];
+    if (seenRole && current.role !== seenRole) {
+      return json({ ok: true, revision: this.session.revision });
+    }
+
+    const takenBy = this.session.claimedIndices[cardIndex];
+    if (!takenBy || takenBy === playerId) {
+      for (const [index, ownerId] of Object.entries(this.session.claimedIndices)) {
+        if (ownerId === playerId && Number(index) !== cardIndex) {
+          delete this.session.claimedIndices[Number(index)];
+        }
+      }
+      this.session.claimedIndices[cardIndex] = playerId;
+    }
+    if (!this.session.openedPlayerIds.includes(playerId)) {
+      this.session.openedPlayerIds.push(playerId);
+    }
+    this.session.revision += 1;
+    return json({ ok: true, revision: this.session.revision });
+  }
+
   private async swapGhostRole(request: Request): Promise<Response> {
     if (!this.session) {
       return json({ error: "not_found" }, 404);
@@ -337,6 +442,13 @@ export class CardSession implements DurableObject {
 
     const ghostPlayer = this.session.players[ghostIndex];
     const partnerPlayer = this.session.players[partnerIndex];
+    this.session.lastGhostSwap = {
+      fromPlayerId: playerId,
+      toPlayerId: partnerPlayer.id,
+      previousRole: partnerPlayer.role,
+      previousWord: partnerPlayer.word ?? null,
+      previousHint: partnerPlayer.categoryHint ?? null,
+    };
     this.session.players[ghostIndex] = {
       ...ghostPlayer,
       role: partnerPlayer.role,
