@@ -21,8 +21,9 @@ export function resetPasswordHtml(): string {
   <title>Sus Out — New password</title>
   <link rel="icon" href="/art/app-icon.jpg">
   <style>
-    body { margin: 0; min-height: 100vh; background: #0f1224; color: #fff; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+    body { margin: 0; min-height: 100vh; color: #fff; font-family: -apple-system, BlinkMacSystemFont, sans-serif; background-color: #12101c; background-image: radial-gradient(ellipse at 10% 100%, rgba(250,115,140,0.14), rgba(250,115,140,0) 58%), linear-gradient(#1c1634, #12101c); }
     .screen { max-width: 420px; margin: 0 auto; padding: 48px 24px; text-align: center; }
+    .mark { width: 72px; height: 72px; border-radius: 18px; object-fit: cover; margin: 0 auto 16px; display: block; }
     h1 { font-size: 28px; margin: 0 0 12px; }
     p, label { color: #c7c9d9; line-height: 1.4; }
     form { display: grid; gap: 12px; margin-top: 24px; text-align: left; }
@@ -33,6 +34,7 @@ export function resetPasswordHtml(): string {
 </head>
 <body>
   <main class="screen">
+    <img class="mark" src="/art/app-icon.jpg" alt="">
     <h1>Choose a new password</h1>
     <p id="status">Use at least 6 characters, then open Sus Out and sign in.</p>
     <form id="reset-form">
@@ -101,16 +103,18 @@ export function accountConfirmedHtml(): string {
   <title>Sus Out — Email confirmed</title>
   <link rel="icon" href="/art/app-icon.jpg">
   <style>
-    body { margin: 0; min-height: 100vh; background: #0f1224; color: #fff; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+    body { margin: 0; min-height: 100vh; color: #fff; font-family: -apple-system, BlinkMacSystemFont, sans-serif; background-color: #12101c; background-image: radial-gradient(ellipse at 10% 100%, rgba(250,115,140,0.14), rgba(250,115,140,0) 58%), linear-gradient(#1c1634, #12101c); }
     .screen { max-width: 420px; margin: 0 auto; padding: 48px 24px; text-align: center; }
+    .mark { width: 72px; height: 72px; border-radius: 18px; object-fit: cover; margin: 0 auto 16px; display: block; }
     h1 { font-size: 28px; margin: 0 0 12px; }
     p { color: #c7c9d9; line-height: 1.4; }
   </style>
 </head>
 <body>
   <main class="screen">
+    <img class="mark" src="/art/app-icon.jpg" alt="">
     <h1>Email confirmed</h1>
-    <p>This address is confirmed for your Sus Out custom-pack account. Open Sus Out and sign in.</p>
+    <p>This address is confirmed for your Sus Out account. Open Sus Out and sign in.</p>
   </main>
 </body>
 </html>`;
@@ -126,14 +130,16 @@ export function gameOverHtml(): string {
   <title>Sus Out — Game over</title>
   <link rel="icon" href="/art/app-icon.jpg">
   <style>
-    body { margin: 0; min-height: 100vh; background: #0f1224; color: #fff; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+    body { margin: 0; min-height: 100vh; color: #fff; font-family: -apple-system, BlinkMacSystemFont, sans-serif; background-color: #12101c; background-image: radial-gradient(ellipse at 10% 100%, rgba(250,115,140,0.14), rgba(250,115,140,0) 58%), linear-gradient(#1c1634, #12101c); }
     .screen { max-width: 420px; margin: 0 auto; padding: 48px 24px; text-align: center; }
+    .mark { width: 72px; height: 72px; border-radius: 18px; object-fit: cover; margin: 0 auto 16px; display: block; }
     h1 { font-size: 28px; margin: 0 0 12px; }
     p { color: #c7c9d9; line-height: 1.4; }
   </style>
 </head>
 <body>
   <main class="screen">
+    <img class="mark" src="/art/app-icon.jpg" alt="">
     <h1>This game is over</h1>
     <p>The host ended it. This page is closed.</p>
   </main>

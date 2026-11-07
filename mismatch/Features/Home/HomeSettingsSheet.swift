@@ -79,7 +79,7 @@ struct HomeSettingsSheet: View {
                                         .foregroundStyle(AppColor.label)
 
                                     if viewModel.isPackAccountSignedIn {
-                                        Text("Signed in. Custom packs stay with this account.")
+                                        Text("Signed in. Packs and scores stay with this account.")
                                             .font(AppTypography.caption)
                                             .foregroundStyle(AppColor.secondaryLabel)
                                         Button("Sign out") { viewModel.signOutOfPackAccount() }
@@ -92,7 +92,7 @@ struct HomeSettingsSheet: View {
                                             .foregroundStyle(AppColor.accentSecondary)
                                             .disabled(viewModel.isAccountBusy)
                                     } else {
-                                        Text("Packs stay on this phone until you sign in.")
+                                        Text("Sign in to keep packs and scores with your Sus Out account.")
                                             .font(AppTypography.caption)
                                             .foregroundStyle(AppColor.secondaryLabel)
                                         TextField("Email", text: $viewModel.accountEmail)
@@ -101,9 +101,11 @@ struct HomeSettingsSheet: View {
                                             .textContentType(.username)
                                             .autocorrectionDisabled()
                                             .foregroundStyle(AppColor.label)
+                                            .disabled(viewModel.isAccountFormLocked)
                                         SecureField("Password", text: $viewModel.accountPassword)
                                             .textContentType(.password)
                                             .foregroundStyle(AppColor.label)
+                                            .disabled(viewModel.isAccountFormLocked)
                                         Text(viewModel.passwordRequirement)
                                             .font(AppTypography.caption)
                                             .foregroundStyle(AppColor.secondaryLabel)
@@ -112,14 +114,14 @@ struct HomeSettingsSheet: View {
                                                 .foregroundStyle(viewModel.canSignInToPackAccount ? AppColor.accent : AppColor.secondaryLabel)
                                                 .disabled(!viewModel.canSignInToPackAccount || viewModel.isAccountBusy)
                                             Button("Create account") { viewModel.createPackAccount() }
-                                                .foregroundStyle(viewModel.canCreatePackAccount ? AppColor.accent : AppColor.secondaryLabel)
-                                                .disabled(!viewModel.canCreatePackAccount || viewModel.isAccountBusy)
+                                                .foregroundStyle(viewModel.canCreatePackAccount && !viewModel.accountFieldsLocked ? AppColor.accent : AppColor.secondaryLabel)
+                                                .disabled(!viewModel.canCreatePackAccount || viewModel.isAccountFormLocked)
                                         }
                                         .font(AppTypography.body)
                                         Button("Forgot password") { viewModel.sendPasswordReset() }
                                             .font(AppTypography.body)
-                                            .foregroundStyle(viewModel.canSendPasswordReset ? AppColor.accent : AppColor.secondaryLabel)
-                                            .disabled(!viewModel.canSendPasswordReset || viewModel.isAccountBusy)
+                                            .foregroundStyle(viewModel.canSendPasswordReset && !viewModel.accountFieldsLocked ? AppColor.accent : AppColor.secondaryLabel)
+                                            .disabled(!viewModel.canSendPasswordReset || viewModel.isAccountFormLocked)
                                     }
 
                                     if let accountMessage = viewModel.accountMessage {
@@ -186,7 +188,7 @@ struct HomeSettingsSheet: View {
             .confirmDialog(
                 isPresented: $viewModel.showDeleteAccountConfirmation,
                 title: "Delete this account?",
-                message: "This deletes the custom-pack account and its packs, then signs this phone out. This cannot be undone.",
+                message: "This deletes your Sus Out account, including its packs and scores, then signs this phone out. This cannot be undone.",
                 confirmTitle: "Delete account"
             ) {
                 viewModel.deletePackAccount()

@@ -1,5 +1,6 @@
 const confirmPage = "https://mismatch-cards.kotinarupali.workers.dev/account-confirmed";
 const resetPage = "https://mismatch-cards.kotinarupali.workers.dev/reset-password";
+const appIcon = "https://mismatch-cards.kotinarupali.workers.dev/art/app-icon.jpg";
 
 const font = "ui-rounded,'Avenir Next','Nunito','Segoe UI',sans-serif";
 
@@ -59,10 +60,10 @@ export function accountDeletedMessage(email: string): { subject: string; html: s
   return {
     subject: "Your Sus Out account was deleted",
     html: susOutEmail({
-      preheader: "Your Sus Out custom-pack account was deleted.",
+      preheader: "Your Sus Out account was deleted.",
       title: "Your account was deleted",
       paragraphs: [
-        `Sus Out deleted the custom-pack account for <span style="color:#ffffff;">${safeEmail}</span>, including the packs saved with it.`,
+        `Sus Out deleted the account for <span style="color:#ffffff;">${safeEmail}</span>, including the packs and scores saved with it.`,
       ],
       footnote: "If you did this, you can ignore this email. If you did not, create a new account in Game Settings.",
     }),
@@ -97,11 +98,11 @@ export function authEmailMessage(input: {
   return {
     subject: "Confirm your Sus Out account",
     html: susOutEmail({
-      preheader: "Confirm the email for your Sus Out custom-pack account.",
+      preheader: "Confirm the email for your Sus Out account.",
       title: "Confirm your account",
       paragraphs: [
-        `Sus Out sent this email because a custom-pack account was created for <span style="color:#ffffff;">${safeEmail}</span>.`,
-        "Confirm this address so you can sign in and keep those packs with the account.",
+        `Sus Out sent this email because an account was created for <span style="color:#ffffff;">${safeEmail}</span>.`,
+        "Confirm this address so you can sign in and keep your packs and scores with the account.",
       ],
       actionHref: link,
       actionLabel: "Confirm email",
@@ -155,7 +156,8 @@ function susOutEmail(input: {
           </tr>
           <tr>
             <td style="padding:28px 28px 4px;font-family:${font};">
-              <div style="font-size:13px;line-height:1;font-weight:700;letter-spacing:0.16em;color:#8c5cff;">SUS OUT</div>
+              <img src="${appIcon}" width="64" height="64" alt="Sus Out" style="display:block;width:64px;height:64px;border:0;border-radius:16px;">
+              <div style="margin-top:16px;font-size:13px;line-height:1;font-weight:700;letter-spacing:0.16em;color:#8c5cff;">SUS OUT</div>
               <h1 style="margin:16px 0 0;font-size:28px;line-height:1.15;font-weight:700;color:#ffffff;">${escapeHtml(input.title)}</h1>
             </td>
           </tr>

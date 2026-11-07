@@ -15,6 +15,8 @@ final class HomeViewModel {
     var accountPassword = ""
     var accountMessage: String?
     var isAccountBusy = false
+    /// Email and password stay as submitted after a confirmation or reset email is sent.
+    private(set) var accountFieldsLocked = false
     var isPackAccountSignedIn = false
     private(set) var preferences: HostPreferences
 
@@ -42,6 +44,7 @@ final class HomeViewModel {
     func openGameSettings() {
         isPackAccountSignedIn = dependencies.customWordPackService.isSignedIn
         accountMessage = nil
+        accountFieldsLocked = false
         showGameSettings = true
     }
 
@@ -84,12 +87,21 @@ final class HomeViewModel {
         return message
     }
 
+    var isAccountFormLocked: Bool {
+        isAccountBusy || accountFieldsLocked
+    }
+
     func signInToPackAccount() {
-        submitPackAccount { await self.dependencies.customWordPackService.signIn(email: self.normalizedAccountEmail, password: self.accountPassword) }
+        submitPackAccount { email, password in
+            await self.dependencies.customWordPackService.signIn(email: email, password: password)
+        }
     }
 
     func createPackAccount() {
-        submitPackAccount { await self.dependencies.customWordPackService.createAccount(email: self.normalizedAccountEmail, password: self.accountPassword) }
+        guard !accountFieldsLocked else { return }
+        submitPackAccount { email, password in
+            await self.dependencies.customWordPackService.createAccount(email: email, password: password)
+        }
     }
 
     var canSendPasswordReset: Bool {
@@ -97,12 +109,14 @@ final class HomeViewModel {
     }
 
     func sendPasswordReset() {
-        guard !isAccountBusy, canSendPasswordReset else { return }
+        guard !isAccountBusy, !accountFieldsLocked, canSendPasswordReset else { return }
+        let email = normalizedAccountEmail
         isAccountBusy = true
         accountMessage = nil
         Task {
-            accountMessage = await dependencies.customWordPackService.requestPasswordReset(email: normalizedAccountEmail)
+            accountMessage = await dependencies.customWordPackService.requestPasswordReset(email: email)
             isAccountBusy = false
+            accountFieldsLocked = dependencies.customWordPackService.lastError == nil
         }
     }
 
@@ -111,6 +125,7 @@ final class HomeViewModel {
         isPackAccountSignedIn = false
         accountPassword = ""
         accountMessage = nil
+        accountFieldsLocked = false
     }
 
     // Confirmed from Game Settings. https://github.com/kotinarupali/mismatch-ios/issues/45
@@ -122,6 +137,10 @@ final class HomeViewModel {
             let message = await dependencies.customWordPackService.deleteAccount()
             isAccountBusy = false
             isPackAccountSignedIn = dependencies.customWordPackService.isSignedIn
+            if message?.hasPrefix("Account deleted") == true {
+                try? dependencies.profileRepository.deleteAll()
+                dependencies.profilesViewModel.reload()
+            }
             accountMessage = message ?? "Account deleted."
             showDeleteAccountConfirmation = false
         }
@@ -131,16 +150,21 @@ final class HomeViewModel {
         accountEmail.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
     }
 
-    private func submitPackAccount(_ action: @escaping () async -> String?) {
-        guard canSignInToPackAccount || canCreatePackAccount else { return }
+    private func submitPackAccount(_ action: @escaping (String, String) async -> String?) {
+        guard !isAccountBusy, canSignInToPackAccount || canCreatePackAccount else { return }
+        let email = normalizedAccountEmail
+        let password = accountPassword
         isAccountBusy = true
         accountMessage = nil
         Task {
-            accountMessage = await action()
+            accountMessage = await action(email, password)
             isAccountBusy = false
             isPackAccountSignedIn = dependencies.customWordPackService.isSignedIn
             if isPackAccountSignedIn {
                 accountPassword = ""
+                accountFieldsLocked = false
+            } else {
+                accountFieldsLocked = accountMessage != nil && dependencies.customWordPackService.lastError == nil
             }
         }
     }
