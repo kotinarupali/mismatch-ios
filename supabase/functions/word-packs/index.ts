@@ -1,5 +1,6 @@
 // Custom pack storage. https://github.com/kotinarupali/mismatch-ios/issues/30
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { accountDeletedMessage, sendSmtpEmail } from "../_shared/mail.ts";
 
 const MAX_COUNT = 40;
 const SAMPLE_COUNT = 3;
@@ -47,6 +48,12 @@ Deno.serve(async (request) => {
     const body = request.method === "GET" ? {} : await readJson(request);
     const hostToken = header(request, "x-host-token") || stringField(body, "hostToken");
     if (!hostToken) return json({ error: "missingHost" }, 400);
+
+    // Checked before resolveHost so a signed-out phone can ask, and so the check does not create a host row.
+    if (path.endsWith("/word-packs/account-exists") && request.method === "POST") {
+      const found = await accountExists(stringField(body, "email"));
+      return json(found, found.status ?? 200);
+    }
 
     const userId = await signedInUserId(request);
     const host = await resolveHost(hostToken, userId);
@@ -235,11 +242,38 @@ async function linkAccount(host: Host, userId: string | null) {
   return { linked: true, titleConflicts, status: undefined as number | undefined };
 }
 
+async function accountExists(email: string) {
+  const normalized = email.trim().toLowerCase();
+  if (!normalized.includes("@")) {
+    return { error: "invalidEmail", message: "Enter an email address.", status: 400 as number | undefined };
+  }
+  const response = await fetch(
+    `${supabaseUrl()}/auth/v1/admin/users?page=1&per_page=50&filter=${encodeURIComponent(normalized)}`,
+    {
+      headers: {
+        apikey: serviceKey(),
+        Authorization: `Bearer ${serviceKey()}`,
+      },
+    },
+  );
+  if (!response.ok) {
+    return { error: "failed", message: "Couldn't check that email. Try again.", status: 500 as number | undefined };
+  }
+  const payload = await response.json();
+  const users = Array.isArray(payload) ? payload : Array.isArray(payload?.users) ? payload.users : [];
+  const exists = users.some((user: { email?: string }) =>
+    (user?.email ?? "").trim().toLowerCase() === normalized
+  );
+  return { exists, status: undefined as number | undefined };
+}
+
 // In-app account deletion. https://github.com/kotinarupali/mismatch-ios/issues/45
 async function deleteAccount(host: Host, userId: string | null) {
   if (!userId) {
     return { error: "signInRequired", message: "Sign in to delete this account.", status: 401 as number | undefined };
   }
+
+  const email = await authUserEmail(userId);
 
   try {
     // Packs are not ON DELETE CASCADE, so children go before hosts.
@@ -280,7 +314,26 @@ async function deleteAccount(host: Host, userId: string | null) {
   if (!response.ok && response.status !== 404) {
     return { error: "failed", message: "Couldn't delete the account. Try again.", status: 500 as number | undefined };
   }
-  return { deleted: true, status: undefined as number | undefined };
+  const emailed = email ? await sendAccountDeletedEmail(email) : false;
+  return { deleted: true, emailed, status: undefined as number | undefined };
+}
+
+async function authUserEmail(userId: string): Promise<string | null> {
+  const response = await fetch(`${supabaseUrl()}/auth/v1/admin/users/${userId}`, {
+    headers: {
+      apikey: serviceKey(),
+      Authorization: `Bearer ${serviceKey()}`,
+    },
+  });
+  if (!response.ok) return null;
+  const user = await response.json();
+  const email = user?.email ?? user?.user?.email;
+  return typeof email === "string" ? email : null;
+}
+
+async function sendAccountDeletedEmail(email: string): Promise<boolean> {
+  const message = accountDeletedMessage(email);
+  return sendSmtpEmail({ to: email, subject: message.subject, html: message.html });
 }
 
 async function markPlayed(host: Host, body: Record<string, unknown>) {

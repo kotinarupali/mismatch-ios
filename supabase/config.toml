@@ -1,0 +1,23 @@
+project_id = "mismatch"
+
+[auth]
+site_url = "https://mismatch-cards.kotinarupali.workers.dev/account-confirmed"
+additional_redirect_urls = [
+  "https://mismatch-cards.kotinarupali.workers.dev/account-confirmed",
+  "https://mismatch-cards.kotinarupali.workers.dev/reset-password",
+]
+
+# Confirm and reset mail use the Gmail SMTP server set in the Supabase dashboard.
+# Keep the Resend send-email hook off. Turning it on replaces that server.
+# [auth.hook.send_email]
+# enabled = true
+# uri = "https://ldyaxstombvpqmxmmyiu.supabase.co/functions/v1/send-email"
+# secrets = "env(SEND_EMAIL_HOOK_SECRET)"
+
+[auth.email.template.confirmation]
+subject = "Confirm your Sus Out account"
+content_path = "./supabase/templates/confirmation.html"
+
+[auth.email.template.recovery]
+subject = "Reset your Sus Out password"
+content_path = "./supabase/templates/recovery.html"

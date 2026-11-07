@@ -124,13 +124,26 @@ struct CustomWordPackClient: Sendable {
     }
 
     // Signed-in deletion. The access token identifies the account. https://github.com/kotinarupali/mismatch-ios/issues/45
-    func deleteAccount(hostToken: String, accessToken: String) async throws {
-        let _: DeleteAccountResponse = try await send(
+    func deleteAccount(hostToken: String, accessToken: String) async throws -> Bool {
+        let payload: DeleteAccountResponse = try await send(
             method: "POST",
             path: "/delete-account",
             body: Optional<HostBody>.none,
             hostToken: hostToken,
             accessToken: accessToken
+        )
+        return payload.emailed ?? false
+    }
+
+    func requestPasswordReset(email: String) async throws {
+        var query: [URLQueryItem] = []
+        if let redirect = CloudCardConfig.baseURL?.appendingPathComponent("reset-password") {
+            query.append(URLQueryItem(name: "redirect_to", value: redirect.absoluteString))
+        }
+        _ = try await authData(
+            path: "auth/v1/recover",
+            query: query,
+            body: RecoverBody(email: email)
         )
     }
 
@@ -145,6 +158,20 @@ struct CustomWordPackClient: Sendable {
         return payload.titleConflicts ?? []
     }
 
+    func accountExists(hostToken: String, email: String) async throws -> Bool {
+        let payload: AccountExistsResponse = try await send(
+            method: "POST",
+            path: "/account-exists",
+            body: AccountExistsBody(email: email),
+            hostToken: hostToken,
+            accessToken: nil
+        )
+        guard let exists = payload.exists else {
+            throw CustomWordPackClientError.message(payload.message ?? "Couldn't check that email.")
+        }
+        return exists
+    }
+
     func signInWithEmail(email: String, password: String) async throws -> AuthSession {
         try await authSession(
             path: "auth/v1/token",
@@ -154,11 +181,21 @@ struct CustomWordPackClient: Sendable {
     }
 
     func createAccount(email: String, password: String) async throws -> EmailAccountResult {
+        // Auth redirects here after the link is opened. Without this it falls back to localhost.
+        var query: [URLQueryItem] = []
+        if let redirect = CloudCardConfig.baseURL?.appendingPathComponent("account-confirmed") {
+            query.append(URLQueryItem(name: "redirect_to", value: redirect.absoluteString))
+        }
         let data = try await authData(
             path: "auth/v1/signup",
-            query: [],
+            query: query,
             body: EmailPasswordBody(email: email, password: password)
         )
+        let payload = try JSONDecoder().decode(SignupPayload.self, from: data)
+        // Supabase hides an existing account behind an empty identities list instead of an error.
+        if payload.alreadyRegistered {
+            throw CustomWordPackClientError.message("An account with this email already exists.")
+        }
         if let session = try? JSONDecoder().decode(AuthSession.self, from: data), !session.accessToken.isEmpty {
             return .session(session)
         }
@@ -273,6 +310,37 @@ private struct EditBody: Encodable {
     let category: String
 }
 
+private struct AccountExistsBody: Encodable {
+    let email: String
+}
+
+private struct AccountExistsResponse: Decodable {
+    let exists: Bool?
+    let error: String?
+    let message: String?
+}
+
+private struct SignupPayload: Decodable {
+    let identities: [SignupIdentity]?
+    let user: SignupUser?
+
+    struct SignupUser: Decodable {
+        let identities: [SignupIdentity]?
+    }
+
+    struct SignupIdentity: Decodable {}
+
+    var alreadyRegistered: Bool {
+        if let identities {
+            return identities.isEmpty
+        }
+        if let identities = user?.identities {
+            return identities.isEmpty
+        }
+        return false
+    }
+}
+
 private struct EmailPasswordBody: Encodable {
     let email: String
     let password: String
@@ -349,8 +417,13 @@ private struct PlayedResponse: Decodable {
 
 private struct DeleteAccountResponse: Decodable {
     let deleted: Bool?
+    let emailed: Bool?
     let error: String?
     let message: String?
+}
+
+private struct RecoverBody: Encodable {
+    let email: String
 }
 
 private struct LinkResponse: Decodable {

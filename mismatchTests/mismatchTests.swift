@@ -2310,3 +2310,18 @@ struct ProfileRepositoryTests {
         #expect(loser?.stats.winsAsMismatch == 1)
     }
 }
+
+struct SupabasePasswordRuleTests {
+    @Test func acceptsSixBytesAndRejectsShorterOrLonger() {
+        #expect(SupabasePasswordRule.accepts("abcde") == false)
+        #expect(SupabasePasswordRule.accepts("abcdef"))
+        #expect(SupabasePasswordRule.accepts(String(repeating: "a", count: 72)))
+        #expect(SupabasePasswordRule.accepts(String(repeating: "a", count: 73)) == false)
+    }
+
+    @Test func countsBytesTheWaySupabaseDoes() {
+        let fiveEmoji = String(repeating: "😀", count: 5)
+        #expect(fiveEmoji.count == 5)
+        #expect(SupabasePasswordRule.accepts(fiveEmoji))
+    }
+}

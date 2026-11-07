@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="supported-color-schemes" content="dark">
+  <title>Confirm your account</title>
+</head>
+<body style="margin:0;padding:0;background-color:#1f1433;color:#ffffff;">
+  <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">Confirm the email for your Sus Out custom-pack account.</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#1f1433" style="background-color:#1f1433;background-image:radial-gradient(ellipse at 8% 100%, rgba(250,115,140,0.38), rgba(250,115,140,0) 52%),radial-gradient(ellipse at 100% 100%, rgba(140,92,255,0.42), rgba(140,92,255,0) 50%),linear-gradient(#381f57,#1f1433);">
+    <tr>
+      <td align="center" style="padding:36px 16px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#242642" style="max-width:440px;background-color:#242642;border:1px solid #3a3c55;border-radius:24px;">
+          <tr>
+            <td height="8" bgcolor="#7347f2" style="height:8px;line-height:8px;font-size:0;background-color:#7347f2;background-image:linear-gradient(90deg,#7347f2,#d95294);border-radius:24px 24px 0 0;">&nbsp;</td>
+          </tr>
+          <tr>
+            <td style="padding:28px 28px 4px;font-family:ui-rounded,'Avenir Next','Nunito','Segoe UI',sans-serif;">
+              <div style="font-size:13px;line-height:1;font-weight:700;letter-spacing:0.16em;color:#8c5cff;">SUS OUT</div>
+              <h1 style="margin:16px 0 0;font-size:28px;line-height:1.15;font-weight:700;color:#ffffff;">Confirm your account</h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:12px 28px 0;font-family:ui-rounded,'Avenir Next','Nunito','Segoe UI',sans-serif;font-size:16px;line-height:1.45;color:#c9c9d6;">
+              <p style="margin:0 0 12px;">Sus Out sent this email because a custom-pack account was created for <span style="color:#ffffff;">{{ .Email }}</span>.</p>
+              <p style="margin:0;">Confirm this address so you can sign in and keep those packs with the account.</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:22px 28px 8px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td align="center" bgcolor="#7347f2" style="border-radius:20px;background-color:#7347f2;background-image:linear-gradient(135deg,#7347f2,#d95294);">
+                    <a href="{{ .ConfirmationURL }}" style="display:block;padding:14px 18px;font-family:ui-rounded,'Avenir Next','Nunito','Segoe UI',sans-serif;font-size:17px;line-height:1.2;font-weight:700;color:#ffffff;text-decoration:none;">Confirm email</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:18px 28px 28px;font-family:ui-rounded,'Avenir Next','Nunito','Segoe UI',sans-serif;font-size:13px;line-height:1.45;color:#a7a7b8;">If you did not create a Sus Out account, you can ignore this email.</td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

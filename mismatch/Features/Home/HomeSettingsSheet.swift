@@ -104,13 +104,22 @@ struct HomeSettingsSheet: View {
                                         SecureField("Password", text: $viewModel.accountPassword)
                                             .textContentType(.password)
                                             .foregroundStyle(AppColor.label)
+                                        Text(viewModel.passwordRequirement)
+                                            .font(AppTypography.caption)
+                                            .foregroundStyle(AppColor.secondaryLabel)
                                         HStack(spacing: 16) {
                                             Button("Sign in") { viewModel.signInToPackAccount() }
+                                                .foregroundStyle(viewModel.canSignInToPackAccount ? AppColor.accent : AppColor.secondaryLabel)
+                                                .disabled(!viewModel.canSignInToPackAccount || viewModel.isAccountBusy)
                                             Button("Create account") { viewModel.createPackAccount() }
+                                                .foregroundStyle(viewModel.canCreatePackAccount ? AppColor.accent : AppColor.secondaryLabel)
+                                                .disabled(!viewModel.canCreatePackAccount || viewModel.isAccountBusy)
                                         }
                                         .font(AppTypography.body)
-                                        .foregroundStyle(viewModel.canSubmitPackAccount ? AppColor.accent : AppColor.secondaryLabel)
-                                        .disabled(!viewModel.canSubmitPackAccount || viewModel.isAccountBusy)
+                                        Button("Forgot password") { viewModel.sendPasswordReset() }
+                                            .font(AppTypography.body)
+                                            .foregroundStyle(viewModel.canSendPasswordReset ? AppColor.accent : AppColor.secondaryLabel)
+                                            .disabled(!viewModel.canSendPasswordReset || viewModel.isAccountBusy)
                                     }
 
                                     if let accountMessage = viewModel.accountMessage {

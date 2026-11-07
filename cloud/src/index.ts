@@ -1,10 +1,12 @@
 import { CardSession } from "./session";
-import { gameOverHtml, joinPageHtml, staticAsset } from "./webAssets";
+import { accountConfirmedHtml, gameOverHtml, joinPageHtml, resetPasswordHtml, staticAsset } from "./webAssets";
 
 export { CardSession };
 
 interface Env {
   CARD_SESSION: DurableObjectNamespace;
+  SUPABASE_URL?: string;
+  SUPABASE_ANON_KEY?: string;
 }
 
 export default {
@@ -13,6 +15,10 @@ export default {
 
     if (request.method === "OPTIONS") {
       return cors(new Response(null, { status: 204 }));
+    }
+
+    if (url.pathname === "/api/account/password" && request.method === "POST") {
+      return resetPassword(request, env);
     }
 
     if (url.pathname === "/api/sessions" && request.method === "POST") {
@@ -136,6 +142,30 @@ export default {
       });
     }
 
+    if (
+      (url.pathname === "/reset-password" || url.pathname === "/reset-password/") &&
+      request.method === "GET"
+    ) {
+      return new Response(resetPasswordHtml(), {
+        headers: {
+          "Content-Type": "text/html; charset=utf-8",
+          "Cache-Control": "no-store",
+        },
+      });
+    }
+
+    if (
+      (url.pathname === "/account-confirmed" || url.pathname === "/account-confirmed/") &&
+      request.method === "GET"
+    ) {
+      return new Response(accountConfirmedHtml(), {
+        headers: {
+          "Content-Type": "text/html; charset=utf-8",
+          "Cache-Control": "no-store",
+        },
+      });
+    }
+
     if (request.method === "GET") {
       const asset = staticAsset(url.pathname);
       if (asset) return asset;
@@ -168,6 +198,68 @@ async function createSession(request: Request, env: Env, url: URL): Promise<Resp
       },
     })
   );
+}
+
+async function resetPassword(request: Request, env: Env): Promise<Response> {
+  const supabaseURL = env.SUPABASE_URL ?? "";
+  const anonKey = env.SUPABASE_ANON_KEY ?? "";
+  if (!supabaseURL || !anonKey) {
+    return accountJson({ message: "Password reset is unavailable." }, 500);
+  }
+  const body = (await request.json().catch(() => ({}))) as {
+    accessToken?: string;
+    tokenHash?: string;
+    password?: string;
+  };
+  const password = body.password ?? "";
+  const length = new TextEncoder().encode(password).length;
+  if (length < 6) return accountJson({ message: "Use at least 6 characters." }, 400);
+  if (length > 72) return accountJson({ message: "Use at most 72 characters." }, 400);
+
+  let accessToken = body.accessToken ?? "";
+  if (!accessToken && body.tokenHash) {
+    const verified = await fetch(`${supabaseURL}/auth/v1/verify`, {
+      method: "POST",
+      headers: {
+        apikey: anonKey,
+        Authorization: `Bearer ${anonKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ type: "recovery", token_hash: body.tokenHash }),
+    });
+    const payload = (await verified.json().catch(() => ({}))) as { access_token?: string };
+    if (!verified.ok || !payload.access_token) {
+      return accountJson({ message: "This reset link is invalid or has expired." }, 400);
+    }
+    accessToken = payload.access_token;
+  }
+  if (!accessToken) {
+    return accountJson({ message: "This reset link is invalid or has expired." }, 400);
+  }
+
+  const updated = await fetch(`${supabaseURL}/auth/v1/user`, {
+    method: "PUT",
+    headers: {
+      apikey: anonKey,
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ password }),
+  });
+  if (!updated.ok) {
+    return accountJson({ message: "This reset link is invalid or has expired." }, 400);
+  }
+  return accountJson({ updated: true }, 200);
+}
+
+function accountJson(payload: unknown, status: number): Response {
+  return new Response(JSON.stringify(payload), {
+    status,
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Control": "no-store",
+    },
+  });
 }
 
 function cors(response: Response): Response {

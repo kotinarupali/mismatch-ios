@@ -65,10 +65,23 @@ final class HomeViewModel {
         persistPreferences()
     }
 
-    var canSubmitPackAccount: Bool {
+    var canSignInToPackAccount: Bool {
         dependencies.customWordPackService.isConfigured
             && accountEmail.contains("@")
-            && accountPassword.count >= 6
+            && !accountPassword.isEmpty
+    }
+
+    var canCreatePackAccount: Bool {
+        dependencies.customWordPackService.isConfigured
+            && accountEmail.contains("@")
+            && SupabasePasswordRule.accepts(accountPassword)
+    }
+
+    var passwordRequirement: String {
+        guard !accountPassword.isEmpty, let message = SupabasePasswordRule.rejectionMessage(for: accountPassword) else {
+            return "At least 6 characters."
+        }
+        return message
     }
 
     func signInToPackAccount() {
@@ -77,6 +90,20 @@ final class HomeViewModel {
 
     func createPackAccount() {
         submitPackAccount { await self.dependencies.customWordPackService.createAccount(email: self.normalizedAccountEmail, password: self.accountPassword) }
+    }
+
+    var canSendPasswordReset: Bool {
+        dependencies.customWordPackService.isConfigured && accountEmail.contains("@")
+    }
+
+    func sendPasswordReset() {
+        guard !isAccountBusy, canSendPasswordReset else { return }
+        isAccountBusy = true
+        accountMessage = nil
+        Task {
+            accountMessage = await dependencies.customWordPackService.requestPasswordReset(email: normalizedAccountEmail)
+            isAccountBusy = false
+        }
     }
 
     func signOutOfPackAccount() {
@@ -105,7 +132,7 @@ final class HomeViewModel {
     }
 
     private func submitPackAccount(_ action: @escaping () async -> String?) {
-        guard canSubmitPackAccount else { return }
+        guard canSignInToPackAccount || canCreatePackAccount else { return }
         isAccountBusy = true
         accountMessage = nil
         Task {

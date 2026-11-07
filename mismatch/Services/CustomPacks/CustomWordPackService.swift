@@ -289,11 +289,16 @@ final class CustomWordPackService {
 
     func signIn(email: String, password: String) async -> String? {
         do {
+            guard try await client.accountExists(hostToken: identity.hostToken, email: email) else {
+                lastError = "No account uses this email."
+                return lastError
+            }
             let session = try await client.signInWithEmail(email: email, password: password)
             return await finishSignIn(session)
         } catch CustomWordPackClientError.message(let message) {
-            lastError = message
-            return message
+            let shown = Self.signInFailureMessage(message)
+            lastError = shown
+            return shown
         } catch {
             lastError = "Couldn't sign in."
             return lastError
@@ -302,6 +307,14 @@ final class CustomWordPackService {
 
     func createAccount(email: String, password: String) async -> String? {
         do {
+            if let message = SupabasePasswordRule.rejectionMessage(for: password) {
+                lastError = message
+                return message
+            }
+            if try await client.accountExists(hostToken: identity.hostToken, email: email) {
+                lastError = "An account with this email already exists."
+                return lastError
+            }
             switch try await client.createAccount(email: email, password: password) {
             case .session(let session):
                 return await finishSignIn(session)
@@ -316,6 +329,17 @@ final class CustomWordPackService {
             lastError = "Couldn't create that account."
             return lastError
         }
+    }
+
+    private static func signInFailureMessage(_ message: String) -> String {
+        let folded = message.folding(options: .caseInsensitive, locale: .current)
+        if folded.contains("not confirmed") {
+            return "Confirm this email before signing in."
+        }
+        if folded.contains("invalid login") {
+            return "That password doesn't match."
+        }
+        return message
     }
 
     private func finishSignIn(_ session: AuthSession) async -> String? {
@@ -383,10 +407,12 @@ final class CustomWordPackService {
             return "Sign in to delete this account."
         }
         do {
-            try await client.deleteAccount(hostToken: identity.hostToken, accessToken: accessToken)
+            let emailed = try await client.deleteAccount(hostToken: identity.hostToken, accessToken: accessToken)
             signOut()
             lastError = nil
-            return nil
+            return emailed
+                ? "Account deleted. Check your email for a confirmation."
+                : "Account deleted."
         } catch CustomWordPackClientError.message(let message) {
             lastError = message
             return message
@@ -394,6 +420,33 @@ final class CustomWordPackService {
             lastError = "Couldn't delete the account."
             return lastError
         }
+    }
+
+    func requestPasswordReset(email: String) async -> String? {
+        do {
+            guard try await client.accountExists(hostToken: identity.hostToken, email: email) else {
+                lastError = "No account uses this email."
+                return lastError
+            }
+            try await client.requestPasswordReset(email: email)
+            lastError = nil
+            return "Check your email for a link to choose a new password."
+        } catch CustomWordPackClientError.message(let message) {
+            let shown = Self.emailFailureMessage(message)
+            lastError = shown
+            return shown
+        } catch {
+            lastError = "Couldn't send the reset email."
+            return lastError
+        }
+    }
+
+    private static func emailFailureMessage(_ message: String) -> String {
+        let folded = message.folding(options: .caseInsensitive, locale: .current)
+        if folded.contains("rate limit") {
+            return "Too many emails were sent. Try again in about an hour."
+        }
+        return message
     }
 
     func signOut() {
