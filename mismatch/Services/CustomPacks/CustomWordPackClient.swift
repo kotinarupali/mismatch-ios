@@ -123,6 +123,17 @@ struct CustomWordPackClient: Sendable {
         return pack
     }
 
+    // Signed-in deletion. The access token identifies the account. https://github.com/kotinarupali/mismatch-ios/issues/45
+    func deleteAccount(hostToken: String, accessToken: String) async throws {
+        let _: DeleteAccountResponse = try await send(
+            method: "POST",
+            path: "/delete-account",
+            body: Optional<HostBody>.none,
+            hostToken: hostToken,
+            accessToken: accessToken
+        )
+    }
+
     func link(hostToken: String, accessToken: String) async throws -> [String] {
         let payload: LinkResponse = try await send(
             method: "POST",
@@ -332,6 +343,12 @@ private struct ArchiveResponse: Decodable {
 
 private struct PlayedResponse: Decodable {
     let updated: Int?
+    let error: String?
+    let message: String?
+}
+
+private struct DeleteAccountResponse: Decodable {
+    let deleted: Bool?
     let error: String?
     let message: String?
 }

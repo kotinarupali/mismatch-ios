@@ -85,6 +85,12 @@ struct HomeSettingsSheet: View {
                                         Button("Sign out") { viewModel.signOutOfPackAccount() }
                                             .font(AppTypography.body)
                                             .foregroundStyle(AppColor.accent)
+                                            .disabled(viewModel.isAccountBusy)
+                                        // In-app deletion required for App Store review. https://github.com/kotinarupali/mismatch-ios/issues/45
+                                        Button("Delete account") { viewModel.showDeleteAccountConfirmation = true }
+                                            .font(AppTypography.body)
+                                            .foregroundStyle(AppColor.accentSecondary)
+                                            .disabled(viewModel.isAccountBusy)
                                     } else {
                                         Text("Packs stay on this phone until you sign in.")
                                             .font(AppTypography.caption)
@@ -167,6 +173,14 @@ struct HomeSettingsSheet: View {
                     Button("Done") { dismiss() }
                         .foregroundStyle(AppColor.accent)
                 }
+            }
+            .confirmDialog(
+                isPresented: $viewModel.showDeleteAccountConfirmation,
+                title: "Delete this account?",
+                message: "This deletes the custom-pack account and its packs, then signs this phone out. This cannot be undone.",
+                confirmTitle: "Delete account"
+            ) {
+                viewModel.deletePackAccount()
             }
             .confirmDialog(
                 isPresented: $viewModel.showClearDataConfirmation,

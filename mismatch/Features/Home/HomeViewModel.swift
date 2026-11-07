@@ -10,6 +10,7 @@ final class HomeViewModel {
     var showGameSettings = false
     var showCustomPacks = false
     var showClearDataConfirmation = false
+    var showDeleteAccountConfirmation = false
     var accountEmail = ""
     var accountPassword = ""
     var accountMessage: String?
@@ -83,6 +84,20 @@ final class HomeViewModel {
         isPackAccountSignedIn = false
         accountPassword = ""
         accountMessage = nil
+    }
+
+    // Confirmed from Game Settings. https://github.com/kotinarupali/mismatch-ios/issues/45
+    func deletePackAccount() {
+        guard !isAccountBusy else { return }
+        isAccountBusy = true
+        accountMessage = nil
+        Task {
+            let message = await dependencies.customWordPackService.deleteAccount()
+            isAccountBusy = false
+            isPackAccountSignedIn = dependencies.customWordPackService.isSignedIn
+            accountMessage = message ?? "Account deleted."
+            showDeleteAccountConfirmation = false
+        }
     }
 
     private var normalizedAccountEmail: String {

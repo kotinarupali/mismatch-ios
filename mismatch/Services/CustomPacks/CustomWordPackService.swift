@@ -4,6 +4,7 @@ import Foundation
 @Observable
 // Local copy and played upload: https://github.com/kotinarupali/mismatch-ios/issues/33
 // Email account: https://github.com/kotinarupali/mismatch-ios/issues/36
+// Account deletion: https://github.com/kotinarupali/mismatch-ios/issues/45
 final class CustomWordPackService {
     private let identity: HostIdentityStore
     private let store: CustomWordPackStore
@@ -373,6 +374,26 @@ final class CustomWordPackService {
             return true
         }
         return Date().timeIntervalSince1970 > exp - 30
+    }
+
+    // Server removes the login and its packs, then this phone signs out. https://github.com/kotinarupali/mismatch-ios/issues/45
+    func deleteAccount() async -> String? {
+        await refreshIfNeeded()
+        guard let accessToken = identity.accessToken else {
+            return "Sign in to delete this account."
+        }
+        do {
+            try await client.deleteAccount(hostToken: identity.hostToken, accessToken: accessToken)
+            signOut()
+            lastError = nil
+            return nil
+        } catch CustomWordPackClientError.message(let message) {
+            lastError = message
+            return message
+        } catch {
+            lastError = "Couldn't delete the account."
+            return lastError
+        }
     }
 
     func signOut() {

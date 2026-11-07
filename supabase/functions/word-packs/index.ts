@@ -69,6 +69,12 @@ Deno.serve(async (request) => {
       return json(linked, linked.status ?? 200);
     }
 
+    // Registered before the pack-id route so "delete-account" is not treated as a pack.
+    if (path.endsWith("/word-packs/delete-account") && request.method === "POST") {
+      const deleted = await deleteAccount(host.host, userId);
+      return json(deleted, deleted.status ?? 200);
+    }
+
     if (path.endsWith("/word-packs/played") && request.method === "POST") {
       return json(await markPlayed(host.host, body));
     }
@@ -227,6 +233,54 @@ async function linkAccount(host: Host, userId: string | null) {
     seen.set(key, row.host_id);
   }
   return { linked: true, titleConflicts, status: undefined as number | undefined };
+}
+
+// In-app account deletion. https://github.com/kotinarupali/mismatch-ios/issues/45
+async function deleteAccount(host: Host, userId: string | null) {
+  if (!userId) {
+    return { error: "signInRequired", message: "Sign in to delete this account.", status: 401 as number | undefined };
+  }
+
+  try {
+    // Packs are not ON DELETE CASCADE, so children go before hosts.
+    const ids = await hostIds(userId, host);
+    const list = ids.join(",");
+    await rest(`word_pairs?host_id=in.(${list})`, {
+      method: "DELETE",
+      headers: { Prefer: "return=minimal" },
+    });
+    await rest(`word_packs?host_id=in.(${list})`, {
+      method: "DELETE",
+      headers: { Prefer: "return=minimal" },
+    });
+    await rest(`pending_generations?host_id=in.(${list})`, {
+      method: "DELETE",
+      headers: { Prefer: "return=minimal" },
+    });
+    await rest(`generation_events?host_id=in.(${list})`, {
+      method: "DELETE",
+      headers: { Prefer: "return=minimal" },
+    });
+    await rest(`hosts?id=in.(${list})`, {
+      method: "DELETE",
+      headers: { Prefer: "return=minimal" },
+    });
+  } catch {
+    return { error: "failed", message: "Couldn't delete the account. Try again.", status: 500 as number | undefined };
+  }
+
+  // Login goes last so a failed user delete can be retried while this session is still valid.
+  const response = await fetch(`${supabaseUrl()}/auth/v1/admin/users/${userId}`, {
+    method: "DELETE",
+    headers: {
+      apikey: serviceKey(),
+      Authorization: `Bearer ${serviceKey()}`,
+    },
+  });
+  if (!response.ok && response.status !== 404) {
+    return { error: "failed", message: "Couldn't delete the account. Try again.", status: 500 as number | undefined };
+  }
+  return { deleted: true, status: undefined as number | undefined };
 }
 
 async function markPlayed(host: Host, body: Record<string, unknown>) {
