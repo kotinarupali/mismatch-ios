@@ -709,8 +709,8 @@ def main() -> None:
 
     indian_pop = load_similar_pairs_file("indian_pop_culture_pairs.json", "Indian Pop Culture")
     validate_no_repeated_words(indian_pop, "indian_pop_culture")
-    if len(indian_pop) != 500:
-        raise ValueError(f"Indian pop culture pack needs 500 pairs, generated {len(indian_pop)}")
+    if len(indian_pop) != 543:
+        raise ValueError(f"Indian pop culture pack needs 543 pairs, generated {len(indian_pop)}")
     write_pack("indian_pop_culture", "Indian Pop Culture", indian_pop)
 
     pop_pairs = unique_word_pairs(dedupe_pairs(POP_CULTURE_FIXED), 250)

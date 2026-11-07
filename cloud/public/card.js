@@ -31,7 +31,7 @@
             '<span class="brand-tile brand-tile-sad"></span>' +
             '<span class="brand-tile brand-tile-ghost"></span>' +
           '</div>' +
-          '<h1 class="brand-title">Mismatch</h1>' +
+          '<h1 class="brand-title">Sus Out</h1>' +
           '<p class="brand-sub">' + escapeHtml(sub) + '</p>' +
         '</header>' +
         '<div class="panel">' + content + '</div>' +
@@ -452,28 +452,43 @@
     return isNaN(parsed) ? null : parsed;
   }
 
+  function roleCallout(role, title, detail) {
+    return (
+      '<div class="role-callout ' + role + '">' +
+        '<div class="badge ' + role + '">' + escapeHtml(title) + '</div>' +
+        '<p class="reveal-copy">' + escapeHtml(detail) + '</p>' +
+      '</div>'
+    );
+  }
+
   function renderReveal(data, claimedCardIndex) {
     stopPolling();
     let body = '<div class="revealed">';
 
-    if (data.showRoleOnCard && data.role !== 'ghost') {
-      body += '<div class="badge ' + data.role + '">' + capitalize(data.role) + '</div>';
-    }
-
     if (data.role === 'ghost') {
-      body += '<div class="ghost-reveal">';
-      body += '<div class="ghost-icon" aria-hidden="true">☾</div>';
-      body += '<h2 class="ghost-title">Ghost</h2>';
+      body += roleCallout('ghost', 'Ghost', 'You have no secret word');
+      body += '<div class="secret shown word-reveal">You are the Ghost</div>';
       if (data.categoryHint) {
         body += '<p class="hint">Hint: ' + escapeHtml(data.categoryHint) + '</p>';
       }
-      body += '</div>';
       if (data.canSwapGhostRole) {
         body += '<button type="button" class="secondary-btn" id="ghost-repick">Pick again for another role</button>';
       }
+    } else if (data.role === 'mismatch' && data.showRoleOnCard) {
+      savePassedGhostCardIndex(null);
+      lastGhostCardIndex = null;
+      body += roleCallout('mismatch', 'Mismatch', 'Your word is different from the group');
+      if (data.word) {
+        body += '<div class="secret shown word-reveal">' + escapeHtml(data.word) + '</div>';
+      }
+      body += '<p class="reveal-copy emphasis">You are the Mismatch</p>';
     } else if (data.word) {
       savePassedGhostCardIndex(null);
       lastGhostCardIndex = null;
+      if (data.showRoleOnCard) {
+        body += '<div class="badge insider">Insider</div>';
+      }
+      body += '<p class="reveal-copy">Your secret word is</p>';
       body += '<div class="secret shown word-reveal">' + escapeHtml(data.word) + '</div>';
     }
 
@@ -547,10 +562,6 @@
     const map = {};
     claimedCards.forEach(function (c) { map[c.cardIndex] = c; });
     return map;
-  }
-
-  function capitalize(s) {
-    return s.charAt(0).toUpperCase() + s.slice(1);
   }
 
   function escapeHtml(s) {

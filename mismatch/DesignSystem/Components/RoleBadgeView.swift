@@ -39,124 +39,23 @@ struct RoleIconBadge: View {
             case .hero: 96
             }
         }
-
-        var iconScale: CGFloat {
-            switch self {
-            case .tiny: 0.58
-            case .small: 0.62
-            case .medium: 0.68
-            case .large: 0.72
-            case .extraLarge: 0.76
-            case .hero: 0.8
-            }
-        }
     }
 
     let role: Role
     var size: Size = .small
 
     var body: some View {
-        ZStack {
-            Circle()
-                .fill(roleGradient)
-            Circle()
-                .strokeBorder(.white.opacity(0.4), lineWidth: 1.5)
-
-            roleIcon
-                .scaleEffect(size.iconScale)
-        }
-        .frame(width: size.dimension, height: size.dimension)
-        .shadow(color: roleShadowColor.opacity(size == .tiny ? 0.35 : 0.45), radius: size == .tiny ? 3 : 6, y: size == .tiny ? 1 : 3)
-        .accessibilityLabel(role.displayName)
-    }
-
-    private var roleGradient: LinearGradient {
-        switch role {
-        case .insider:
-            LinearGradient(
-                colors: [
-                    Color(red: 0.28, green: 0.95, blue: 0.68),
-                    Color(red: 0.10, green: 0.72, blue: 0.48)
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        case .mismatch:
-            LinearGradient(
-                colors: [
-                    Color(red: 1.0, green: 0.78, blue: 0.28),
-                    Color(red: 0.98, green: 0.42, blue: 0.18)
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        case .ghost:
-            LinearGradient(
-                colors: [
-                    Color(red: 0.78, green: 0.58, blue: 1.0),
-                    Color(red: 0.48, green: 0.32, blue: 0.88)
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        }
-    }
-
-    private var roleShadowColor: Color {
-        switch role {
-        case .insider: Color(red: 0.12, green: 0.72, blue: 0.48)
-        case .mismatch: Color(red: 0.98, green: 0.42, blue: 0.18)
-        case .ghost: Color(red: 0.48, green: 0.32, blue: 0.88)
-        }
-    }
-
-    @ViewBuilder
-    private var roleIcon: some View {
-        switch role {
-        case .insider:
-            InsiderGlyph()
-                .foregroundStyle(.white)
-                .frame(width: size.dimension * 0.86, height: size.dimension * 0.86)
-        case .mismatch:
-            MismatchGlyph()
-                .foregroundStyle(.white)
-                .frame(width: size.dimension * 0.88, height: size.dimension * 0.88)
-        case .ghost:
-            GhostGlyph()
-                .foregroundStyle(.white)
-                .frame(width: size.dimension * 0.68, height: size.dimension * 0.78)
-        }
+        PartySticker(name: PartyArt.name(for: role), size: size.dimension, accessibilityLabel: role.displayName)
     }
 }
 
-/// Compact role marker for avatar overlays — bold SF Symbol, no badge circle.
+/// Compact role marker for avatar overlays.
 struct RoleOverlayMark: View {
     let role: Role
-    var size: CGFloat = 15
+    var size: CGFloat = 18
 
     var body: some View {
-        Image(systemName: symbolName)
-            .font(.system(size: size, weight: .bold))
-            .foregroundStyle(.white)
-            .shadow(color: .black.opacity(0.9), radius: 0, x: 0, y: 1)
-            .shadow(color: roleColor.opacity(0.9), radius: 2, y: 0)
-            .accessibilityLabel(role.displayName)
-    }
-
-    private var symbolName: String {
-        switch role {
-        case .insider: "checkmark"
-        case .mismatch: "xmark"
-        case .ghost: "moon.stars.fill"
-        }
-    }
-
-    private var roleColor: Color {
-        switch role {
-        case .insider: BrandPalette.insiderMid
-        case .mismatch: BrandPalette.mismatchMid
-        case .ghost: BrandPalette.ghostMid
-        }
+        PartySticker(name: PartyArt.name(for: role), size: size, accessibilityLabel: role.displayName)
     }
 }
 

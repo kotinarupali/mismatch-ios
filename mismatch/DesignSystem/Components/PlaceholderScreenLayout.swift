@@ -4,6 +4,7 @@ struct PlaceholderScreenLayout<Content: View>: View {
     let title: String
     let subtitle: String
     var icon: String? = nil
+    var artwork: String? = nil
     var showsBrandLogo: Bool = false
     var usesHeroTitle: Bool = false
     var roomStyle: PartyRoomStyle = .lobby
@@ -30,6 +31,8 @@ struct PlaceholderScreenLayout<Content: View>: View {
         VStack(alignment: .leading, spacing: 10) {
             if showsBrandLogo {
                 MismatchLogoView(size: 56, style: .mini, showsShadow: false)
+            } else if let artwork {
+                PartySticker(name: artwork, size: 64, accessibilityLabel: title)
             } else if let icon {
                 Image(systemName: icon)
                     .font(.system(size: 28, weight: .semibold))
@@ -61,25 +64,31 @@ struct PlaceholderScreenLayout<Content: View>: View {
 
 struct PrimaryButton: View {
     let title: String
+    var artwork: String? = nil
     var isEnabled: Bool = true
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            Text(title)
-                .font(AppTypography.headline)
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
-                .background {
-                    if isEnabled {
-                        AppColor.heroGradient
-                    } else {
-                        Color.white.opacity(0.12)
-                    }
+            HStack(spacing: 10) {
+                if let artwork {
+                    PartySticker(name: artwork, size: 32)
                 }
-                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                .shadow(color: isEnabled ? AppColor.accent.opacity(0.35) : .clear, radius: 12, y: 6)
+                Text(title)
+                    .font(AppTypography.headline)
+                    .foregroundStyle(.white)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 14)
+            .background {
+                if isEnabled {
+                    AppColor.heroGradient
+                } else {
+                    Color.white.opacity(0.12)
+                }
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+            .shadow(color: isEnabled ? AppColor.accent.opacity(0.35) : .clear, radius: 12, y: 6)
         }
         .disabled(!isEnabled)
         .accessibilityHint(title)
@@ -88,21 +97,27 @@ struct PrimaryButton: View {
 
 struct SecondaryButton: View {
     let title: String
+    var artwork: String? = nil
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            Text(title)
-                .font(AppTypography.headline)
-                .foregroundStyle(AppColor.label)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
-                .background(AppColor.card)
-                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                .overlay {
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .strokeBorder(AppColor.cardBorder, lineWidth: 1)
+            HStack(spacing: 10) {
+                if let artwork {
+                    PartySticker(name: artwork, size: 32)
                 }
+                Text(title)
+                    .font(AppTypography.headline)
+                    .foregroundStyle(AppColor.label)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 14)
+            .background(AppColor.card)
+            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .strokeBorder(AppColor.cardBorder, lineWidth: 1)
+            }
         }
     }
 }
@@ -416,15 +431,20 @@ struct OutcomeCard: View {
     let title: String
     let value: String
     var icon: String = "person.fill"
+    var role: Role? = nil
 
     var body: some View {
         HStack(spacing: 14) {
-            Image(systemName: icon)
-                .font(.title2)
-                .foregroundStyle(AppColor.heroGradient)
-                .frame(width: 44, height: 44)
-                .background(AppColor.backgroundElevated)
-                .clipShape(Circle())
+            if let role {
+                PartySticker(name: PartyArt.name(for: role), size: 44, accessibilityLabel: role.displayName)
+            } else {
+                Image(systemName: icon)
+                    .font(.title2)
+                    .foregroundStyle(AppColor.heroGradient)
+                    .frame(width: 44, height: 44)
+                    .background(AppColor.backgroundElevated)
+                    .clipShape(Circle())
+            }
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)

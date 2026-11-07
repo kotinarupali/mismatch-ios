@@ -16,6 +16,10 @@ struct RoleAssigner: Sendable {
         settings: GameSettings
     ) throws -> [PlayerSlot] {
         guard !players.isEmpty else { throw RoleAssignerError.noPlayers }
+        guard players.count >= CardPickRules.minimumFaceDownCards,
+              players.count <= CardPickRules.maximumPlayers else {
+            throw RoleAssignerError.invalidPlayerCount
+        }
 
         let counts = RoleDistributionTable.counts(
             playerCount: players.count,

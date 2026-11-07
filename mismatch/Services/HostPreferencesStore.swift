@@ -1,13 +1,25 @@
 import Foundation
+import UIKit
 
 @MainActor
 final class HostPreferencesStore {
     private let defaults: UserDefaults
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
+    private let hostPlayerIDKey = "stableHostPlayerID"
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
+    }
+
+    /// The same host player for every game on this phone.
+    func stableHostPlayerID() -> UUID {
+        if let raw = defaults.string(forKey: hostPlayerIDKey), let id = UUID(uuidString: raw) {
+            return id
+        }
+        let created = UIDevice.current.identifierForVendor ?? UUID()
+        defaults.set(created.uuidString, forKey: hostPlayerIDKey)
+        return created
     }
 
     func load() -> HostPreferences {

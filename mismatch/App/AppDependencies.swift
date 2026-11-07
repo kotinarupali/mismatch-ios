@@ -15,6 +15,7 @@ final class AppDependencies {
     let localNetworkCardServer: LocalNetworkCardServer
     let remoteCardSessionClient: RemoteCardSessionClient
     let hostPreferencesStore: HostPreferencesStore
+    let customWordPackService: CustomWordPackService
     private(set) lazy var lobbyViewModel = LobbyViewModel(dependencies: self)
     private(set) lazy var profilesViewModel = ProfilesViewModel(dependencies: self)
 
@@ -31,6 +32,11 @@ final class AppDependencies {
         self.localNetworkCardServer = LocalNetworkCardServer(sessionStore: localCardSessionStore)
         self.remoteCardSessionClient = RemoteCardSessionClient()
         self.hostPreferencesStore = HostPreferencesStore()
+        self.customWordPackService = CustomWordPackService(
+            identity: HostIdentityStore(),
+            store: CustomWordPackStore(),
+            client: CustomWordPackClient()
+        )
     }
 
     convenience init() {
@@ -61,7 +67,8 @@ final class AppDependencies {
         localCardSessionStore: LocalCardSessionStore,
         localNetworkCardServer: LocalNetworkCardServer,
         remoteCardSessionClient: RemoteCardSessionClient,
-        hostPreferencesStore: HostPreferencesStore
+        hostPreferencesStore: HostPreferencesStore,
+        customWordPackService: CustomWordPackService
     ) {
         self.modelContainer = modelContainer
         self.profileRepository = ProfileRepository(modelContext: modelContainer.mainContext)
@@ -75,15 +82,17 @@ final class AppDependencies {
         self.localNetworkCardServer = localNetworkCardServer
         self.remoteCardSessionClient = remoteCardSessionClient
         self.hostPreferencesStore = hostPreferencesStore
+        self.customWordPackService = customWordPackService
     }
 
     func stopCardDelivery() {
         localNetworkCardServer.stop()
         guard let session = gameSessionStore.currentSession,
               session.cardDeliveryBackend == .cloud,
-              let token = session.joinSessionToken else { return }
+              let token = session.joinSessionToken,
+              let hostKey = session.cloudHostKey else { return }
         Task {
-            await remoteCardSessionClient.invalidate(token: token)
+            await remoteCardSessionClient.invalidate(token: token, hostKey: hostKey)
         }
     }
 
@@ -131,8 +140,15 @@ final class AppDependencies {
         stopCardDelivery()
         syncCompletedGameProfileStatsIfNeeded()
         gameSessionStore.resetRoundForPlayAgain()
-        lobbyViewModel.reloadFromSession()
-        await dealRolesAndNavigateToDistribution()
+
+        if let message = lobbyViewModel.dealSelectedPack() {
+            lobbyViewModel.reloadFromSession()
+            lobbyViewModel.errorMessage = message
+            router.replaceWithLobby()
+            return
+        }
+
+        await navigateToDistribution()
     }
 
     func syncCompletedGameProfileStatsIfNeeded() {
@@ -159,20 +175,6 @@ final class AppDependencies {
 
     func newGameNight() {
         endGame()
-    }
-
-    private func dealRolesAndNavigateToDistribution() async {
-        do {
-            let packIds = gameSessionStore.currentSession?.settings.selectedWordPackIds
-                ?? GameSettings.defaultSelectedWordPackIds
-            let selection = try wordPairSelector.nextPair(packIds: packIds)
-            try gameSessionStore.distributeRoles(wordPair: selection.pair)
-            wordPairSelector.markUsed(selection)
-            lobbyViewModel.reloadWordPackSummaries()
-            await navigateToDistribution()
-        } catch {
-            router.popToRoot()
-        }
     }
 
     private func navigateToDistribution() async {

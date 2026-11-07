@@ -70,6 +70,10 @@ final class ResultsViewModel {
         dependencies.gameSessionStore.eliminatedPlayer?.assignment?.role.displayName ?? "Unknown"
     }
 
+    var eliminatedRoleValue: Role? {
+        dependencies.gameSessionStore.eliminatedPlayer?.assignment?.role
+    }
+
     var eliminatedWord: String {
         guard let player = dependencies.gameSessionStore.eliminatedPlayer else {
             return "Unknown"

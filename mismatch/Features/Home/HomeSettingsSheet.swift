@@ -71,6 +71,53 @@ struct HomeSettingsSheet: View {
                             }
                         }
 
+                        if CustomPackConfig.isConfigured {
+                            SettingsCard {
+                                VStack(alignment: .leading, spacing: 12) {
+                                    Label("Account", systemImage: "person.crop.circle")
+                                        .font(AppTypography.body)
+                                        .foregroundStyle(AppColor.label)
+
+                                    if viewModel.isPackAccountSignedIn {
+                                        Text("Signed in. Custom packs stay with this account.")
+                                            .font(AppTypography.caption)
+                                            .foregroundStyle(AppColor.secondaryLabel)
+                                        Button("Sign out") { viewModel.signOutOfPackAccount() }
+                                            .font(AppTypography.body)
+                                            .foregroundStyle(AppColor.accent)
+                                    } else {
+                                        Text("Packs stay on this phone until you sign in.")
+                                            .font(AppTypography.caption)
+                                            .foregroundStyle(AppColor.secondaryLabel)
+                                        TextField("Email", text: $viewModel.accountEmail)
+                                            .textInputAutocapitalization(.never)
+                                            .keyboardType(.emailAddress)
+                                            .textContentType(.username)
+                                            .autocorrectionDisabled()
+                                            .foregroundStyle(AppColor.label)
+                                        SecureField("Password", text: $viewModel.accountPassword)
+                                            .textContentType(.password)
+                                            .foregroundStyle(AppColor.label)
+                                        HStack(spacing: 16) {
+                                            Button("Sign in") { viewModel.signInToPackAccount() }
+                                            Button("Create account") { viewModel.createPackAccount() }
+                                        }
+                                        .font(AppTypography.body)
+                                        .foregroundStyle(viewModel.canSubmitPackAccount ? AppColor.accent : AppColor.secondaryLabel)
+                                        .disabled(!viewModel.canSubmitPackAccount || viewModel.isAccountBusy)
+                                    }
+
+                                    if let accountMessage = viewModel.accountMessage {
+                                        Text(accountMessage)
+                                            .font(AppTypography.caption)
+                                            .foregroundStyle(AppColor.accentSecondary)
+                                    }
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 12)
+                            }
+                        }
+
                         SettingsCard {
                             VStack(alignment: .leading, spacing: 10) {
                                 Label("Data", systemImage: "externaldrive.fill")
@@ -92,6 +139,16 @@ struct HomeSettingsSheet: View {
                                         .padding(.vertical, 4)
                                 }
                                 .buttonStyle(.plain)
+
+                                if let privacyURL = CloudCardConfig.privacyPolicyURL {
+                                    Link(destination: privacyURL) {
+                                        Text("Privacy Policy")
+                                            .font(AppTypography.body)
+                                            .foregroundStyle(AppColor.accent)
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                            .padding(.vertical, 4)
+                                    }
+                                }
                             }
                             .padding(.horizontal, 16)
                             .padding(.vertical, 12)

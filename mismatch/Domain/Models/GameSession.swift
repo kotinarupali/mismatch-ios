@@ -80,5 +80,8 @@ struct GameSession: Identifiable, Codable, Equatable, Sendable {
     }
 
     var playerCount: Int { players.count }
-    var canStartGame: Bool { players.count >= 3 }
+    var canStartGame: Bool {
+        players.count >= CardPickRules.minimumFaceDownCards
+            && players.count <= CardPickRules.maximumPlayers
+    }
 }

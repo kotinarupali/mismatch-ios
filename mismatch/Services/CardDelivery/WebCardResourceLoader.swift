@@ -55,7 +55,7 @@ enum WebCardResourceLoader {
     <html lang="en"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mismatch</title>
+    <title>Sus Out</title>
     <style>body{margin:0;min-height:100vh;background:#141a2e;color:#fff;font-family:-apple-system,sans-serif}.loading{opacity:.85;text-align:center;padding:48px 16px}</style>
     <link rel="stylesheet" href="/card.css">
     </head><body>

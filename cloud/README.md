@@ -63,8 +63,9 @@ The **audit vulnerabilities** message is dev-only tooling — safe to ignore for
 | `POST` | `/api/session/{token}` | Claim a card `{ playerId, cardIndex }` |
 | `POST` | `/api/session/{token}/vote` | Guest submits vote `{ voterId, targetPlayerId }` |
 | `POST` | `/api/sessions/{token}/voting` | Host controls voting `{ hostKey, action: open \| close \| revote, eliminatedPlayerIds, revoteExcludedPlayerIds? }` |
-| `POST` | `/api/sessions/{token}/delete` | Host ends session |
+| `POST` | `/api/sessions/{token}/delete` | Host ends session `{ hostKey }` |
 | `GET` | `/join/{token}` | Player web page |
+| `GET` | `/privacy` | Privacy policy |
 
 ## Local development
 
@@ -79,7 +80,7 @@ Use the printed `localhost` or tunnel URL as `MismatchCloudCardBaseURL` while te
 
 - Session tokens are unguessable UUIDs
 - Role/word secrets are only returned to the claiming player
-- Sessions should be deleted when the game ends (host app calls delete)
+- Sessions should be deleted when the game ends (host app calls delete with `hostKey`)
 - For production, add rate limiting and optional host auth on `POST /api/sessions`
 
 ## Cost

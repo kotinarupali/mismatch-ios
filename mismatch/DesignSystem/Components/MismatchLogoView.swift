@@ -55,7 +55,7 @@ struct MismatchLogoView: View {
             }
         }
         .frame(width: size, height: size)
-        .accessibilityLabel("Mismatch")
+        .accessibilityLabel("Sus Out")
     }
 
     private var miniLogo: some View {

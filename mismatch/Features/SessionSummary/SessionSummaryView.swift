@@ -7,7 +7,7 @@ struct SessionSummaryView: View {
         PlaceholderScreenLayout(
             title: layoutTitle,
             subtitle: layoutSubtitle,
-            icon: layoutIcon,
+            artwork: viewModel.phase == .personas ? nil : PartyArt.trophy,
             showsBrandLogo: viewModel.phase == .personas,
             roomStyle: .reveal
         ) {
@@ -43,10 +43,6 @@ struct SessionSummaryView: View {
         viewModel.phase == .personas
             ? "How everyone showed up tonight"
             : viewModel.subtitle
-    }
-
-    private var layoutIcon: String? {
-        viewModel.phase == .personas ? nil : "trophy.fill"
     }
 
     @ViewBuilder

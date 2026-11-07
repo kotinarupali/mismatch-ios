@@ -8,7 +8,13 @@ final class HomeViewModel {
     var wordPairStats: WordPairStats?
     var showGameRules = false
     var showGameSettings = false
+    var showCustomPacks = false
     var showClearDataConfirmation = false
+    var accountEmail = ""
+    var accountPassword = ""
+    var accountMessage: String?
+    var isAccountBusy = false
+    var isPackAccountSignedIn = false
     private(set) var preferences: HostPreferences
 
     init(dependencies: AppDependencies) {
@@ -22,6 +28,10 @@ final class HomeViewModel {
         if !UserDefaults.standard.bool(forKey: UserDefaultsKeys.hasSeenInlineRules) {
             showGameRules = true
         }
+        Task {
+            await dependencies.customWordPackService.sync()
+            loadWordPairStats()
+        }
     }
 
     func openGameRules() {
@@ -29,6 +39,8 @@ final class HomeViewModel {
     }
 
     func openGameSettings() {
+        isPackAccountSignedIn = dependencies.customWordPackService.isSignedIn
+        accountMessage = nil
         showGameSettings = true
     }
 
@@ -52,6 +64,45 @@ final class HomeViewModel {
         persistPreferences()
     }
 
+    var canSubmitPackAccount: Bool {
+        dependencies.customWordPackService.isConfigured
+            && accountEmail.contains("@")
+            && accountPassword.count >= 6
+    }
+
+    func signInToPackAccount() {
+        submitPackAccount { await self.dependencies.customWordPackService.signIn(email: self.normalizedAccountEmail, password: self.accountPassword) }
+    }
+
+    func createPackAccount() {
+        submitPackAccount { await self.dependencies.customWordPackService.createAccount(email: self.normalizedAccountEmail, password: self.accountPassword) }
+    }
+
+    func signOutOfPackAccount() {
+        dependencies.customWordPackService.signOut()
+        isPackAccountSignedIn = false
+        accountPassword = ""
+        accountMessage = nil
+    }
+
+    private var normalizedAccountEmail: String {
+        accountEmail.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    }
+
+    private func submitPackAccount(_ action: @escaping () async -> String?) {
+        guard canSubmitPackAccount else { return }
+        isAccountBusy = true
+        accountMessage = nil
+        Task {
+            accountMessage = await action()
+            isAccountBusy = false
+            isPackAccountSignedIn = dependencies.customWordPackService.isSignedIn
+            if isPackAccountSignedIn {
+                accountPassword = ""
+            }
+        }
+    }
+
     func hostGameTapped() {
         persistPreferences()
         let settings = preferences.applying(to: .default)
@@ -63,6 +114,16 @@ final class HomeViewModel {
 
     func openProfiles() {
         dependencies.router.navigate(to: .profiles)
+    }
+
+    func openCustomPacks() {
+        showCustomPacks = true
+    }
+
+    func makeCustomPacksViewModel() -> CustomPacksViewModel {
+        CustomPacksViewModel(service: dependencies.customWordPackService) { [weak self] in
+            self?.showCustomPacks = false
+        }
     }
 
     func clearDataAndResetWords() {
@@ -79,12 +140,26 @@ final class HomeViewModel {
         dependencies.hostPreferencesStore.save(preferences)
     }
 
+    func refreshWordPairStats() {
+        loadWordPairStats()
+    }
+
     private func loadWordPairStats() {
-        guard let catalog = try? dependencies.wordPackLoader.loadCatalog() else {
+        let builtInIds = (try? dependencies.wordPackLoader.loadCatalog())?.packs.map(\.id) ?? []
+        let builtIn = (try? dependencies.wordPairSelector.aggregateStats(for: builtInIds))
+            ?? WordPairStats(used: 0, remaining: 0, total: 0)
+        let custom = dependencies.customWordPackService.packs
+        guard !builtInIds.isEmpty || !custom.isEmpty else {
             wordPairStats = nil
             return
         }
-        let packIds = catalog.packs.map(\.id)
-        wordPairStats = try? dependencies.wordPairSelector.aggregateStats(for: packIds)
+        let customUsed = custom.reduce(0) { $0 + $1.stats.used }
+        let customRemaining = custom.reduce(0) { $0 + $1.stats.remaining }
+        let customTotal = custom.reduce(0) { $0 + $1.stats.total }
+        wordPairStats = WordPairStats(
+            used: builtIn.used + customUsed,
+            remaining: builtIn.remaining + customRemaining,
+            total: builtIn.total + customTotal
+        )
     }
 }

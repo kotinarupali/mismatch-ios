@@ -15,33 +15,43 @@ enum AppRoute: Hashable {
 @Observable
 final class AppRouter {
     var path = NavigationPath()
+    private(set) var currentRoute: AppRoute?
 
     func navigate(to route: AppRoute) {
         path.append(route)
+        currentRoute = route
     }
 
     func replaceWithSessionSummary() {
-        path = NavigationPath()
-        path.append(AppRoute.sessionSummary)
+        show(.sessionSummary)
     }
 
     func replaceWithDistribution(_ route: AppRoute) {
-        path = NavigationPath()
-        path.append(route)
+        show(route)
     }
 
     func popToRoot() {
         path = NavigationPath()
+        currentRoute = nil
     }
 
     func goBack() {
         guard !path.isEmpty else { return }
         path.removeLast()
+        currentRoute = nil
     }
 
     func replaceWithLobby() {
-        path = NavigationPath()
-        path.append(AppRoute.lobby)
+        show(.lobby)
+    }
+
+    /// Replaces the whole stack in one update. Clearing the path and then appending
+    /// lets SwiftUI pop back through the lobby before the new screen is applied.
+    private func show(_ route: AppRoute) {
+        var next = NavigationPath()
+        next.append(route)
+        path = next
+        currentRoute = route
     }
 
     func popLast(_ count: Int) {
@@ -55,5 +65,6 @@ final class AppRouter {
     func continueToDiscussion() {
         popLast(3)
         path.append(AppRoute.discussion)
+        currentRoute = .discussion
     }
 }

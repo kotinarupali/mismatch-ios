@@ -204,12 +204,14 @@ final class RemoteCardSessionClient {
         try validate(response: response)
     }
 
-    func invalidate(token: String) async {
+    func invalidate(token: String, hostKey: String) async {
         guard let baseURL = CloudCardConfig.baseURL else { return }
 
         let url = baseURL.appendingPathComponent("api/sessions/\(token)/delete")
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try? JSONEncoder().encode(DeletePayload(hostKey: hostKey))
         _ = try? await session.data(for: request)
     }
 
@@ -264,6 +266,10 @@ private struct CreatePayload: Encodable {
     let insiderWord: String?
     let votingEnabled: Bool
     let ghostPickAgainEnabled: Bool
+}
+
+private struct DeletePayload: Encodable {
+    let hostKey: String
 }
 
 private struct VotingControlPayload: Encodable {

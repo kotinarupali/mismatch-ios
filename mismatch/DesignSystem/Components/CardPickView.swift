@@ -113,8 +113,10 @@ struct CardPickView: View {
         VStack(spacing: 20) {
             if showsGhostTruthReveal {
                 ghostTruthReveal
+            } else if displayAssignment.role == .mismatch {
+                mismatchReveal
             } else {
-                standardRoleReveal
+                insiderReveal
             }
 
             if canGhostRepick {
@@ -138,12 +140,16 @@ struct CardPickView: View {
     }
 
     private var ghostTruthReveal: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 14) {
             RoleIconBadge(role: .ghost, size: .hero)
+            RoleBadgeView(role: .ghost)
 
-            Text("Ghost")
-                .font(AppTypography.title)
-                .foregroundStyle(AppColor.label)
+            Text("You have no secret word")
+                .font(AppTypography.body)
+                .foregroundStyle(AppColor.secondaryLabel)
+                .multilineTextAlignment(.center)
+
+            secretCard("You are the Ghost")
 
             if let hint = displayAssignment.categoryHint {
                 Text("Hint: \(hint)")
@@ -153,26 +159,64 @@ struct CardPickView: View {
         }
     }
 
-    @ViewBuilder
-    private var standardRoleReveal: some View {
-        if showRoleOnCard {
-            RoleBadgeView(role: displayAssignment.role)
-        }
+    private var mismatchReveal: some View {
+        VStack(spacing: 14) {
+            if showRoleOnCard {
+                RoleIconBadge(role: .mismatch, size: .hero)
+                RoleBadgeView(role: .mismatch)
 
-        if let word = displayAssignment.word {
-            Text(word)
-                .font(AppTypography.title)
-                .foregroundStyle(AppColor.label)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 20)
-                .padding(.horizontal, 16)
-                .background(AppColor.backgroundElevated)
-                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                .overlay {
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .strokeBorder(AppColor.cardBorder, lineWidth: 1)
-                }
+                Text("Your word is different from the group")
+                    .font(AppTypography.body)
+                    .foregroundStyle(AppColor.secondaryLabel)
+                    .multilineTextAlignment(.center)
+            } else {
+                Text("Your secret word is")
+                    .font(AppTypography.body)
+                    .foregroundStyle(AppColor.secondaryLabel)
+            }
+
+            if let word = displayAssignment.word {
+                secretCard(word)
+            }
+
+            if showRoleOnCard {
+                Text("You are the Mismatch")
+                    .font(AppTypography.headline)
+                    .foregroundStyle(AppColor.label)
+            }
         }
+    }
+
+    private var insiderReveal: some View {
+        VStack(spacing: 14) {
+            if showRoleOnCard {
+                RoleBadgeView(role: .insider)
+            }
+
+            Text("Your secret word is")
+                .font(AppTypography.body)
+                .foregroundStyle(AppColor.secondaryLabel)
+
+            if let word = displayAssignment.word {
+                secretCard(word)
+            }
+        }
+    }
+
+    private func secretCard(_ text: String) -> some View {
+        Text(text)
+            .font(AppTypography.title)
+            .foregroundStyle(AppColor.label)
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 20)
+            .padding(.horizontal, 16)
+            .background(AppColor.backgroundElevated)
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .strokeBorder(AppColor.cardBorder, lineWidth: 1)
+            }
     }
 
     private var nextButtonTitle: String {

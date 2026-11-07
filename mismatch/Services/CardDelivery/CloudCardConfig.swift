@@ -20,4 +20,8 @@ enum CloudCardConfig {
     static var isConfigured: Bool {
         baseURL != nil
     }
+
+    static var privacyPolicyURL: URL? {
+        baseURL?.appendingPathComponent("privacy")
+    }
 }

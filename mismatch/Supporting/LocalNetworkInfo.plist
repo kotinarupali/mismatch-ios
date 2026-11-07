@@ -2,11 +2,11 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>NSBonjourServices</key>
-	<array>
-		<string>_mismatch._tcp</string>
-	</array>
 	<key>MismatchCloudCardBaseURL</key>
 	<string>https://mismatch-cards.kotinarupali.workers.dev</string>
+	<key>MismatchSupabaseURL</key>
+	<string>https://ldyaxstombvpqmxmmyiu.supabase.co</string>
+	<key>MismatchSupabaseAnonKey</key>
+	<string>sb_publishable_kofjuWqN98OqaFlf93olqw_6SpM8s79</string>
 </dict>
 </plist>

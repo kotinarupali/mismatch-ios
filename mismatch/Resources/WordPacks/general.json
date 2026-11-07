@@ -132,7 +132,7 @@
     {
       "id": "22",
       "insiderWord": "Hotel",
-      "mismatchWord": "Hostel",
+      "mismatchWord": "Resort",
       "category": "Places"
     },
     {
@@ -1248,7 +1248,7 @@
     {
       "id": "208",
       "insiderWord": "Sorbet",
-      "mismatchWord": "Sherbet",
+      "mismatchWord": "Popsicle",
       "category": "Food"
     },
     {
@@ -1290,7 +1290,7 @@
     {
       "id": "215",
       "insiderWord": "Cocktail",
-      "mismatchWord": "Mocktail",
+      "mismatchWord": "Lemonade",
       "category": "Food"
     },
     {
@@ -1686,7 +1686,7 @@
     {
       "id": "281",
       "insiderWord": "Macaron",
-      "mismatchWord": "Macaroon",
+      "mismatchWord": "Brownie",
       "category": "Food"
     },
     {
@@ -2970,13 +2970,13 @@
     {
       "id": "495",
       "insiderWord": "Product Manager",
-      "mismatchWord": "Project Manager",
+      "mismatchWord": "Salesperson",
       "category": "Professions"
     },
     {
       "id": "496",
       "insiderWord": "UX Designer",
-      "mismatchWord": "UI Designer",
+      "mismatchWord": "Architect",
       "category": "Professions"
     },
     {
@@ -5334,7 +5334,7 @@
     {
       "id": "889",
       "insiderWord": "Centennial",
-      "mismatchWord": "Bicentennial",
+      "mismatchWord": "Millennium",
       "category": "Time"
     },
     {

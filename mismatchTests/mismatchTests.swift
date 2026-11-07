@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import mismatch
 
@@ -30,10 +31,10 @@ struct WordPackLoaderTests {
         }
     }
 
-    @Test func loadsIndianPopCulturePackWith500Pairs() throws {
+    @Test func loadsIndianPopCulturePackWith543Pairs() throws {
         let loader = WordPackLoader()
         let pack = try loader.loadBuiltIn(packId: "indian_pop_culture")
-        #expect(pack.pairs.count == 500)
+        #expect(pack.pairs.count == 543)
     }
 }
 
@@ -139,6 +140,121 @@ struct GameSessionMinimumPlayerTests {
     }
 }
 
+struct LobbyPlayerLimitTests {
+
+    @Test @MainActor func threePlayersCanStartGame() throws {
+        let dependencies = AppDependencies()
+        dependencies.gameSessionStore.createSession()
+        let viewModel = LobbyViewModel(dependencies: dependencies)
+
+        viewModel.addNewPlayer(named: "A")
+        viewModel.addNewPlayer(named: "B")
+
+        #expect(viewModel.totalPlayerCount == 3)
+        #expect(viewModel.canContinue == true)
+        #expect(dependencies.gameSessionStore.currentSession?.canStartGame == true)
+        #expect(CardPickRules.faceDownCardCount(playerCount: 3) == 3)
+    }
+
+    @Test @MainActor func sixteenPlayersAllowedWithMatchingCardGrid() throws {
+        let dependencies = AppDependencies()
+        dependencies.gameSessionStore.createSession()
+        let viewModel = LobbyViewModel(dependencies: dependencies)
+
+        for index in 1...15 {
+            viewModel.addNewPlayer(named: "P\(index)")
+        }
+
+        #expect(viewModel.totalPlayerCount == 16)
+        #expect(viewModel.isAtPlayerCapacity == true)
+        #expect(viewModel.canAddPlayer == false)
+        #expect(viewModel.canContinue == true)
+
+        let pair = WordPair(id: "limit-16", insiderWord: "A", mismatchWord: "B", category: "Test")
+        try dependencies.gameSessionStore.distributeRoles(wordPair: pair)
+        #expect(CardPickRules.faceDownCardCount(playerCount: 16) == 16)
+        #expect(dependencies.gameSessionStore.currentSession?.players.count == 16)
+    }
+
+    @Test @MainActor func seventeenthPlayerRejectedInLobby() throws {
+        let dependencies = AppDependencies()
+        dependencies.gameSessionStore.createSession()
+        let viewModel = LobbyViewModel(dependencies: dependencies)
+
+        for index in 1...15 {
+            viewModel.addNewPlayer(named: "P\(index)")
+        }
+        #expect(viewModel.totalPlayerCount == 16)
+
+        viewModel.addNewPlayer(named: "Overflow")
+        #expect(viewModel.totalPlayerCount == 16)
+        #expect(viewModel.errorMessage?.contains("16") == true)
+    }
+
+    @Test @MainActor func hostSeatStaysTheSameAcrossNewParties() {
+        let dependencies = AppDependencies()
+        dependencies.gameSessionStore.createSession()
+        let first = LobbyViewModel(dependencies: dependencies)
+        let hostId = first.seatedPlayers.first { $0.isHost }?.id
+
+        dependencies.gameSessionStore.reset()
+        dependencies.gameSessionStore.createSession()
+        let second = LobbyViewModel(dependencies: dependencies)
+
+        #expect(hostId != nil)
+        #expect(second.seatedPlayers.first { $0.isHost }?.id == hostId)
+    }
+
+    @Test @MainActor func enablingHostAtSixteenGuestsDoesNotExceedCap() {
+        let dependencies = AppDependencies()
+        var settings = GameSettings.default
+        settings.hostIsPlaying = false
+        dependencies.gameSessionStore.createSession(settings: settings)
+        let viewModel = LobbyViewModel(dependencies: dependencies)
+
+        for index in 1...16 {
+            viewModel.addNewPlayer(named: "P\(index)")
+        }
+
+        #expect(viewModel.totalPlayerCount == 16)
+        #expect(viewModel.hostIsPlaying == false)
+
+        viewModel.hostIsPlaying = true
+        viewModel.refreshSession()
+
+        #expect(viewModel.totalPlayerCount == 16)
+        #expect(viewModel.hostIsPlaying == false)
+        #expect(viewModel.errorMessage?.contains("16") == true)
+        #expect(dependencies.gameSessionStore.currentSession?.players.count == 16)
+        #expect(dependencies.gameSessionStore.currentSession?.canStartGame == true)
+    }
+
+    @Test func roleAssignerRejectsMoreThanSixteenPlayers() {
+        var players: [PlayerSlot] = []
+        for index in 0..<17 {
+            players.append(
+                PlayerSlot(displayName: "P\(index)", avatarColor: AvatarColor.forIndex(index))
+            )
+        }
+        let assigner = RoleAssigner()
+        let pair = WordPair(id: "1", insiderWord: "A", mismatchWord: "B", category: "Test")
+        #expect(throws: RoleAssignerError.invalidPlayerCount) {
+            try assigner.assign(players: players, wordPair: pair, settings: .default)
+        }
+    }
+
+    @Test func gameSessionCannotStartWithSeventeenPlayers() {
+        var players: [PlayerSlot] = []
+        for index in 0..<17 {
+            players.append(
+                PlayerSlot(displayName: "P\(index)", avatarColor: AvatarColor.forIndex(index))
+            )
+        }
+        let session = GameSession(players: players)
+        #expect(session.canStartGame == false)
+    }
+}
+
 struct GameSessionStoreTests {
 
     @Test @MainActor func createAndResetSession() {
@@ -167,9 +283,23 @@ struct SessionWinCheckerTests {
         #expect(SessionWinChecker.checkWinner(players: players, settings: .default) == .mismatchWins)
     }
 
-    @Test func infiltratorsAutoWinWhenOneInsiderAndTwoOutsidersRemain() {
+    @Test func mismatchWinsWhenOneInsiderAndBothOutsidersRemain() {
         var settings = GameSettings.default
         settings.ghostEnabled = true
+        let players = [
+            PlayerSlot(displayName: "Host", avatarColor: .blue, assignment: RoleAssignment(role: .insider, word: "A")),
+            PlayerSlot(displayName: "Klaus", avatarColor: .orange, assignment: RoleAssignment(role: .mismatch, word: "B")),
+            PlayerSlot(displayName: "Hayley", avatarColor: .purple, assignment: RoleAssignment(role: .ghost)),
+            PlayerSlot(displayName: "Freya", avatarColor: .yellow, assignment: RoleAssignment(role: .insider, word: "A"), isEliminated: true),
+            PlayerSlot(displayName: "Elijah", avatarColor: .green, assignment: RoleAssignment(role: .insider, word: "A"), isEliminated: true),
+        ]
+        #expect(SessionWinChecker.checkWinner(players: players, settings: settings) == .mismatchWins)
+    }
+
+    @Test func allianceOutsidersAutoWinWhenOneInsiderAndBothOutsidersRemain() {
+        var settings = GameSettings.default
+        settings.ghostEnabled = true
+        settings.mismatchGhostAlliance = true
         let players = [
             PlayerSlot(displayName: "Host", avatarColor: .blue, assignment: RoleAssignment(role: .insider, word: "A")),
             PlayerSlot(displayName: "Klaus", avatarColor: .orange, assignment: RoleAssignment(role: .mismatch, word: "B")),
@@ -357,7 +487,7 @@ struct NoConsensusWinCheckerTests {
         #expect(SessionWinChecker.checkNoConsensusWinner(players: players, settings: settings) == .mismatchWins)
     }
 
-    @Test func outsidersWinTogetherOnNoConsensusWhenOneInsiderAndBothOutsiderRolesRemain() {
+    @Test func mismatchWinsOnNoConsensusWhenOneInsiderAndBothOutsiderRolesRemain() {
         var settings = GameSettings.default
         settings.ghostEnabled = true
         let players = [
@@ -367,6 +497,35 @@ struct NoConsensusWinCheckerTests {
             PlayerSlot(displayName: "Freya", avatarColor: .yellow, assignment: RoleAssignment(role: .insider, word: "A"), isEliminated: true),
             PlayerSlot(displayName: "Elijah", avatarColor: .green, assignment: RoleAssignment(role: .insider, word: "A"), isEliminated: true),
         ]
+        #expect(SessionWinChecker.checkNoConsensusWinner(players: players, settings: settings) == .mismatchWins)
+    }
+
+    @Test func allianceOutsidersWinTogetherOnNoConsensusWhenOneInsiderAndBothOutsiderRolesRemain() {
+        var settings = GameSettings.default
+        settings.ghostEnabled = true
+        settings.mismatchGhostAlliance = true
+        let players = [
+            PlayerSlot(displayName: "Host", avatarColor: .blue, assignment: RoleAssignment(role: .insider, word: "A")),
+            PlayerSlot(displayName: "Klaus", avatarColor: .orange, assignment: RoleAssignment(role: .mismatch, word: "B")),
+            PlayerSlot(displayName: "Hayley", avatarColor: .purple, assignment: RoleAssignment(role: .ghost)),
+            PlayerSlot(displayName: "Freya", avatarColor: .yellow, assignment: RoleAssignment(role: .insider, word: "A"), isEliminated: true),
+            PlayerSlot(displayName: "Elijah", avatarColor: .green, assignment: RoleAssignment(role: .insider, word: "A"), isEliminated: true),
+        ]
+        #expect(SessionWinChecker.checkNoConsensusWinner(players: players, settings: settings) == .outsiderSideWins)
+    }
+
+    @Test func allianceOutsidersWinTogetherOnNoConsensusWhenTwoInsidersTieBothOutsiders() {
+        var settings = GameSettings.default
+        settings.ghostEnabled = true
+        settings.mismatchGhostAlliance = true
+        let players = [
+            PlayerSlot(displayName: "Host", avatarColor: .blue, assignment: RoleAssignment(role: .insider, word: "A")),
+            PlayerSlot(displayName: "Elijah", avatarColor: .green, assignment: RoleAssignment(role: .insider, word: "A")),
+            PlayerSlot(displayName: "Klaus", avatarColor: .orange, assignment: RoleAssignment(role: .mismatch, word: "B")),
+            PlayerSlot(displayName: "Hayley", avatarColor: .purple, assignment: RoleAssignment(role: .ghost)),
+            PlayerSlot(displayName: "Freya", avatarColor: .yellow, assignment: RoleAssignment(role: .insider, word: "A"), isEliminated: true),
+        ]
+        #expect(SessionWinChecker.checkWinner(players: players, settings: settings) == nil)
         #expect(SessionWinChecker.checkNoConsensusWinner(players: players, settings: settings) == .outsiderSideWins)
     }
 
@@ -397,7 +556,7 @@ struct NoConsensusWinCheckerTests {
         settings.ghostEnabled = true
         store.createSession(settings: settings)
         store.setPlayers([
-            PlayerSlot(displayName: "Host", avatarColor: .blue, assignment: RoleAssignment(role: .insider, word: "A"), isHost: true),
+            PlayerSlot(displayName: "Host", avatarColor: .blue, isHost: true, assignment: RoleAssignment(role: .insider, word: "A")),
             PlayerSlot(displayName: "Elijah", avatarColor: .green, assignment: RoleAssignment(role: .insider, word: "A")),
             PlayerSlot(displayName: "Klaus", avatarColor: .orange, assignment: RoleAssignment(role: .mismatch, word: "B")),
             PlayerSlot(displayName: "Hayley", avatarColor: .purple, assignment: RoleAssignment(role: .ghost)),
@@ -550,6 +709,7 @@ struct CardPickRulesTests {
         #expect(CardPickRules.faceDownCardCount(playerCount: 5) == 5)
         #expect(CardPickRules.faceDownCardCount(playerCount: 8) == 8)
         #expect(CardPickRules.faceDownCardCount(playerCount: 16) == 16)
+        #expect(CardPickRules.faceDownCardCount(playerCount: 17) == 16)
     }
 }
 
@@ -610,7 +770,12 @@ struct HostPreferencesTests {
             localCardSessionStore: LocalCardSessionStore(),
             localNetworkCardServer: LocalNetworkCardServer(sessionStore: LocalCardSessionStore()),
             remoteCardSessionClient: RemoteCardSessionClient(),
-            hostPreferencesStore: preferencesStore
+            hostPreferencesStore: preferencesStore,
+            customWordPackService: CustomWordPackService(
+                identity: HostIdentityStore(defaults: defaults),
+                store: CustomWordPackStore(defaults: defaults),
+                client: CustomWordPackClient()
+            )
         )
 
         dependencies.gameSessionStore.createSession()
@@ -1030,6 +1195,79 @@ struct RepickRolesTests {
         #expect(store.currentSession?.players.allSatisfy { $0.assignment == nil } == true)
     }
 
+    @Test @MainActor func playAgainKeepsTheGroupAndDealsANewRound() async throws {
+        let dependencies = try AppDependencies.makeForTesting()
+        let store = dependencies.gameSessionStore
+        var settings = GameSettings.default
+        settings.ghostEnabled = true
+        settings.showRoleOnCard = false
+        settings.mismatchGhostAlliance = true
+        settings.discussionTimerEnabled = true
+        settings.timerSeconds = 60
+        settings.distributionMode = .passThePhone
+        settings.selectedWordPackIds = ["indian_pop_culture", "hollywood_movies"]
+        store.createSession(settings: settings)
+        store.setPlayers([
+            PlayerSlot(displayName: "Asha", avatarColor: .green, isHost: true),
+            PlayerSlot(displayName: "Bharat", avatarColor: .orange),
+            PlayerSlot(displayName: "Chitra", avatarColor: .purple),
+            PlayerSlot(displayName: "Dev", avatarColor: .blue),
+            PlayerSlot(displayName: "Esha", avatarColor: .yellow),
+        ])
+
+        let pair = WordPair(id: "old-round", insiderWord: "Apple", mismatchWord: "Apricot", category: "Fruit")
+        try store.distributeRoles(wordPair: pair)
+        dependencies.lobbyViewModel.reloadFromSession()
+
+        await dependencies.playAgainSameGroup()
+
+        let session = try #require(store.currentSession)
+        #expect(session.players.map(\.displayName) == ["Asha", "Bharat", "Chitra", "Dev", "Esha"])
+        #expect(session.settings.selectedWordPackIds == ["indian_pop_culture", "hollywood_movies"])
+        #expect(session.settings.ghostEnabled == true)
+        #expect(session.settings.showRoleOnCard == false)
+        #expect(session.settings.mismatchGhostAlliance == true)
+        #expect(session.settings.discussionTimerEnabled == true)
+        #expect(session.settings.timerSeconds == 60)
+        #expect(session.settings.distributionMode == .passThePhone)
+        #expect(session.state == .distributing)
+        #expect(session.players.allSatisfy { $0.assignment != nil })
+        #expect(session.rounds.first?.wordPairId != "old-round")
+        #expect(dependencies.router.currentRoute == .passThePhone)
+        #expect(dependencies.lobbyViewModel.errorMessage == nil)
+    }
+
+    @Test @MainActor func playAgainKeepsTheGroupWhenThePackCannotBeDealt() async throws {
+        let dependencies = try AppDependencies.makeForTesting()
+        let store = dependencies.gameSessionStore
+        var settings = GameSettings.default
+        settings.ghostEnabled = false
+        settings.showRoleOnCard = true
+        settings.selectedWordPackIds = [CustomPackID.make("missing-pack")]
+        store.createSession(settings: settings)
+        store.setPlayers([
+            PlayerSlot(displayName: "Asha", avatarColor: .green, isHost: true),
+            PlayerSlot(displayName: "Bharat", avatarColor: .orange),
+            PlayerSlot(displayName: "Chitra", avatarColor: .purple),
+            PlayerSlot(displayName: "Dev", avatarColor: .blue),
+        ])
+
+        let pair = WordPair(id: "old-round", insiderWord: "Apple", mismatchWord: "Apricot", category: "Fruit")
+        try store.distributeRoles(wordPair: pair)
+
+        await dependencies.playAgainSameGroup()
+
+        let session = try #require(store.currentSession)
+        #expect(session.players.map(\.displayName) == ["Asha", "Bharat", "Chitra", "Dev"])
+        #expect(session.settings.selectedWordPackIds == [CustomPackID.make("missing-pack")])
+        #expect(session.settings.showRoleOnCard == true)
+        #expect(session.settings.ghostEnabled == false)
+        #expect(session.state == .lobby)
+        #expect(session.players.allSatisfy { $0.assignment == nil })
+        #expect(dependencies.router.currentRoute == .lobby)
+        #expect(dependencies.lobbyViewModel.errorMessage == "That custom pack needs a connection once.")
+    }
+
     @Test @MainActor func lobbySyncDoesNotRestoreAssignmentsWhileInLobby() throws {
         let dependencies = try AppDependencies.makeForTesting()
         let store = dependencies.gameSessionStore
@@ -1082,6 +1320,7 @@ struct GhostRoleSwapTests {
     @Test @MainActor func ghostCannotSwapWhenPickAgainDisabled() {
         let store = GameSessionStore()
         var settings = GameSettings.default
+        settings.ghostEnabled = true
         settings.ghostPickAgainEnabled = false
         store.createSession(settings: settings)
         let ghostId = UUID()
@@ -1097,7 +1336,9 @@ struct GhostRoleSwapTests {
 
     @Test @MainActor func ghostCanSwapWhenOnlyOnePlayerHasNotPicked() {
         let store = GameSessionStore()
-        store.createSession()
+        var settings = GameSettings.default
+        settings.ghostEnabled = true
+        store.createSession(settings: settings)
         let ghostId = UUID()
         let pickedInsiderId = UUID()
         let unpickedInsiderId = UUID()
@@ -1116,7 +1357,9 @@ struct GhostRoleSwapTests {
 
     @Test @MainActor func ghostCannotSwapWhenNoUnpickedPlayersRemain() {
         let store = GameSessionStore()
-        store.createSession()
+        var settings = GameSettings.default
+        settings.ghostEnabled = true
+        store.createSession(settings: settings)
         let ghostId = UUID()
         let insiderId = UUID()
         store.setPlayers([
@@ -1159,11 +1402,12 @@ struct GhostRoleSwapTests {
 
 struct CloudCardDistributionTests {
 
-    @Test func lobbyOptionsHideCloudWhenNotConfigured() {
-        #expect(!DistributionMode.lobbyOptions.contains(.cloudQR))
+    @Test func lobbyOptionsIncludeCloudOnlyWhenConfigured() {
+        let showsCloud = DistributionMode.lobbyOptions.contains(.cloudQR)
+        #expect(showsCloud == CloudCardConfig.isConfigured)
     }
 
-    @Test func applyRemoteCardSnapshotMarksPlayersPicked() {
+    @Test @MainActor func applyRemoteCardSnapshotMarksPlayersPicked() {
         let store = GameSessionStore()
         store.createSession()
         let guestId = UUID()
@@ -1685,12 +1929,12 @@ struct ProfileRepositoryTests {
 
         viewModel.addNewPlayer(named: "Freya")
 
-        #expect(viewModel.seatedPlayers.count == 1)
-        #expect(viewModel.seatedPlayers[0].profileId != nil)
+        let freya = viewModel.seatedPlayers.first { $0.displayName == "Freya" }
+        #expect(viewModel.seatedPlayers.contains { $0.isHost })
+        #expect(freya?.profileId != nil)
 
         let profiles = try dependencies.profileRepository.fetchAll()
-        #expect(profiles.count == 1)
-        #expect(profiles[0].name == "Freya")
+        #expect(profiles.contains { $0.name == "Freya" })
     }
 
     @Test func applySessionStatsUpdatesLinkedProfile() throws {
@@ -1711,6 +1955,7 @@ struct ProfileRepositoryTests {
             )
         ]
         session.sessionEndScoreEvents = [
+            ScoreEvent(playerId: insiderId, reason: .survived),
             ScoreEvent(playerId: insiderId, reason: .insiderWinBonus)
         ]
 
@@ -1738,6 +1983,9 @@ struct ProfileRepositoryTests {
                 assignment: RoleAssignment(role: .insider, word: "A"),
                 sessionScore: 3
             )
+        ]
+        session.sessionEndScoreEvents = [
+            ScoreEvent(playerId: hostId, reason: .insiderWinBonus)
         ]
 
         try repository.applySessionStats(from: session, winnerPlayerIds: [hostId])

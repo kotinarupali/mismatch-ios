@@ -6,8 +6,8 @@ struct VotingView: View {
     var body: some View {
         PlaceholderScreenLayout(
             title: "Voting",
-            subtitle: "Tap a player to eliminate.",
-            icon: "hand.raised.fill",
+            subtitle: "Tap whoever seems suspicious.",
+            artwork: PartyArt.vote,
             roomStyle: .voting
         ) {
             VStack(spacing: 20) {

@@ -8,9 +8,9 @@ struct LobbyView: View {
 
     var body: some View {
         PlaceholderScreenLayout(
-            title: "Lobby",
+            title: "Who's playing",
             subtitle: viewModel.statusMessage,
-            icon: "person.3.fill",
+            artwork: PartyArt.profiles,
             roomStyle: .lobby
         ) {
             VStack(spacing: 20) {
@@ -18,14 +18,14 @@ struct LobbyView: View {
                     LobbyQuickActionButton(
                         title: "Word Packs",
                         subtitle: viewModel.selectedWordPackSummary,
-                        systemImage: "books.vertical.fill"
+                        artwork: PartyArt.wordPacks
                     ) {
                         showWordPacksSheet = true
                     }
 
                     LobbyQuickActionButton(
                         title: "Rules",
-                        systemImage: "slider.horizontal.3"
+                        artwork: PartyArt.rules
                     ) {
                         showRulesSheet = true
                     }
@@ -52,10 +52,10 @@ struct LobbyView: View {
                 if !viewModel.seatedPlayers.isEmpty {
                     VStack(alignment: .leading, spacing: 8) {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("Seating order")
+                            Text("Around the circle")
                                 .font(AppTypography.body)
                                 .foregroundStyle(AppColor.label)
-                            Text("Arrange players as they sit in the circle. Type a name to add, or tap a seat to swap.")
+                            Text("Line everyone up the way they're sitting. Type a name to add someone, or tap a seat to swap.")
                                 .font(AppTypography.caption)
                                 .foregroundStyle(AppColor.secondaryLabel)
                         }
@@ -80,7 +80,8 @@ struct LobbyView: View {
                 }
 
                 PrimaryButton(
-                    title: viewModel.isDistributing ? "Dealing roles…" : "Distribute Roles",
+                    title: viewModel.isDistributing ? "Dealing roles…" : "Deal the cards",
+                    artwork: PartyArt.dealCards,
                     isEnabled: viewModel.canContinue
                 ) {
                     viewModel.distributeRolesTapped()
@@ -186,6 +187,12 @@ struct LobbyView: View {
                 title: "Show role on card",
                 isOn: showRoleOnCardBinding
             )
+            Text("Only Ghost is told their role. Turn this on to label Insider and Mismatch too.")
+                .font(AppTypography.caption)
+                .foregroundStyle(AppColor.secondaryLabel)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 16)
+                .padding(.bottom, 4)
             Divider().overlay(AppColor.cardBorder).padding(.horizontal, 16)
             SettingsToggleRow(
                 icon: "figure.wave",
@@ -202,7 +209,7 @@ struct LobbyView: View {
             )
             .disabled(!viewModel.ghostEnabled)
             .opacity(viewModel.ghostEnabled ? 1 : 0.45)
-            Text("If someone gets Ghost, they can pick another card when at least two other players haven't picked yet — the ghost role passes to one of them.")
+            Text("If someone gets Ghost, they can pick another card when at least one other player hasn't picked yet — the ghost role passes to that player.")
                 .font(AppTypography.caption)
                 .foregroundStyle(AppColor.secondaryLabel)
                 .frame(maxWidth: .infinity, alignment: .leading)

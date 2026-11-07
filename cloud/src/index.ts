@@ -71,7 +71,13 @@ export default {
     if (deleteMatch && request.method === "POST") {
       const token = deleteMatch[1];
       const stub = env.CARD_SESSION.get(env.CARD_SESSION.idFromName(token));
-      const response = await stub.fetch("https://do/delete", { method: "POST" });
+      const response = await stub.fetch(
+        new Request("https://do/delete", {
+          method: "POST",
+          body: request.body,
+          headers: request.headers,
+        })
+      );
       return cors(response);
     }
 

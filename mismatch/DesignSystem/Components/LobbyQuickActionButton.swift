@@ -3,16 +3,21 @@ import SwiftUI
 struct LobbyQuickActionButton: View {
     let title: String
     var subtitle: String? = nil
-    let systemImage: String
+    var systemImage: String? = nil
+    var artwork: String? = nil
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
             VStack(alignment: .leading, spacing: subtitle == nil ? 0 : 6) {
-                HStack(spacing: 6) {
-                    Image(systemName: systemImage)
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundStyle(AppColor.accent)
+                HStack(spacing: 8) {
+                    if let artwork {
+                        PartySticker(name: artwork, size: 36)
+                    } else if let systemImage {
+                        Image(systemName: systemImage)
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(AppColor.accent)
+                    }
                     Text(title)
                         .font(AppTypography.body)
                         .foregroundStyle(AppColor.label)

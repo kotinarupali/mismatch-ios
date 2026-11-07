@@ -9,7 +9,7 @@ struct DiscussionView: View {
             subtitle: viewModel.cloudGuestVotingEnabled
                 ? "Talk it out. Guests vote on their phones; you confirm the elimination."
                 : "Talk it out, then tap a player to eliminate.",
-            icon: "bubble.left.and.bubble.right.fill",
+            artwork: PartyArt.discuss,
             roomStyle: .discussion
         ) {
             VStack(spacing: 20) {

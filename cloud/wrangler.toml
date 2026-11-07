@@ -9,6 +9,11 @@ type = "Text"
 globs = ["**/*.html", "**/*.css", "**/*.js"]
 fallthrough = true
 
+[[rules]]
+type = "Data"
+globs = ["**/*.jpg"]
+fallthrough = true
+
 [durable_objects]
 bindings = [{ name = "CARD_SESSION", class_name = "CardSession" }]
 

@@ -57,8 +57,7 @@ export class CardSession implements DurableObject {
       return this.controlVoting(request);
     }
     if (url.pathname === "/delete" && request.method === "POST") {
-      this.session = null;
-      return json({ ok: true });
+      return this.deleteSession(request);
     }
 
     return new Response("Not found", { status: 404 });
@@ -194,11 +193,12 @@ export class CardSession implements DurableObject {
     this.session.revision += 1;
 
     const payload: Record<string, unknown> = {
-      role: player.role,
       showRoleOnCard: this.session.showRoleOnCard,
       faceDownCardCount: this.session.faceDownCardCount,
       revision: this.session.revision,
     };
+    const visibleRole = roleShownOnCard(player.role, this.session.showRoleOnCard);
+    if (visibleRole) payload.role = visibleRole;
     if (player.word) payload.word = player.word;
     if (player.categoryHint) payload.categoryHint = player.categoryHint;
     if (player.role === "ghost" && this.session.insiderWord) {
@@ -236,11 +236,12 @@ export class CardSession implements DurableObject {
     if (this.session.players[ghostIndex].role !== "ghost") {
       const current = this.session.players[ghostIndex];
       const payload: Record<string, unknown> = {
-        role: current.role,
         showRoleOnCard: this.session.showRoleOnCard,
         faceDownCardCount: this.session.faceDownCardCount,
         revision: this.session.revision,
       };
+      const visibleRole = roleShownOnCard(current.role, this.session.showRoleOnCard);
+      if (visibleRole) payload.role = visibleRole;
       if (current.word) payload.word = current.word;
       if (current.categoryHint) payload.categoryHint = current.categoryHint;
       return json(payload);
@@ -291,11 +292,12 @@ export class CardSession implements DurableObject {
 
     const updated = this.session.players[ghostIndex];
     const payload: Record<string, unknown> = {
-      role: updated.role,
       showRoleOnCard: this.session.showRoleOnCard,
       faceDownCardCount: this.session.faceDownCardCount,
       revision: this.session.revision,
     };
+    const visibleRole = roleShownOnCard(updated.role, this.session.showRoleOnCard);
+    if (visibleRole) payload.role = visibleRole;
     if (updated.word) payload.word = updated.word;
     if (updated.categoryHint) payload.categoryHint = updated.categoryHint;
 
@@ -350,6 +352,27 @@ export class CardSession implements DurableObject {
     this.session.revision += 1;
 
     return json({ ok: true, revision: this.session.revision });
+  }
+
+  private async deleteSession(request: Request): Promise<Response> {
+    if (!this.session) {
+      return json({ error: "not_found" }, 404);
+    }
+
+    let hostKey: string | undefined;
+    try {
+      const body = (await request.json()) as { hostKey?: string };
+      hostKey = body.hostKey;
+    } catch {
+      hostKey = undefined;
+    }
+
+    if (!hostKey || hostKey !== this.session.hostKey) {
+      return json({ error: "forbidden" }, 403);
+    }
+
+    this.session = null;
+    return json({ ok: true });
   }
 
   private async controlVoting(request: Request): Promise<Response> {
@@ -421,6 +444,11 @@ export class CardSession implements DurableObject {
 
     return json({ error: "invalid_action" }, 400);
   }
+}
+
+function roleShownOnCard(role: string, showRoleOnCard: boolean): string | undefined {
+  if (role === "ghost" || showRoleOnCard) return role;
+  return undefined;
 }
 
 function json(body: unknown, status = 200): Response {

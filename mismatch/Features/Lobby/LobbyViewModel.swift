@@ -8,6 +8,10 @@ struct LobbySeatedPlayer: Identifiable, Equatable {
     var profileId: UUID?
 }
 
+private enum CustomPackDealError: Error {
+    case needsConnection
+}
+
 @MainActor
 @Observable
 final class LobbyViewModel {
@@ -33,7 +37,8 @@ final class LobbyViewModel {
     private var ghostDisabledByUser = false
     private var reservedHostId: UUID?
 
-    private let minimumPlayers = 3
+    private let minimumPlayers = CardPickRules.minimumFaceDownCards
+    private let maximumPlayers = CardPickRules.maximumPlayers
 
     init(dependencies: AppDependencies) {
         self.dependencies = dependencies
@@ -92,12 +97,29 @@ final class LobbyViewModel {
         reloadSavedProfiles()
         syncSession()
         reloadWordPackSummaries()
+        Task {
+            await dependencies.customWordPackService.sync()
+            reloadWordPackSummaries()
+        }
     }
 
     func reloadWordPackSummaries() {
         let selectedIds = dependencies.gameSessionStore.currentSession?.settings.selectedWordPackIds
             ?? GameSettings.defaultSelectedWordPackIds
-        wordPackSummaries = (try? dependencies.wordPairSelector.stats(for: selectedIds)) ?? []
+        let builtInIds = selectedIds.filter { !CustomPackID.isCustom($0) }
+        var summaries = (try? dependencies.wordPairSelector.stats(for: builtInIds)) ?? []
+        let selected = Set(selectedIds)
+        for pack in dependencies.customWordPackService.packs {
+            summaries.append(
+                WordPackSummary(
+                    id: pack.selectionID,
+                    displayName: pack.title,
+                    stats: pack.stats,
+                    isSelected: selected.contains(pack.selectionID)
+                )
+            )
+        }
+        wordPackSummaries = summaries
     }
 
     func toggleWordPack(id: String) {
@@ -190,6 +212,10 @@ final class LobbyViewModel {
         if let targetId = playerPickerTargetId {
             assignProfile(profile, to: targetId)
         } else {
+            guard totalPlayerCount < maximumPlayers else {
+                errorMessage = "Maximum \(maximumPlayers) players per game."
+                return
+            }
             seatedPlayers.append(
                 LobbySeatedPlayer(
                     id: UUID(),
@@ -288,6 +314,11 @@ final class LobbyViewModel {
 
     var canAddPlayer: Bool {
         !newPlayerName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            && totalPlayerCount < maximumPlayers
+    }
+
+    var isAtPlayerCapacity: Bool {
+        totalPlayerCount >= maximumPlayers
     }
 
     var showsProfileSuggestions: Bool {
@@ -305,7 +336,7 @@ final class LobbyViewModel {
     }
 
     var canContinue: Bool {
-        totalPlayerCount >= minimumPlayers
+        (minimumPlayers...maximumPlayers).contains(totalPlayerCount)
             && !isDistributing
             && wordPackSummaries.contains(where: \.isSelected)
     }
@@ -444,23 +475,68 @@ final class LobbyViewModel {
         }
     }
 
-    private func performDistribution() async {
-        do {
-            let selection = try dependencies.wordPairSelector.nextPair(packIds: selectedWordPackIds())
-            try dependencies.gameSessionStore.distributeRoles(wordPair: selection.pair)
-            dependencies.wordPairSelector.markUsed(selection)
-            reloadWordPackSummaries()
-
-            switch distributionMode {
-            case .passThePhone:
-                dependencies.router.navigate(to: .passThePhone)
-            case .cloudQR:
-                await startCloudQRDistribution()
+    private func chooseDealSource() throws -> DealCandidate.Source? {
+        let ids = selectedWordPackIds()
+        let builtInIDs = ids.filter { !CustomPackID.isCustom($0) }
+        let summaries = (try? dependencies.wordPairSelector.stats(for: builtInIDs)) ?? []
+        var candidates: [DealCandidate] = summaries.filter(\.isSelected).compactMap { summary in
+            let remaining = summary.stats.remaining > 0 ? summary.stats.remaining : summary.stats.total
+            guard remaining > 0 else { return nil }
+            return DealCandidate(source: .builtIn(id: summary.id), remaining: remaining)
+        }
+        for id in ids where CustomPackID.isCustom(id) {
+            guard dependencies.customWordPackService.contains(selectionID: id) else {
+                throw CustomPackDealError.needsConnection
             }
+            let remaining = dependencies.customWordPackService.packs.first { $0.selectionID == id }?.stats.remaining ?? 0
+            candidates.append(DealCandidate(source: .custom(id: id), remaining: remaining))
+        }
+        return PackSourceChooser.choose(candidates) { count in
+            (try? CryptoRandom.randomInt(in: 0..<count)) ?? 0
+        }
+    }
+
+    /// Deals one pair from the packs selected on this session.
+    /// Returns an error message when a new round cannot be dealt. Players and rules stay as they are.
+    func dealSelectedPack() -> String? {
+        do {
+            switch try chooseDealSource() {
+            case .builtIn(let id):
+                let selection = try dependencies.wordPairSelector.nextPair(packIds: [id])
+                try dependencies.gameSessionStore.distributeRoles(wordPair: selection.pair)
+                dependencies.wordPairSelector.markUsed(selection)
+            // Offline deal from the local copy. https://github.com/kotinarupali/mismatch-ios/issues/33
+            case .custom(let id):
+                guard let pair = dependencies.customWordPackService.nextUnplayedPair(selectionID: id) else {
+                    return "That custom pack has no pairs left."
+                }
+                try dependencies.gameSessionStore.distributeRoles(wordPair: pair.wordPair)
+                dependencies.customWordPackService.markPlayed(pairID: pair.id, selectionID: id)
+            case nil:
+                return "No word pairs available."
+            }
+            reloadWordPackSummaries()
+            return nil
         } catch WordPairSelectorError.noPairsAvailable, WordPairSelectorError.noPacksSelected {
-            errorMessage = "No word pairs available."
+            return "No word pairs available."
+        } catch CustomPackDealError.needsConnection {
+            return "That custom pack needs a connection once."
         } catch {
-            errorMessage = "Could not distribute roles."
+            return "Could not distribute roles."
+        }
+    }
+
+    private func performDistribution() async {
+        if let message = dealSelectedPack() {
+            errorMessage = message
+            return
+        }
+
+        switch distributionMode {
+        case .passThePhone:
+            dependencies.router.navigate(to: .passThePhone)
+        case .cloudQR:
+            await startCloudQRDistribution()
         }
     }
 
@@ -519,7 +595,12 @@ final class LobbyViewModel {
                 ensureHostProfile()
                 return
             }
-            let hostId = reservedHostId ?? UUID()
+            guard seatedPlayers.count < maximumPlayers else {
+                hostIsPlaying = false
+                errorMessage = "Maximum \(maximumPlayers) players per game."
+                return
+            }
+            let hostId = reservedHostId ?? dependencies.hostPreferencesStore.stableHostPlayerID()
             reservedHostId = hostId
             seatedPlayers.insert(
                 LobbySeatedPlayer(

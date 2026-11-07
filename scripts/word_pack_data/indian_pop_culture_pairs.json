@@ -40,11 +40,11 @@
     "mismatch": "Allu Arjun"
   },
   {
-    "insider": "Vijay",
-    "mismatch": "Ajith"
+    "insider": "Thalapathy Vijay",
+    "mismatch": "Ajith Kumar"
   },
   {
-    "insider": "NTR Jr",
+    "insider": "Jr NTR",
     "mismatch": "Ram Charan"
   },
   {
@@ -65,19 +65,159 @@
   },
   {
     "insider": "Govinda",
-    "mismatch": "David Dhawan"
+    "mismatch": "Mithun Chakraborty"
   },
   {
     "insider": "Emraan Hashmi",
-    "mismatch": "Imran Khan"
-  },
-  {
-    "insider": "John Abraham",
-    "mismatch": "Abhishek Bachchan"
+    "mismatch": "John Abraham"
   },
   {
     "insider": "Saif Ali Khan",
     "mismatch": "Farhan Akhtar"
+  },
+  {
+    "insider": "Abhishek Bachchan",
+    "mismatch": "Arjun Rampal"
+  },
+  {
+    "insider": "Sunny Deol",
+    "mismatch": "Bobby Deol"
+  },
+  {
+    "insider": "Vicky Kaushal",
+    "mismatch": "Rajkummar Rao"
+  },
+  {
+    "insider": "Irrfan Khan",
+    "mismatch": "Nawazuddin Siddiqui"
+  },
+  {
+    "insider": "Pankaj Tripathi",
+    "mismatch": "Manoj Bajpayee"
+  },
+  {
+    "insider": "Paresh Rawal",
+    "mismatch": "Anupam Kher"
+  },
+  {
+    "insider": "Johnny Lever",
+    "mismatch": "Rajpal Yadav"
+  },
+  {
+    "insider": "Riteish Deshmukh",
+    "mismatch": "Tusshar Kapoor"
+  },
+  {
+    "insider": "Aditya Roy Kapur",
+    "mismatch": "Ishaan Khatter"
+  },
+  {
+    "insider": "Suriya",
+    "mismatch": "Vijay Sethupathi"
+  },
+  {
+    "insider": "Chiranjeevi",
+    "mismatch": "Nagarjuna"
+  },
+  {
+    "insider": "Mohanlal",
+    "mismatch": "Mammootty"
+  },
+  {
+    "insider": "Vijay Deverakonda",
+    "mismatch": "Chiyaan Vikram"
+  },
+  {
+    "insider": "Rajesh Khanna",
+    "mismatch": "Dev Anand"
+  },
+  {
+    "insider": "Rishi Kapoor",
+    "mismatch": "Jeetendra"
+  },
+  {
+    "insider": "Dilip Kumar",
+    "mismatch": "Raj Kapoor"
+  },
+  {
+    "insider": "Vinod Khanna",
+    "mismatch": "Shatrughan Sinha"
+  },
+  {
+    "insider": "Amrish Puri",
+    "mismatch": "Prem Chopra"
+  },
+  {
+    "insider": "Nana Patekar",
+    "mismatch": "Om Puri"
+  },
+  {
+    "insider": "Kapil Sharma",
+    "mismatch": "Krushna Abhishek"
+  },
+  {
+    "insider": "Sunil Grover",
+    "mismatch": "Ali Asgar"
+  },
+  {
+    "insider": "Chunky Panday",
+    "mismatch": "Shakti Kapoor"
+  },
+  {
+    "insider": "Akshaye Khanna",
+    "mismatch": "Vivek Oberoi"
+  },
+  {
+    "insider": "Sushant Singh Rajput",
+    "mismatch": "Jitendra Kumar"
+  },
+  {
+    "insider": "Gulshan Grover",
+    "mismatch": "Danny Denzongpa"
+  },
+  {
+    "insider": "Boman Irani",
+    "mismatch": "Kader Khan"
+  },
+  {
+    "insider": "Fawad Khan",
+    "mismatch": "Ali Zafar"
+  },
+  {
+    "insider": "Imran Khan",
+    "mismatch": "Neil Nitin Mukesh"
+  },
+  {
+    "insider": "Kunal Kemmu",
+    "mismatch": "Arjun Kapoor"
+  },
+  {
+    "insider": "Pulkit Samrat",
+    "mismatch": "Varun Sharma"
+  },
+  {
+    "insider": "Sohail Khan",
+    "mismatch": "Arbaaz Khan"
+  },
+  {
+    "insider": "R Madhavan",
+    "mismatch": "Sharman Joshi"
+  },
+  {
+    "insider": "Jimmy Sheirgill",
+    "mismatch": "Ali Fazal"
+  },
+  {
+    "insider": "Aparshakti Khurana",
+    "mismatch": "Gajraj Rao"
+  },
+  {
+    "insider": "Sanjay Mishra",
+    "mismatch": "Vijay Raaz"
+  },
+  {
+    "insider": "Annu Kapoor",
+    "mismatch": "Raghubir Yadav"
   },
   {
     "insider": "Deepika Padukone",
@@ -117,11 +257,11 @@
   },
   {
     "insider": "Nayanthara",
-    "mismatch": "Trisha"
+    "mismatch": "Samantha Ruth Prabhu"
   },
   {
-    "insider": "Samantha",
-    "mismatch": "Rashmika Mandanna"
+    "insider": "Rashmika Mandanna",
+    "mismatch": "Pooja Hegde"
   },
   {
     "insider": "Kriti Sanon",
@@ -132,156 +272,684 @@
     "mismatch": "Bhumi Pednekar"
   },
   {
-    "insider": "Biryani",
-    "mismatch": "Pulao"
+    "insider": "Aishwarya Rai",
+    "mismatch": "Preity Zinta"
   },
   {
-    "insider": "Dosa",
-    "mismatch": "Idli"
+    "insider": "Raveena Tandon",
+    "mismatch": "Shilpa Shetty"
   },
   {
-    "insider": "Samosa",
-    "mismatch": "Pakora"
+    "insider": "Juhi Chawla",
+    "mismatch": "Tabu"
   },
   {
-    "insider": "Chai",
-    "mismatch": "Filter Coffee"
+    "insider": "Rekha",
+    "mismatch": "Hema Malini"
   },
   {
-    "insider": "Butter Chicken",
-    "mismatch": "Chicken Tikka"
+    "insider": "Zeenat Aman",
+    "mismatch": "Parveen Babi"
   },
   {
-    "insider": "Naan",
-    "mismatch": "Roti"
+    "insider": "Jacqueline Fernandez",
+    "mismatch": "Nora Fatehi"
   },
   {
-    "insider": "Paneer",
-    "mismatch": "Tofu"
+    "insider": "Ananya Panday",
+    "mismatch": "Tara Sutaria"
   },
   {
-    "insider": "Pani Puri",
-    "mismatch": "Bhel Puri"
+    "insider": "Triptii Dimri",
+    "mismatch": "Mrunal Thakur"
   },
   {
-    "insider": "Vada Pav",
-    "mismatch": "Pav Bhaji"
+    "insider": "Tamannaah Bhatia",
+    "mismatch": "Kajal Aggarwal"
   },
   {
-    "insider": "Masala Dosa",
-    "mismatch": "Rava Dosa"
+    "insider": "Anushka Shetty",
+    "mismatch": "Keerthy Suresh"
   },
   {
-    "insider": "Rajma",
-    "mismatch": "Chole"
+    "insider": "Sai Pallavi",
+    "mismatch": "Trisha Krishnan"
   },
   {
-    "insider": "Dal Makhani",
-    "mismatch": "Dal Tadka"
+    "insider": "Parineeti Chopra",
+    "mismatch": "Sonakshi Sinha"
   },
   {
-    "insider": "Lassi",
-    "mismatch": "Chaas"
+    "insider": "Ileana D'Cruz",
+    "mismatch": "Genelia D'Souza"
   },
   {
-    "insider": "Gulab Jamun",
-    "mismatch": "Rasgulla"
+    "insider": "Bipasha Basu",
+    "mismatch": "Mallika Sherawat"
   },
   {
-    "insider": "Jalebi",
-    "mismatch": "Imarti"
+    "insider": "Sushmita Sen",
+    "mismatch": "Lara Dutta"
   },
   {
-    "insider": "Kheer",
-    "mismatch": "Payasam"
+    "insider": "Urmila Matondkar",
+    "mismatch": "Manisha Koirala"
+  },
+  {
+    "insider": "Sonali Bendre",
+    "mismatch": "Mahima Chaudhry"
+  },
+  {
+    "insider": "Twinkle Khanna",
+    "mismatch": "Gauri Khan"
+  },
+  {
+    "insider": "Jaya Bachchan",
+    "mismatch": "Shabana Azmi"
+  },
+  {
+    "insider": "Neena Gupta",
+    "mismatch": "Shefali Shah"
+  },
+  {
+    "insider": "Mouni Roy",
+    "mismatch": "Hina Khan"
+  },
+  {
+    "insider": "Shehnaaz Gill",
+    "mismatch": "Tejasswi Prakash"
+  },
+  {
+    "insider": "Jennifer Winget",
+    "mismatch": "Divyanka Tripathi"
+  },
+  {
+    "insider": "Suhana Khan",
+    "mismatch": "Khushi Kapoor"
+  },
+  {
+    "insider": "Fatima Sana Shaikh",
+    "mismatch": "Sanya Malhotra"
+  },
+  {
+    "insider": "Bharti Singh",
+    "mismatch": "Sumona Chakravarti"
+  },
+  {
+    "insider": "Kirron Kher",
+    "mismatch": "Farida Jalal"
+  },
+  {
+    "insider": "Dimple Kapadia",
+    "mismatch": "Padmini Kolhapure"
+  },
+  {
+    "insider": "Meenakshi Seshadri",
+    "mismatch": "Bhagyashree"
+  },
+  {
+    "insider": "Waheeda Rehman",
+    "mismatch": "Nutan"
+  },
+  {
+    "insider": "Madhubala",
+    "mismatch": "Nargis"
+  },
+  {
+    "insider": "Asha Parekh",
+    "mismatch": "Sadhana"
+  },
+  {
+    "insider": "Sharmila Tagore",
+    "mismatch": "Tanuja"
+  },
+  {
+    "insider": "Helen",
+    "mismatch": "Bindu"
+  },
+  {
+    "insider": "Yami Gautam",
+    "mismatch": "Vaani Kapoor"
+  },
+  {
+    "insider": "Alaya F",
+    "mismatch": "Sharvari Wagh"
+  },
+  {
+    "insider": "Athiya Shetty",
+    "mismatch": "Nushrratt Bharuccha"
+  },
+  {
+    "insider": "Aditi Rao Hydari",
+    "mismatch": "Radhika Apte"
+  },
+  {
+    "insider": "Konkona Sen Sharma",
+    "mismatch": "Chitrangda Singh"
+  },
+  {
+    "insider": "Prachi Desai",
+    "mismatch": "Amrita Rao"
+  },
+  {
+    "insider": "Lisa Haydon",
+    "mismatch": "Nargis Fakhri"
+  },
+  {
+    "insider": "Sunny Leone",
+    "mismatch": "Rakhi Sawant"
+  },
+  {
+    "insider": "Urvashi Rautela",
+    "mismatch": "Malaika Arora"
+  },
+  {
+    "insider": "Ameesha Patel",
+    "mismatch": "Gracy Singh"
+  },
+  {
+    "insider": "Dia Mirza",
+    "mismatch": "Amy Jackson"
+  },
+  {
+    "insider": "Karishma Tanna",
+    "mismatch": "Gauahar Khan"
+  },
+  {
+    "insider": "Rubina Dilaik",
+    "mismatch": "Jasmin Bhasin"
+  },
+  {
+    "insider": "Rakul Preet Singh",
+    "mismatch": "Diana Penty"
+  },
+  {
+    "insider": "Esha Deol",
+    "mismatch": "Shamita Shetty"
+  },
+  {
+    "insider": "Happy New Year",
+    "mismatch": "Housefull 3"
+  },
+  {
+    "insider": "Sholay",
+    "mismatch": "Deewar"
+  },
+  {
+    "insider": "DDLJ",
+    "mismatch": "Kuch Kuch Hota Hai"
+  },
+  {
+    "insider": "Kabhi Khushi Kabhie Gham",
+    "mismatch": "Mohabbatein"
+  },
+  {
+    "insider": "Kal Ho Naa Ho",
+    "mismatch": "Veer-Zaara"
+  },
+  {
+    "insider": "Jab Tak Hai Jaan",
+    "mismatch": "Kabhi Alvida Naa Kehna"
+  },
+  {
+    "insider": "Dil Chahta Hai",
+    "mismatch": "Zindagi Na Milegi Dobara"
+  },
+  {
+    "insider": "Lagaan",
+    "mismatch": "Chak De India"
+  },
+  {
+    "insider": "3 Idiots",
+    "mismatch": "PK"
+  },
+  {
+    "insider": "Dangal",
+    "mismatch": "Sultan"
+  },
+  {
+    "insider": "Taare Zameen Par",
+    "mismatch": "Secret Superstar"
+  },
+  {
+    "insider": "Hera Pheri",
+    "mismatch": "Andaz Apna Apna"
+  },
+  {
+    "insider": "Hungama",
+    "mismatch": "Malamaal Weekly"
+  },
+  {
+    "insider": "Golmaal",
+    "mismatch": "Dhamaal"
+  },
+  {
+    "insider": "Dhoom",
+    "mismatch": "Fighter"
+  },
+  {
+    "insider": "Singham",
+    "mismatch": "Dabangg"
+  },
+  {
+    "insider": "Pathaan",
+    "mismatch": "Jawan"
+  },
+  {
+    "insider": "Baahubali",
+    "mismatch": "RRR"
+  },
+  {
+    "insider": "KGF",
+    "mismatch": "Pushpa"
+  },
+  {
+    "insider": "Kantara",
+    "mismatch": "Drishyam"
+  },
+  {
+    "insider": "Queen",
+    "mismatch": "English Vinglish"
+  },
+  {
+    "insider": "Andhadhun",
+    "mismatch": "Badla"
+  },
+  {
+    "insider": "Stree",
+    "mismatch": "Bhool Bhulaiyaa"
   },
   {
     "insider": "Barfi",
-    "mismatch": "Ladoo"
+    "mismatch": "Piku"
   },
   {
-    "insider": "Poha",
-    "mismatch": "Upma"
+    "insider": "Gully Boy",
+    "mismatch": "Dil Dhadakne Do"
   },
   {
-    "insider": "Tandoori",
-    "mismatch": "Kebab"
+    "insider": "Yeh Jawaani Hai Deewani",
+    "mismatch": "Student of the Year"
   },
   {
-    "insider": "Momos",
-    "mismatch": "Dim Sum"
+    "insider": "Jab We Met",
+    "mismatch": "Love Aaj Kal"
   },
   {
-    "insider": "Hakka Noodles",
-    "mismatch": "Chow Mein"
+    "insider": "Devdas",
+    "mismatch": "Bajirao Mastani"
   },
   {
-    "insider": "Dahi Puri",
-    "mismatch": "Sev Puri"
+    "insider": "Padmaavat",
+    "mismatch": "Ram-Leela"
   },
   {
-    "insider": "Frankie",
-    "mismatch": "Shawarma"
+    "insider": "Om Shanti Om",
+    "mismatch": "Main Hoon Na"
   },
   {
-    "insider": "Maggi",
-    "mismatch": "Instant Noodles"
+    "insider": "Chennai Express",
+    "mismatch": "Dilwale"
   },
   {
-    "insider": "Chole Bhature",
-    "mismatch": "Amritsari Kulcha"
+    "insider": "Swades",
+    "mismatch": "My Name Is Khan"
   },
   {
-    "insider": "Kulfi",
-    "mismatch": "Ice Cream"
+    "insider": "Rang De Basanti",
+    "mismatch": "Rock On"
   },
   {
-    "insider": "Falooda",
-    "mismatch": "Milkshake"
+    "insider": "Maine Pyar Kiya",
+    "mismatch": "Hum Aapke Hain Koun"
   },
   {
-    "insider": "Aloo Paratha",
-    "mismatch": "Gobi Paratha"
+    "insider": "Vivah",
+    "mismatch": "Baghban"
   },
   {
-    "insider": "Puri Bhaji",
-    "mismatch": "Halwa Puri"
+    "insider": "Guzaarish",
+    "mismatch": "Saawariya"
   },
   {
-    "insider": "Dhokla",
-    "mismatch": "Khandvi"
+    "insider": "Kaho Naa Pyaar Hai",
+    "mismatch": "Koi Mil Gaya"
   },
   {
-    "insider": "Thepla",
-    "mismatch": "Paratha"
+    "insider": "Krrish",
+    "mismatch": "Ra.One"
   },
   {
-    "insider": "Chicken 65",
-    "mismatch": "Gobi 65"
+    "insider": "Ghajini",
+    "mismatch": "Talaash"
   },
   {
-    "insider": "Cutting Chai",
-    "mismatch": "Irani Chai"
+    "insider": "Bodyguard",
+    "mismatch": "Wanted"
   },
   {
-    "insider": "Masala Chai",
-    "mismatch": "Adrak Chai"
+    "insider": "Bajrangi Bhaijaan",
+    "mismatch": "Prem Ratan Dhan Payo"
   },
   {
-    "insider": "Rasmalai",
-    "mismatch": "Sandesh"
+    "insider": "Rowdy Rathore",
+    "mismatch": "Simmba"
   },
   {
-    "insider": "IPL",
-    "mismatch": "T20 World Cup"
+    "insider": "Housefull",
+    "mismatch": "No Entry"
   },
   {
-    "insider": "Mumbai Indians",
-    "mismatch": "Chennai Super Kings"
+    "insider": "Don",
+    "mismatch": "Agneepath"
   },
   {
-    "insider": "Royal Challengers Bangalore",
-    "mismatch": "Kolkata Knight Riders"
+    "insider": "Amar Akbar Anthony",
+    "mismatch": "Coolie"
+  },
+  {
+    "insider": "Dil To Pagal Hai",
+    "mismatch": "Chandni"
+  },
+  {
+    "insider": "Kabhi Kabhie",
+    "mismatch": "Silsila"
+  },
+  {
+    "insider": "Bombay",
+    "mismatch": "Roja"
+  },
+  {
+    "insider": "Dil Se",
+    "mismatch": "Fanaa"
+  },
+  {
+    "insider": "Jodhaa Akbar",
+    "mismatch": "Mughal-E-Azam"
+  },
+  {
+    "insider": "Rockstar",
+    "mismatch": "Tamasha"
+  },
+  {
+    "insider": "Aashiqui 2",
+    "mismatch": "Cocktail"
+  },
+  {
+    "insider": "Fashion",
+    "mismatch": "Heroine"
+  },
+  {
+    "insider": "Pink",
+    "mismatch": "Thappad"
+  },
+  {
+    "insider": "Uri",
+    "mismatch": "Kesari"
+  },
+  {
+    "insider": "Airlift",
+    "mismatch": "Special 26"
+  },
+  {
+    "insider": "Tiger Zinda Hai",
+    "mismatch": "Ek Tha Tiger"
+  },
+  {
+    "insider": "Bang Bang",
+    "mismatch": "Race 3"
+  },
+  {
+    "insider": "Animal",
+    "mismatch": "Kabir Singh"
+  },
+  {
+    "insider": "Brahmastra",
+    "mismatch": "Kalki 2898 AD"
+  },
+  {
+    "insider": "Stree 2",
+    "mismatch": "Munjya"
+  },
+  {
+    "insider": "Gangubai Kathiawadi",
+    "mismatch": "Heeramandi"
+  },
+  {
+    "insider": "Toilet Ek Prem Katha",
+    "mismatch": "Pad Man"
+  },
+  {
+    "insider": "Mission Mangal",
+    "mismatch": "Shakuntala Devi"
+  },
+  {
+    "insider": "Tanhaji",
+    "mismatch": "Panipat"
+  },
+  {
+    "insider": "Raazi",
+    "mismatch": "Article 15"
+  },
+  {
+    "insider": "Raees",
+    "mismatch": "Jab Harry Met Sejal"
+  },
+  {
+    "insider": "Dunki",
+    "mismatch": "Lal Singh Chaddha"
+  },
+  {
+    "insider": "Bhaag Milkha Bhaag",
+    "mismatch": "Mary Kom"
+  },
+  {
+    "insider": "MS Dhoni The Untold Story",
+    "mismatch": "Chandu Champion"
+  },
+  {
+    "insider": "Chhichhore",
+    "mismatch": "12th Fail"
+  },
+  {
+    "insider": "Super 30",
+    "mismatch": "Srikanth"
+  },
+  {
+    "insider": "Vicky Donor",
+    "mismatch": "Badhaai Ho"
+  },
+  {
+    "insider": "Dum Laga Ke Haisha",
+    "mismatch": "Bareilly Ki Barfi"
+  },
+  {
+    "insider": "Shubh Mangal Saavdhan",
+    "mismatch": "Bala"
+  },
+  {
+    "insider": "Dream Girl",
+    "mismatch": "Luka Chuppi"
+  },
+  {
+    "insider": "Sonu Ke Titu Ki Sweety",
+    "mismatch": "Pyaar Ka Punchnama"
+  },
+  {
+    "insider": "Fukrey",
+    "mismatch": "Go Goa Gone"
+  },
+  {
+    "insider": "Wake Up Sid",
+    "mismatch": "Jaane Tu Ya Jaane Na"
+  },
+  {
+    "insider": "Kai Po Che",
+    "mismatch": "Udaan"
+  },
+  {
+    "insider": "Kapoor and Sons",
+    "mismatch": "Dear Zindagi"
+  },
+  {
+    "insider": "Humpty Sharma Ki Dulhania",
+    "mismatch": "Badrinath Ki Dulhania"
+  },
+  {
+    "insider": "2 States",
+    "mismatch": "Hasee Toh Phasee"
+  },
+  {
+    "insider": "Band Baaja Baaraat",
+    "mismatch": "Ladies vs Ricky Bahl"
+  },
+  {
+    "insider": "Saajan",
+    "mismatch": "Aashiqui"
+  },
+  {
+    "insider": "Qayamat Se Qayamat Tak",
+    "mismatch": "Jo Jeeta Wohi Sikandar"
+  },
+  {
+    "insider": "Darr",
+    "mismatch": "Baazigar"
+  },
+  {
+    "insider": "Raja Hindustani",
+    "mismatch": "Pardes"
+  },
+  {
+    "insider": "Singh Is Kinng",
+    "mismatch": "Namastey London"
+  },
+  {
+    "insider": "Mujhse Shaadi Karogi",
+    "mismatch": "De Dana Dan"
+  },
+  {
+    "insider": "Sooryavanshi",
+    "mismatch": "Singham Returns"
+  },
+  {
+    "insider": "Sheila Ki Jawani",
+    "mismatch": "Munni Badnaam Hui"
+  },
+  {
+    "insider": "Kajra Re",
+    "mismatch": "Chaiyya Chaiyya"
+  },
+  {
+    "insider": "Jai Ho",
+    "mismatch": "Naatu Naatu"
+  },
+  {
+    "insider": "Why This Kolaveri Di",
+    "mismatch": "Oo Antava"
+  },
+  {
+    "insider": "Tum Hi Ho",
+    "mismatch": "Kesariya"
+  },
+  {
+    "insider": "Channa Mereya",
+    "mismatch": "Agar Tum Saath Ho"
+  },
+  {
+    "insider": "Kala Chashma",
+    "mismatch": "London Thumakda"
+  },
+  {
+    "insider": "Kar Gayi Chull",
+    "mismatch": "Kamariya"
+  },
+  {
+    "insider": "Gerua",
+    "mismatch": "Janam Janam"
+  },
+  {
+    "insider": "Tunak Tunak Tun",
+    "mismatch": "Mundian To Bach Ke"
+  },
+  {
+    "insider": "Proper Patola",
+    "mismatch": "Illegal Weapon"
+  },
+  {
+    "insider": "High Rated Gabru",
+    "mismatch": "Lahore"
+  },
+  {
+    "insider": "Lamberghini",
+    "mismatch": "Titliaan"
+  },
+  {
+    "insider": "Brown Munde",
+    "mismatch": "Summer High"
+  },
+  {
+    "insider": "Srivalli",
+    "mismatch": "Apna Bana Le"
+  },
+  {
+    "insider": "Raataan Lambiyan",
+    "mismatch": "Ranjha"
+  },
+  {
+    "insider": "Bekhayali",
+    "mismatch": "Tera Ban Jaunga"
+  },
+  {
+    "insider": "Raabta",
+    "mismatch": "Tum Se Hi"
+  },
+  {
+    "insider": "Suraj Hua Maddham",
+    "mismatch": "Tujh Mein Rab Dikhta Hai"
+  },
+  {
+    "insider": "Bole Chudiyan",
+    "mismatch": "Maahi Ve"
+  },
+  {
+    "insider": "Dilbar",
+    "mismatch": "Ooh La La"
+  },
+  {
+    "insider": "Chikni Chameli",
+    "mismatch": "Aankh Marey"
+  },
+  {
+    "insider": "Ghungroo",
+    "mismatch": "Cutiepie"
+  },
+  {
+    "insider": "Nashe Si Chadh Gayi",
+    "mismatch": "The Breakup Song"
+  },
+  {
+    "insider": "Kun Faya Kun",
+    "mismatch": "Roobaroo"
+  },
+  {
+    "insider": "Mitwa",
+    "mismatch": "Ilahi"
+  },
+  {
+    "insider": "Tum Tak",
+    "mismatch": "Moh Moh Ke Dhaage"
+  },
+  {
+    "insider": "Gallan Goodiyan",
+    "mismatch": "Badtameez Dil"
+  },
+  {
+    "insider": "Nagada Sang Dhol",
+    "mismatch": "Dhol Baaje"
+  },
+  {
+    "insider": "Maa Tujhe Salaam",
+    "mismatch": "Ae Watan"
   },
   {
     "insider": "Virat Kohli",
@@ -296,24 +964,64 @@
     "mismatch": "Rahul Dravid"
   },
   {
+    "insider": "Virender Sehwag",
+    "mismatch": "Gautam Gambhir"
+  },
+  {
+    "insider": "Sourav Ganguly",
+    "mismatch": "VVS Laxman"
+  },
+  {
+    "insider": "Kapil Dev",
+    "mismatch": "Sunil Gavaskar"
+  },
+  {
+    "insider": "Jasprit Bumrah",
+    "mismatch": "Mohammed Shami"
+  },
+  {
     "insider": "Hardik Pandya",
+    "mismatch": "Rishabh Pant"
+  },
+  {
+    "insider": "KL Rahul",
+    "mismatch": "Sanju Samson"
+  },
+  {
+    "insider": "Suresh Raina",
+    "mismatch": "Shikhar Dhawan"
+  },
+  {
+    "insider": "Anil Kumble",
+    "mismatch": "Harbhajan Singh"
+  },
+  {
+    "insider": "Ravichandran Ashwin",
     "mismatch": "Ravindra Jadeja"
   },
   {
-    "insider": "Wankhede Stadium",
-    "mismatch": "Eden Gardens"
+    "insider": "Zaheer Khan",
+    "mismatch": "Irfan Pathan"
   },
   {
-    "insider": "World Cup",
-    "mismatch": "Champions Trophy"
+    "insider": "Smriti Mandhana",
+    "mismatch": "Harmanpreet Kaur"
   },
   {
-    "insider": "Asia Cup",
-    "mismatch": "IPL Final"
+    "insider": "Mithali Raj",
+    "mismatch": "Jhulan Goswami"
   },
   {
-    "insider": "Gully Cricket",
-    "mismatch": "Box Cricket"
+    "insider": "Kuldeep Yadav",
+    "mismatch": "Yuzvendra Chahal"
+  },
+  {
+    "insider": "Mumbai Indians",
+    "mismatch": "Chennai Super Kings"
+  },
+  {
+    "insider": "Royal Challengers Bangalore",
+    "mismatch": "Kolkata Knight Riders"
   },
   {
     "insider": "Sunrisers Hyderabad",
@@ -328,28 +1036,440 @@
     "mismatch": "Lucknow Super Giants"
   },
   {
-    "insider": "Rishabh Pant",
-    "mismatch": "KL Rahul"
+    "insider": "IPL",
+    "mismatch": "Cricket World Cup"
   },
   {
-    "insider": "Jasprit Bumrah",
-    "mismatch": "Mohammed Shami"
-  },
-  {
-    "insider": "Chepauk Stadium",
-    "mismatch": "Chinnaswamy Stadium"
+    "insider": "Wankhede Stadium",
+    "mismatch": "Eden Gardens"
   },
   {
     "insider": "Harsha Bhogle",
     "mismatch": "Ravi Shastri"
   },
   {
-    "insider": "IPL Auction",
-    "mismatch": "IPL Opening Ceremony"
+    "insider": "Asia Cup",
+    "mismatch": "Champions Trophy"
   },
   {
-    "insider": "Cricket Commentary",
-    "mismatch": "Match Highlights"
+    "insider": "Kaun Banega Crorepati",
+    "mismatch": "Bigg Boss"
+  },
+  {
+    "insider": "The Kapil Sharma Show",
+    "mismatch": "Koffee with Karan"
+  },
+  {
+    "insider": "Taarak Mehta",
+    "mismatch": "Bhabiji"
+  },
+  {
+    "insider": "Sarabhai vs Sarabhai",
+    "mismatch": "The Great Indian Laughter Challenge"
+  },
+  {
+    "insider": "CID",
+    "mismatch": "Adaalat"
+  },
+  {
+    "insider": "Crime Patrol",
+    "mismatch": "Savdhaan India"
+  },
+  {
+    "insider": "Ramayan",
+    "mismatch": "Mahabharat"
+  },
+  {
+    "insider": "Indian Idol",
+    "mismatch": "Sa Re Ga Ma Pa"
+  },
+  {
+    "insider": "Dance India Dance",
+    "mismatch": "Super Dancer"
+  },
+  {
+    "insider": "Jhalak Dikhhla Jaa",
+    "mismatch": "Nach Baliye"
+  },
+  {
+    "insider": "India's Got Talent",
+    "mismatch": "Dance Plus"
+  },
+  {
+    "insider": "Roadies",
+    "mismatch": "Splitsvilla"
+  },
+  {
+    "insider": "Shark Tank India",
+    "mismatch": "Khatron Ke Khiladi"
+  },
+  {
+    "insider": "Kyunki Saas Bhi Kabhi Bahu Thi",
+    "mismatch": "Kahaani Ghar Ghar Kii"
+  },
+  {
+    "insider": "Balika Vadhu",
+    "mismatch": "Uttaran"
+  },
+  {
+    "insider": "Yeh Rishta",
+    "mismatch": "Anupama"
+  },
+  {
+    "insider": "Naagin",
+    "mismatch": "Kumkum Bhagya"
+  },
+  {
+    "insider": "The Family Man",
+    "mismatch": "Mirzapur"
+  },
+  {
+    "insider": "Sacred Games",
+    "mismatch": "Scam 1992"
+  },
+  {
+    "insider": "Panchayat",
+    "mismatch": "Gullak"
+  },
+  {
+    "insider": "Kota Factory",
+    "mismatch": "Aspirants"
+  },
+  {
+    "insider": "Made in Heaven",
+    "mismatch": "Indian Matchmaking"
+  },
+  {
+    "insider": "Filmfare Awards",
+    "mismatch": "IIFA Awards"
+  },
+  {
+    "insider": "Star Plus",
+    "mismatch": "Colors TV"
+  },
+  {
+    "insider": "Zee TV",
+    "mismatch": "Sony TV"
+  },
+  {
+    "insider": "SAB TV",
+    "mismatch": "MTV India"
+  },
+  {
+    "insider": "Arijit Singh",
+    "mismatch": "Atif Aslam"
+  },
+  {
+    "insider": "Sonu Nigam",
+    "mismatch": "Udit Narayan"
+  },
+  {
+    "insider": "Kumar Sanu",
+    "mismatch": "Abhijeet"
+  },
+  {
+    "insider": "Shaan",
+    "mismatch": "KK"
+  },
+  {
+    "insider": "Mohit Chauhan",
+    "mismatch": "Ankit Tiwari"
+  },
+  {
+    "insider": "Jubin Nautiyal",
+    "mismatch": "Darshan Raval"
+  },
+  {
+    "insider": "B Praak",
+    "mismatch": "Sachet Tandon"
+  },
+  {
+    "insider": "Armaan Malik",
+    "mismatch": "Tony Kakkar"
+  },
+  {
+    "insider": "Shreya Ghoshal",
+    "mismatch": "Sunidhi Chauhan"
+  },
+  {
+    "insider": "Neha Kakkar",
+    "mismatch": "Dhvani Bhanushali"
+  },
+  {
+    "insider": "Palak Muchhal",
+    "mismatch": "Tulsi Kumar"
+  },
+  {
+    "insider": "Asees Kaur",
+    "mismatch": "Shirley Setia"
+  },
+  {
+    "insider": "Neeti Mohan",
+    "mismatch": "Monali Thakur"
+  },
+  {
+    "insider": "Alka Yagnik",
+    "mismatch": "Kavita Krishnamurthy"
+  },
+  {
+    "insider": "Lata Mangeshkar",
+    "mismatch": "Asha Bhosle"
+  },
+  {
+    "insider": "Kishore Kumar",
+    "mismatch": "Mohammed Rafi"
+  },
+  {
+    "insider": "Mukesh",
+    "mismatch": "Manna Dey"
+  },
+  {
+    "insider": "AR Rahman",
+    "mismatch": "Pritam"
+  },
+  {
+    "insider": "Vishal-Shekhar",
+    "mismatch": "Shankar-Ehsaan-Loy"
+  },
+  {
+    "insider": "Amit Trivedi",
+    "mismatch": "Salim-Sulaiman"
+  },
+  {
+    "insider": "Ilaiyaraaja",
+    "mismatch": "Yesudas"
+  },
+  {
+    "insider": "Anu Malik",
+    "mismatch": "Himesh Reshammiya"
+  },
+  {
+    "insider": "Badshah",
+    "mismatch": "Yo Yo Honey Singh"
+  },
+  {
+    "insider": "Diljit Dosanjh",
+    "mismatch": "Guru Randhawa"
+  },
+  {
+    "insider": "AP Dhillon",
+    "mismatch": "Sidhu Moose Wala"
+  },
+  {
+    "insider": "Karan Aujla",
+    "mismatch": "Harrdy Sandhu"
+  },
+  {
+    "insider": "Jassie Gill",
+    "mismatch": "Ammy Virk"
+  },
+  {
+    "insider": "Divine",
+    "mismatch": "Raftaar"
+  },
+  {
+    "insider": "MC Stan",
+    "mismatch": "Emiway Bantai"
+  },
+  {
+    "insider": "Daler Mehndi",
+    "mismatch": "Mika Singh"
+  },
+  {
+    "insider": "Sukhwinder Singh",
+    "mismatch": "Kailash Kher"
+  },
+  {
+    "insider": "Nusrat Fateh Ali Khan",
+    "mismatch": "Rahat Fateh Ali Khan"
+  },
+  {
+    "insider": "Coke Studio",
+    "mismatch": "MTV Unplugged"
+  },
+  {
+    "insider": "Bhangra",
+    "mismatch": "Giddha"
+  },
+  {
+    "insider": "Qawwali",
+    "mismatch": "Ghazal"
+  },
+  {
+    "insider": "Biryani",
+    "mismatch": "Pulao"
+  },
+  {
+    "insider": "Dosa",
+    "mismatch": "Idli"
+  },
+  {
+    "insider": "Samosa",
+    "mismatch": "Kachori"
+  },
+  {
+    "insider": "Pakora",
+    "mismatch": "Bread Pakora"
+  },
+  {
+    "insider": "Masala Chai",
+    "mismatch": "Filter Coffee"
+  },
+  {
+    "insider": "Butter Chicken",
+    "mismatch": "Tandoori Chicken"
+  },
+  {
+    "insider": "Paneer Butter Masala",
+    "mismatch": "Shahi Paneer"
+  },
+  {
+    "insider": "Palak Paneer",
+    "mismatch": "Matar Paneer"
+  },
+  {
+    "insider": "Paneer Tikka",
+    "mismatch": "Chicken Tikka"
+  },
+  {
+    "insider": "Dal Makhani",
+    "mismatch": "Kadhi Chawal"
+  },
+  {
+    "insider": "Chole Bhature",
+    "mismatch": "Rajma Chawal"
+  },
+  {
+    "insider": "Malai Kofta",
+    "mismatch": "Navratan Korma"
+  },
+  {
+    "insider": "Sarson Da Saag",
+    "mismatch": "Makki Di Roti"
+  },
+  {
+    "insider": "Naan",
+    "mismatch": "Roti"
+  },
+  {
+    "insider": "Paratha",
+    "mismatch": "Poori"
+  },
+  {
+    "insider": "Aloo Paratha",
+    "mismatch": "Paneer Paratha"
+  },
+  {
+    "insider": "Pani Puri",
+    "mismatch": "Bhel Puri"
+  },
+  {
+    "insider": "Vada Pav",
+    "mismatch": "Pav Bhaji"
+  },
+  {
+    "insider": "Aloo Tikki",
+    "mismatch": "Dahi Bhalla"
+  },
+  {
+    "insider": "Papdi Chaat",
+    "mismatch": "Dahi Puri"
+  },
+  {
+    "insider": "Momos",
+    "mismatch": "Spring Rolls"
+  },
+  {
+    "insider": "Hakka Noodles",
+    "mismatch": "Fried Rice"
+  },
+  {
+    "insider": "Gobi Manchurian",
+    "mismatch": "Chilli Paneer"
+  },
+  {
+    "insider": "Chicken Lollipop",
+    "mismatch": "Amritsari Fish"
+  },
+  {
+    "insider": "Hara Bhara Kebab",
+    "mismatch": "Seekh Kebab"
+  },
+  {
+    "insider": "Frankie",
+    "mismatch": "Shawarma"
+  },
+  {
+    "insider": "Poha",
+    "mismatch": "Upma"
+  },
+  {
+    "insider": "Dhokla",
+    "mismatch": "Khandvi"
+  },
+  {
+    "insider": "Sambar",
+    "mismatch": "Rasam"
+  },
+  {
+    "insider": "Curd Rice",
+    "mismatch": "Lemon Rice"
+  },
+  {
+    "insider": "Medu Vada",
+    "mismatch": "Uttapam"
+  },
+  {
+    "insider": "Gulab Jamun",
+    "mismatch": "Rasgulla"
+  },
+  {
+    "insider": "Jalebi",
+    "mismatch": "Fafda"
+  },
+  {
+    "insider": "Rasmalai",
+    "mismatch": "Gajar Ka Halwa"
+  },
+  {
+    "insider": "Kheer",
+    "mismatch": "Kulfi"
+  },
+  {
+    "insider": "Falooda",
+    "mismatch": "Mango Lassi"
+  },
+  {
+    "insider": "Ladoo",
+    "mismatch": "Modak"
+  },
+  {
+    "insider": "Peda",
+    "mismatch": "Kaju Katli"
+  },
+  {
+    "insider": "Soan Papdi",
+    "mismatch": "Mysore Pak"
+  },
+  {
+    "insider": "Shikanji",
+    "mismatch": "Masala Soda"
+  },
+  {
+    "insider": "Cold Coffee",
+    "mismatch": "Mango Shake"
+  },
+  {
+    "insider": "Pickle",
+    "mismatch": "Chutney"
+  },
+  {
+    "insider": "Papad",
+    "mismatch": "Raita"
+  },
+  {
+    "insider": "North Indian Thali",
+    "mismatch": "South Indian Thali"
   },
   {
     "insider": "Diwali",
@@ -377,7 +1497,31 @@
   },
   {
     "insider": "Raksha Bandhan",
-    "mismatch": "Karva Chauth"
+    "mismatch": "Bhai Dooj"
+  },
+  {
+    "insider": "Dussehra",
+    "mismatch": "Ramleela"
+  },
+  {
+    "insider": "Chhath Puja",
+    "mismatch": "Maha Shivaratri"
+  },
+  {
+    "insider": "Karva Chauth",
+    "mismatch": "Teej"
+  },
+  {
+    "insider": "Independence Day",
+    "mismatch": "Republic Day"
+  },
+  {
+    "insider": "Gandhi Jayanti",
+    "mismatch": "Ambedkar Jayanti"
+  },
+  {
+    "insider": "Teachers' Day",
+    "mismatch": "Children's Day"
   },
   {
     "insider": "Sangeet",
@@ -385,11 +1529,11 @@
   },
   {
     "insider": "Haldi",
-    "mismatch": "Mehendi Ceremony"
+    "mismatch": "Baraat"
   },
   {
-    "insider": "Barat",
-    "mismatch": "Reception"
+    "insider": "Vidaai",
+    "mismatch": "Wedding Reception"
   },
   {
     "insider": "Saree",
@@ -400,292 +1544,136 @@
     "mismatch": "Kurta"
   },
   {
-    "insider": "Rangoli",
-    "mismatch": "Kolam"
-  },
-  {
-    "insider": "Diya",
-    "mismatch": "Lantern"
-  },
-  {
-    "insider": "Fireworks",
-    "mismatch": "Sparklers"
-  },
-  {
-    "insider": "Puja",
-    "mismatch": "Aarti"
+    "insider": "Salwar Kameez",
+    "mismatch": "Anarkali"
   },
   {
     "insider": "Garba",
     "mismatch": "Dandiya"
   },
   {
-    "insider": "Bhang",
-    "mismatch": "Thandai"
+    "insider": "Rangoli",
+    "mismatch": "Kolam"
   },
   {
-    "insider": "Kite Flying",
-    "mismatch": "Patang"
+    "insider": "Diya",
+    "mismatch": "Phuljhari"
   },
   {
-    "insider": "Wedding Mandap",
-    "mismatch": "Reception Stage"
+    "insider": "Puja",
+    "mismatch": "Aarti"
   },
   {
     "insider": "Bindi",
     "mismatch": "Sindoor"
   },
   {
-    "insider": "Temple Visit",
-    "mismatch": "Gurudwara Visit"
+    "insider": "Dulha",
+    "mismatch": "Varmala"
   },
   {
-    "insider": "Christmas",
-    "mismatch": "New Year Party"
+    "insider": "Mandap",
+    "mismatch": "Pheras"
   },
   {
-    "insider": "Diwali Lights",
-    "mismatch": "Fairy Lights"
+    "insider": "Jutti",
+    "mismatch": "Kolhapuri Chappal"
   },
   {
-    "insider": "Kaun Banega Crorepati",
-    "mismatch": "Bigg Boss"
+    "insider": "Maang Tikka",
+    "mismatch": "Nath"
   },
   {
-    "insider": "The Kapil Sharma Show",
-    "mismatch": "Comedy Nights"
+    "insider": "Mangalsutra",
+    "mismatch": "Bangles"
   },
   {
-    "insider": "Taarak Mehta Ka Ooltah Chashmah",
-    "mismatch": "Bhabhi Ji Ghar Par Hai"
+    "insider": "Payal",
+    "mismatch": "Chooda"
   },
   {
-    "insider": "CID",
-    "mismatch": "Crime Patrol"
+    "insider": "Big Fat Wedding",
+    "mismatch": "Destination Wedding"
   },
   {
-    "insider": "Ramayan",
-    "mismatch": "Mahabharat"
+    "insider": "Arranged Marriage",
+    "mismatch": "Love Marriage"
   },
   {
-    "insider": "Sa Re Ga Ma Pa",
-    "mismatch": "Indian Idol"
+    "insider": "Joint Family",
+    "mismatch": "Nuclear Family"
   },
   {
-    "insider": "Dance India Dance",
-    "mismatch": "Boogie Woogie"
+    "insider": "Pandit Ji",
+    "mismatch": "Maulana"
   },
   {
-    "insider": "Roadies",
-    "mismatch": "Splitsvilla"
+    "insider": "Gabbar Singh",
+    "mismatch": "Mogambo"
   },
   {
-    "insider": "Shark Tank India",
-    "mismatch": "Dragon's Den"
+    "insider": "Munna Bhai",
+    "mismatch": "Circuit"
   },
   {
-    "insider": "Jhalak Dikhla Jaa",
-    "mismatch": "Nach Baliye"
+    "insider": "Rancho",
+    "mismatch": "Chatur"
   },
   {
-    "insider": "The Family Man",
-    "mismatch": "Mirzapur"
+    "insider": "Baburao",
+    "mismatch": "Crime Master Gogo"
   },
   {
-    "insider": "Sacred Games",
-    "mismatch": "Scam 1992"
+    "insider": "Kattappa",
+    "mismatch": "Bhallaladeva"
   },
   {
-    "insider": "Panchayat",
-    "mismatch": "Gullak"
+    "insider": "Pushpa Raj",
+    "mismatch": "Rocky Bhai"
   },
   {
-    "insider": "Kota Factory",
-    "mismatch": "Aspirants"
+    "insider": "Chulbul Pandey",
+    "mismatch": "Kaleen Bhaiya"
   },
   {
-    "insider": "Hotstar",
-    "mismatch": "Netflix"
+    "insider": "Guddu Bhaiya",
+    "mismatch": "Munna Bhaiya"
   },
   {
-    "insider": "SonyLIV",
-    "mismatch": "Prime Video"
+    "insider": "Chhota Bheem",
+    "mismatch": "Motu Patlu"
   },
   {
-    "insider": "Zee5",
-    "mismatch": "JioCinema"
+    "insider": "Doraemon",
+    "mismatch": "Shinchan"
   },
   {
-    "insider": "Colors TV",
-    "mismatch": "Star Plus"
+    "insider": "Ninja Hattori",
+    "mismatch": "Oggy and the Cockroaches"
   },
   {
-    "insider": "SAB TV",
-    "mismatch": "Sony TV"
+    "insider": "Vir The Robot Boy",
+    "mismatch": "Little Singham"
   },
   {
-    "insider": "MTV India",
-    "mismatch": "Vh1 India"
+    "insider": "Zakir Khan",
+    "mismatch": "Vir Das"
   },
   {
-    "insider": "Arijit Singh",
-    "mismatch": "Atif Aslam"
+    "insider": "Samay Raina",
+    "mismatch": "Tanmay Bhat"
   },
   {
-    "insider": "Sonu Nigam",
-    "mismatch": "Shaan"
+    "insider": "Anubhav Singh Bassi",
+    "mismatch": "Abhishek Upmanyu"
   },
   {
-    "insider": "Sunidhi Chauhan",
-    "mismatch": "Shreya Ghoshal"
+    "insider": "Gadar",
+    "mismatch": "Border"
   },
   {
-    "insider": "Badshah",
-    "mismatch": "Yo Yo Honey Singh"
-  },
-  {
-    "insider": "AR Rahman",
-    "mismatch": "Pritam"
-  },
-  {
-    "insider": "Lata Mangeshkar",
-    "mismatch": "Asha Bhosle"
-  },
-  {
-    "insider": "Kishore Kumar",
-    "mismatch": "Mohammed Rafi"
-  },
-  {
-    "insider": "Neha Kakkar",
-    "mismatch": "Tulsi Kumar"
-  },
-  {
-    "insider": "Sidhu Moose Wala",
-    "mismatch": "AP Dhillon"
-  },
-  {
-    "insider": "Diljit Dosanjh",
-    "mismatch": "Guru Randhawa"
-  },
-  {
-    "insider": "Coke Studio",
-    "mismatch": "MTV Unplugged"
-  },
-  {
-    "insider": "Gaana",
-    "mismatch": "JioSaavn"
-  },
-  {
-    "insider": "Spotify",
-    "mismatch": "Apple Music"
-  },
-  {
-    "insider": "Bhangra",
-    "mismatch": "Punjabi Pop"
-  },
-  {
-    "insider": "Qawwali",
-    "mismatch": "Sufi Music"
-  },
-  {
-    "insider": "Antakshari",
-    "mismatch": "Karaoke"
-  },
-  {
-    "insider": "Item Song",
-    "mismatch": "Dance Number"
-  },
-  {
-    "insider": "Ilaiyaraaja",
-    "mismatch": "SP Balasubrahmanyam"
-  },
-  {
-    "insider": "Ritviz",
-    "mismatch": "Prateek Kuhad"
-  },
-  {
-    "insider": "Divine",
-    "mismatch": "Raftaar"
-  },
-  {
-    "insider": "Zomato",
-    "mismatch": "Swiggy"
-  },
-  {
-    "insider": "Paytm",
-    "mismatch": "PhonePe"
-  },
-  {
-    "insider": "Google Pay",
-    "mismatch": "BHIM UPI"
-  },
-  {
-    "insider": "Flipkart",
-    "mismatch": "Amazon India"
-  },
-  {
-    "insider": "Ola",
-    "mismatch": "Uber"
-  },
-  {
-    "insider": "IRCTC",
-    "mismatch": "MakeMyTrip"
-  },
-  {
-    "insider": "BookMyShow",
-    "mismatch": "Paytm Insider"
-  },
-  {
-    "insider": "CRED",
-    "mismatch": "BharatPe"
-  },
-  {
-    "insider": "Blinkit",
-    "mismatch": "Zepto"
-  },
-  {
-    "insider": "BigBasket",
-    "mismatch": "Grofers"
-  },
-  {
-    "insider": "Nykaa",
-    "mismatch": "Myntra"
-  },
-  {
-    "insider": "Jio",
-    "mismatch": "Airtel"
-  },
-  {
-    "insider": "Dunzo",
-    "mismatch": "Swiggy Instamart"
-  },
-  {
-    "insider": "Meesho",
-    "mismatch": "Ajio"
-  },
-  {
-    "insider": "BYJU'S",
-    "mismatch": "Unacademy"
-  },
-  {
-    "insider": "OYO",
-    "mismatch": "Treebo"
-  },
-  {
-    "insider": "Rapido",
-    "mismatch": "Uber Moto"
-  },
-  {
-    "insider": "ShareChat",
-    "mismatch": "Josh"
-  },
-  {
-    "insider": "Dream11",
-    "mismatch": "MPL"
-  },
-  {
-    "insider": "Policybazaar",
-    "mismatch": "Paytm Insurance"
+    "insider": "Rocky Aur Rani",
+    "mismatch": "Ae Dil Hai Mushkil"
   },
   {
     "insider": "Mumbai",
@@ -697,11 +1685,7 @@
   },
   {
     "insider": "Chennai",
-    "mismatch": "Kochi"
-  },
-  {
-    "insider": "Pune",
-    "mismatch": "Ahmedabad"
+    "mismatch": "Kolkata"
   },
   {
     "insider": "Jaipur",
@@ -709,1075 +1693,47 @@
   },
   {
     "insider": "Goa",
-    "mismatch": "Pondicherry"
-  },
-  {
-    "insider": "Shimla",
     "mismatch": "Manali"
   },
   {
+    "insider": "Shimla",
+    "mismatch": "Mussoorie"
+  },
+  {
     "insider": "Darjeeling",
-    "mismatch": "Ooty"
+    "mismatch": "Gangtok"
   },
   {
     "insider": "Varanasi",
     "mismatch": "Haridwar"
   },
   {
-    "insider": "Chandigarh",
-    "mismatch": "Ludhiana"
-  },
-  {
-    "insider": "Marine Drive",
-    "mismatch": "Gateway of India"
-  },
-  {
-    "insider": "India Gate",
-    "mismatch": "Qutub Minar"
+    "insider": "Rishikesh",
+    "mismatch": "Kasol"
   },
   {
     "insider": "Taj Mahal",
     "mismatch": "Red Fort"
   },
   {
-    "insider": "Local Train",
-    "mismatch": "Metro"
+    "insider": "India Gate",
+    "mismatch": "Gateway of India"
   },
   {
-    "insider": "Auto Rickshaw",
-    "mismatch": "Cab"
+    "insider": "Qutub Minar",
+    "mismatch": "Humayun's Tomb"
   },
   {
-    "insider": "Dhaba",
-    "mismatch": "Restaurant"
-  },
-  {
-    "insider": "Kirana Store",
-    "mismatch": "Supermarket"
-  },
-  {
-    "insider": "Sabzi Mandi",
-    "mismatch": "Fish Market"
-  },
-  {
-    "insider": "Hill Station",
-    "mismatch": "Beach Town"
-  },
-  {
-    "insider": "Old Delhi",
-    "mismatch": "Chandni Chowk"
-  },
-  {
-    "insider": "Haldiram's",
-    "mismatch": "Bikanervala"
-  },
-  {
-    "insider": "Amul Butter",
-    "mismatch": "Britannia Butter"
-  },
-  {
-    "insider": "Parle-G",
-    "mismatch": "Monaco Biscuits"
-  },
-  {
-    "insider": "Frooti",
-    "mismatch": "Maaza"
-  },
-  {
-    "insider": "Thums Up",
-    "mismatch": "Coca-Cola"
-  },
-  {
-    "insider": "Old Monk",
-    "mismatch": "Royal Stag"
-  },
-  {
-    "insider": "Rajma Chawal",
-    "mismatch": "Dal Chawal"
-  },
-  {
-    "insider": "Hyderabadi Biryani",
-    "mismatch": "Lucknowi Biryani"
-  },
-  {
-    "insider": "Palak Paneer",
-    "mismatch": "Saag Paneer"
-  },
-  {
-    "insider": "Chicken Biryani",
-    "mismatch": "Mutton Biryani"
-  },
-  {
-    "insider": "Masala Papad",
-    "mismatch": "Roasted Papad"
-  },
-  {
-    "insider": "Aloo Gobi",
-    "mismatch": "Mix Veg"
-  },
-  {
-    "insider": "Fish Fry",
-    "mismatch": "Pomfret Fry"
-  },
-  {
-    "insider": "Butter Naan",
-    "mismatch": "Garlic Naan"
-  },
-  {
-    "insider": "Rogan Josh",
-    "mismatch": "Vindaloo"
-  },
-  {
-    "insider": "Pickle",
-    "mismatch": "Chutney"
-  },
-  {
-    "insider": "Raita",
-    "mismatch": "Curd"
-  },
-  {
-    "insider": "Punjabi",
-    "mismatch": "Hindi"
-  },
-  {
-    "insider": "Tamil",
-    "mismatch": "Telugu"
-  },
-  {
-    "insider": "Bengali",
-    "mismatch": "Marathi"
-  },
-  {
-    "insider": "Gujarati",
-    "mismatch": "Rajasthani"
-  },
-  {
-    "insider": "South Indian",
-    "mismatch": "North Indian"
-  },
-  {
-    "insider": "Dhaba Food",
-    "mismatch": "Home Food"
-  },
-  {
-    "insider": "Tiffin",
-    "mismatch": "Lunch Box"
-  },
-  {
-    "insider": "Coaching Class",
-    "mismatch": "Tuition"
-  },
-  {
-    "insider": "Board Exam",
-    "mismatch": "Entrance Exam"
-  },
-  {
-    "insider": "Arranged Marriage",
-    "mismatch": "Love Marriage"
-  },
-  {
-    "insider": "Joint Family",
-    "mismatch": "Nuclear Family"
-  },
-  {
-    "insider": "NRI",
-    "mismatch": "Desi Abroad"
-  },
-  {
-    "insider": "Kollywood",
-    "mismatch": "Sandalwood"
-  },
-  {
-    "insider": "Punjabi Wedding",
-    "mismatch": "Sikh Wedding"
-  },
-  {
-    "insider": "Rickshaw",
-    "mismatch": "Cab Ride"
-  },
-  {
-    "insider": "Engineering College",
-    "mismatch": "Medical College"
-  },
-  {
-    "insider": "Campus Placement",
-    "mismatch": "Internship"
-  },
-  {
-    "insider": "Rent Agreement",
-    "mismatch": "Broker"
-  },
-  {
-    "insider": "Society Watchman",
-    "mismatch": "Building Security"
-  },
-  {
-    "insider": "Power Cut",
-    "mismatch": "Inverter Backup"
-  },
-  {
-    "insider": "Water Tanker",
-    "mismatch": "Borewell"
-  },
-  {
-    "insider": "First Show",
-    "mismatch": "Matinee"
-  },
-  {
-    "insider": "Corner Seat",
-    "mismatch": "Balcony Seat"
-  },
-  {
-    "insider": "Interval",
-    "mismatch": "Intermission"
-  },
-  {
-    "insider": "Single Screen",
-    "mismatch": "Multiplex"
-  },
-  {
-    "insider": "First Day First Show",
-    "mismatch": "Premiere"
-  },
-  {
-    "insider": "Fan Club",
-    "mismatch": "Fan Page"
-  },
-  {
-    "insider": "Paisa Vasool",
-    "mismatch": "Blockbuster Hit"
-  },
-  {
-    "insider": "Kachori",
-    "mismatch": "Bedmi Puri"
-  },
-  {
-    "insider": "Aloo Tikki",
-    "mismatch": "Chaat"
-  },
-  {
-    "insider": "Papdi Chaat",
-    "mismatch": "Dahi Bhalla"
-  },
-  {
-    "insider": "Soan Papdi",
-    "mismatch": "Patisa"
-  },
-  {
-    "insider": "Masala Soda",
-    "mismatch": "Nimbu Pani"
-  },
-  {
-    "insider": "Cold Coffee",
-    "mismatch": "Frappe"
-  },
-  {
-    "insider": "Filter Kaapi",
-    "mismatch": "Degree Coffee"
-  },
-  {
-    "insider": "Panipuri",
-    "mismatch": "Golgappa"
-  },
-  {
-    "insider": "Bhel",
-    "mismatch": "Jhalmuri"
-  },
-  {
-    "insider": "Bhatura",
-    "mismatch": "Poori"
-  },
-  {
-    "insider": "Tandoori Roti",
-    "mismatch": "Roomali Roti"
-  },
-  {
-    "insider": "Paneer Butter Masala",
-    "mismatch": "Shahi Paneer"
-  },
-  {
-    "insider": "Kabaddi",
-    "mismatch": "Kho Kho"
-  },
-  {
-    "insider": "Hockey",
-    "mismatch": "Football"
-  },
-  {
-    "insider": "Badminton",
-    "mismatch": "Table Tennis"
-  },
-  {
-    "insider": "Chess",
-    "mismatch": "Carrom"
-  },
-  {
-    "insider": "PV Sindhu",
-    "mismatch": "Saina Nehwal"
-  },
-  {
-    "insider": "Neeraj Chopra",
-    "mismatch": "Abhinav Bindra"
-  },
-  {
-    "insider": "Leander Paes",
-    "mismatch": "Mahesh Bhupathi"
-  },
-  {
-    "insider": "Mumbai Marathon",
-    "mismatch": "Delhi Half Marathon"
-  },
-  {
-    "insider": "Gully Football",
-    "mismatch": "Street Cricket"
-  },
-  {
-    "insider": "Pro Kabaddi League",
-    "mismatch": "Pro Wrestling League"
-  },
-  {
-    "insider": "Hockey India League",
-    "mismatch": "Indian Super League"
-  },
-  {
-    "insider": "Sunil Chhetri",
-    "mismatch": "Bhaichung Bhutia"
-  },
-  {
-    "insider": "Mary Kom",
-    "mismatch": "Vijender Singh"
-  },
-  {
-    "insider": "Meme Page",
-    "mismatch": "Reels Account"
-  },
-  {
-    "insider": "Instagram Reels",
-    "mismatch": "YouTube Shorts"
-  },
-  {
-    "insider": "WhatsApp Group",
-    "mismatch": "Telegram Channel"
-  },
-  {
-    "insider": "Family Group",
-    "mismatch": "Friends Group"
-  },
-  {
-    "insider": "Good Morning Message",
-    "mismatch": "Forward Message"
-  },
-  {
-    "insider": "Status Update",
-    "mismatch": "Story"
-  },
-  {
-    "insider": "Influencer",
-    "mismatch": "Content Creator"
-  },
-  {
-    "insider": "Vlog",
-    "mismatch": "Podcast"
-  },
-  {
-    "insider": "Stand-Up Comedy",
-    "mismatch": "Roast Show"
-  },
-  {
-    "insider": "Open Mic",
-    "mismatch": "Comedy Club"
-  },
-  {
-    "insider": "Wedding Sangeet",
-    "mismatch": "Sangeet Night"
-  },
-  {
-    "insider": "Shaadi.com",
-    "mismatch": "Bumble"
-  },
-  {
-    "insider": "Arranged Match",
-    "mismatch": "Swipe Right"
-  },
-  {
-    "insider": "Big Fat Wedding",
-    "mismatch": "Destination Wedding"
-  },
-  {
-    "insider": "Mehendi Night",
-    "mismatch": "Haldi Function"
-  },
-  {
-    "insider": "DDLJ",
-    "mismatch": "Mohabbatein"
-  },
-  {
-    "insider": "Sholay",
-    "mismatch": "Deewar"
-  },
-  {
-    "insider": "Lagaan",
-    "mismatch": "Chak De India"
-  },
-  {
-    "insider": "3 Idiots",
-    "mismatch": "PK"
-  },
-  {
-    "insider": "Dangal",
-    "mismatch": "Sultan"
-  },
-  {
-    "insider": "KBC Host",
-    "mismatch": "Bigg Boss Host"
-  },
-  {
-    "insider": "Rajesh Khanna",
-    "mismatch": "Dev Anand"
-  },
-  {
-    "insider": "Helen",
-    "mismatch": "Zeenat Aman"
-  },
-  {
-    "insider": "Rishi Kapoor",
-    "mismatch": "Jeetendra"
-  },
-  {
-    "insider": "Rekha",
-    "mismatch": "Hema Malini"
-  },
-  {
-    "insider": "Amitabh Voice",
-    "mismatch": "Pran Voice"
-  },
-  {
-    "insider": "Filmy Dialogue",
-    "mismatch": "One-Liner"
-  },
-  {
-    "insider": "Masala Film",
-    "mismatch": "Family Entertainer"
-  },
-  {
-    "insider": "Item Number",
-    "mismatch": "Romantic Song"
-  },
-  {
-    "insider": "Background Score",
-    "mismatch": "Title Track"
-  },
-  {
-    "insider": "Pathaan",
-    "mismatch": "Jawan"
-  },
-  {
-    "insider": "Gully Boy",
-    "mismatch": "Rockstar"
-  },
-  {
-    "insider": "Chennai Express",
-    "mismatch": "Dilwale"
-  },
-  {
-    "insider": "Kapil Sharma",
-    "mismatch": "Krushna Abhishek"
-  },
-  {
-    "insider": "Manish Malhotra",
-    "mismatch": "Sabyasachi"
-  },
-  {
-    "insider": "Suhana Khan",
-    "mismatch": "Khushi Kapoor"
-  },
-  {
-    "insider": "Filmfare Awards",
-    "mismatch": "IIFA Awards"
-  },
-  {
-    "insider": "Marine Lines",
-    "mismatch": "Bandra-Worli Sea Link"
-  },
-  {
-    "insider": "Dabbawala",
-    "mismatch": "Swiggy Delivery"
-  },
-  {
-    "insider": "Auto Stand",
-    "mismatch": "Cab Booking"
-  },
-  {
-    "insider": "Baahubali",
-    "mismatch": "RRR"
-  },
-  {
-    "insider": "KGF",
-    "mismatch": "Pushpa"
-  },
-  {
-    "insider": "Stree",
-    "mismatch": "Bala"
-  },
-  {
-    "insider": "Andhadhun",
-    "mismatch": "Badla"
-  },
-  {
-    "insider": "Queen",
-    "mismatch": "English Vinglish"
-  },
-  {
-    "insider": "Drishyam",
-    "mismatch": "Drishyam 2"
-  },
-  {
-    "insider": "War",
-    "mismatch": "Tiger"
-  },
-  {
-    "insider": "Brahmastra",
-    "mismatch": "Adipurush"
-  },
-  {
-    "insider": "Stree 2",
-    "mismatch": "Munjya"
-  },
-  {
-    "insider": "Animal",
-    "mismatch": "Kabir Singh"
-  },
-  {
-    "insider": "Badhaai Do",
-    "mismatch": "Shubh Mangal Saavdhan"
-  },
-  {
-    "insider": "Haider",
-    "mismatch": "Omkara"
-  },
-  {
-    "insider": "Zindagi Na Milegi Dobara",
-    "mismatch": "Dil Chahta Hai"
-  },
-  {
-    "insider": "Kal Ho Naa Ho",
-    "mismatch": "Kuch Kuch Hota Hai"
-  },
-  {
-    "insider": "Hum Aapke Hain Kaun",
-    "mismatch": "Hum Saath Saath Hain"
-  },
-  {
-    "insider": "Main Hoon Na",
-    "mismatch": "Om Shanti Om"
-  },
-  {
-    "insider": "Golmaal",
-    "mismatch": "Housefull"
-  },
-  {
-    "insider": "Golmaal Returns",
-    "mismatch": "Housefull 2"
-  },
-  {
-    "insider": "Dhoom",
-    "mismatch": "Dhoom 2"
-  },
-  {
-    "insider": "Race",
-    "mismatch": "Race 2"
-  },
-  {
-    "insider": "Wanted",
-    "mismatch": "Dabangg"
-  },
-  {
-    "insider": "Singham",
-    "mismatch": "Simmba"
-  },
-  {
-    "insider": "Student of the Year",
-    "mismatch": "Student of the Year 2"
-  },
-  {
-    "insider": "Ae Dil Hai Mushkil",
-    "mismatch": "Kabhi Alvida Naa Kehna"
-  },
-  {
-    "insider": "Piku",
-    "mismatch": "Pink"
-  },
-  {
-    "insider": "Taare Zameen Par",
-    "mismatch": "Stanley Ka Dabba"
-  },
-  {
-    "insider": "Munna Bhai MBBS",
-    "mismatch": "Lage Raho Munna Bhai"
-  },
-  {
-    "insider": "Hera Pheri",
-    "mismatch": "Phir Hera Pheri"
-  },
-  {
-    "insider": "Welcome",
-    "mismatch": "Hungama"
-  },
-  {
-    "insider": "Toilet Ek Prem Katha",
-    "mismatch": "Pad Man"
-  },
-  {
-    "insider": "Mission Mangal",
-    "mismatch": "Shakuntala Devi"
-  },
-  {
-    "insider": "Uri",
-    "mismatch": "Kesari"
-  },
-  {
-    "insider": "Tanhaji",
-    "mismatch": "Panipat"
-  },
-  {
-    "insider": "Raazi",
-    "mismatch": "Ghazi Attack"
-  },
-  {
-    "insider": "Raees",
-    "mismatch": "Ra.One"
-  },
-  {
-    "insider": "Bhediya",
-    "mismatch": "Bhoot Police"
-  },
-  {
-    "insider": "Gangubai Kathiawadi",
-    "mismatch": "Thalaivi"
-  },
-  {
-    "insider": "Heeramandi",
-    "mismatch": "Maharani"
-  },
-  {
-    "insider": "Karan Johar",
-    "mismatch": "Farah Khan"
-  },
-  {
-    "insider": "Sanjay Leela Bhansali",
-    "mismatch": "Ashutosh Gowariker"
-  },
-  {
-    "insider": "Anurag Kashyap",
-    "mismatch": "Imtiaz Ali"
-  },
-  {
-    "insider": "Zoya Akhtar",
-    "mismatch": "Reema Kagti"
-  },
-  {
-    "insider": "Rajkumar Hirani",
-    "mismatch": "Shoojit Sircar"
-  },
-  {
-    "insider": "Rohit Shetty",
-    "mismatch": "Atlee"
-  },
-  {
-    "insider": "Shankar",
-    "mismatch": "Mani Ratnam"
-  },
-  {
-    "insider": "Nawazuddin Siddiqui",
-    "mismatch": "Manoj Bajpayee"
-  },
-  {
-    "insider": "Rajkummar Rao",
-    "mismatch": "Vicky Kaushal"
-  },
-  {
-    "insider": "Jacqueline Fernandez",
-    "mismatch": "Nora Fatehi"
-  },
-  {
-    "insider": "Mouni Roy",
-    "mismatch": "Hina Khan"
-  },
-  {
-    "insider": "Urvashi Rautela",
-    "mismatch": "Sunny Leone"
-  },
-  {
-    "insider": "Juhi Chawla",
-    "mismatch": "Tabu"
-  },
-  {
-    "insider": "Ratna Pathak",
-    "mismatch": "Supriya Pathak"
-  },
-  {
-    "insider": "Paresh Rawal",
-    "mismatch": "Om Puri"
-  },
-  {
-    "insider": "Nana Patekar",
-    "mismatch": "Anupam Kher"
-  },
-  {
-    "insider": "Johnny Lever",
-    "mismatch": "Rajpal Yadav"
-  },
-  {
-    "insider": "Sunil Grover",
-    "mismatch": "Krishna Abhishek"
-  },
-  {
-    "insider": "Bharti Singh",
-    "mismatch": "Sumona Chakravarti"
-  },
-  {
-    "insider": "Shehnaaz Gill",
-    "mismatch": "Jasmin Bhasin"
-  },
-  {
-    "insider": "Chunky Pandey",
-    "mismatch": "Shakti Kapoor"
-  },
-  {
-    "insider": "Gulshan Grover",
-    "mismatch": "Prem Chopra"
-  },
-  {
-    "insider": "Prakash Raj",
-    "mismatch": "Nassar"
-  },
-  {
-    "insider": "Rana Daggubati",
-    "mismatch": "Rakul Preet"
-  },
-  {
-    "insider": "Tamannaah",
-    "mismatch": "Shruti Haasan"
-  },
-  {
-    "insider": "Keerthy Suresh",
-    "mismatch": "Sai Pallavi"
-  },
-  {
-    "insider": "Dulquer Salmaan",
-    "mismatch": "Fahadh Faasil"
-  },
-  {
-    "insider": "Mohanlal",
-    "mismatch": "Mammootty"
-  },
-  {
-    "insider": "Anupama",
-    "mismatch": "Yeh Rishta Kya Kehlata Hai"
-  },
-  {
-    "insider": "Naagin",
-    "mismatch": "Sasural Simar Ka"
-  },
-  {
-    "insider": "Kumkum Bhagya",
-    "mismatch": "Kundali Bhagya"
-  },
-  {
-    "insider": "Balika Vadhu",
-    "mismatch": "Uttaran"
-  },
-  {
-    "insider": "Comedy Nights with Kapil",
-    "mismatch": "The Great Indian Laughter Challenge"
-  },
-  {
-    "insider": "Indian Matchmaking",
-    "mismatch": "Made in Heaven"
-  },
-  {
-    "insider": "Delhi Crime",
-    "mismatch": "Paatal Lok"
-  },
-  {
-    "insider": "Special Ops",
-    "mismatch": "Asur"
-  },
-  {
-    "insider": "Faadu",
-    "mismatch": "Jubilee"
-  },
-  {
-    "insider": "Aarya",
-    "mismatch": "Criminal Justice"
-  },
-  {
-    "insider": "Broken But Beautiful",
-    "mismatch": "Never Kiss Your Best Friend"
-  },
-  {
-    "insider": "Class",
-    "mismatch": "Hostel Daze"
-  },
-  {
-    "insider": "Permanent Roommates",
-    "mismatch": "Tripling"
-  },
-  {
-    "insider": "Little Things",
-    "mismatch": "Modern Love Mumbai"
-  },
-  {
-    "insider": "Flames",
-    "mismatch": "College Romance"
-  },
-  {
-    "insider": "TVF Pitchers",
-    "mismatch": "TVF Tripling"
-  },
-  {
-    "insider": "Shekhar Ravjiani",
-    "mismatch": "Vishal Dadlani"
-  },
-  {
-    "insider": "Shankar Mahadevan",
-    "mismatch": "Hariharan"
-  },
-  {
-    "insider": "Udit Narayan",
-    "mismatch": "Kumar Sanu"
-  },
-  {
-    "insider": "Alka Yagnik",
-    "mismatch": "Kavita Krishnamurthy"
-  },
-  {
-    "insider": "Benny Dayal",
-    "mismatch": "Armaan Malik"
-  },
-  {
-    "insider": "MC Stan",
-    "mismatch": "Ikka"
-  },
-  {
-    "insider": "Sachin-Jigar",
-    "mismatch": "Amit Trivedi"
-  },
-  {
-    "insider": "Salim-Sulaiman",
-    "mismatch": "Shankar-Ehsaan-Loy"
-  },
-  {
-    "insider": "Ismail Darbar",
-    "mismatch": "Anu Malik"
-  },
-  {
-    "insider": "Himesh Reshammiya",
-    "mismatch": "Mika Singh"
-  },
-  {
-    "insider": "Appam",
-    "mismatch": "Puttu"
-  },
-  {
-    "insider": "Mysore Pak",
-    "mismatch": "Halwa"
-  },
-  {
-    "insider": "Mysore Bonda",
-    "mismatch": "Medu Vada"
-  },
-  {
-    "insider": "Sambar",
-    "mismatch": "Rasam"
-  },
-  {
-    "insider": "Chettinad Chicken",
-    "mismatch": "Andhra Chicken"
-  },
-  {
-    "insider": "Gongura",
-    "mismatch": "Pachadi"
-  },
-  {
-    "insider": "Avial",
-    "mismatch": "Thoran"
-  },
-  {
-    "insider": "Pesarattu",
-    "mismatch": "Neer Dosa"
-  },
-  {
-    "insider": "Malabar Parotta",
-    "mismatch": "Kerala Parotta"
-  },
-  {
-    "insider": "Kerala Sadya",
-    "mismatch": "Onam Sadya"
-  },
-  {
-    "insider": "Galouti Kebab",
-    "mismatch": "Seekh Kebab"
-  },
-  {
-    "insider": "Shami Kebab",
-    "mismatch": "Reshmi Kebab"
-  },
-  {
-    "insider": "Litti Chokha",
-    "mismatch": "Baati Chokha"
-  },
-  {
-    "insider": "Chana Masala",
-    "mismatch": "Chole Masala"
-  },
-  {
-    "insider": "Malai Kofta",
-    "mismatch": "Navratan Korma"
-  },
-  {
-    "insider": "Malai Matar",
-    "mismatch": "Matar Paneer"
-  },
-  {
-    "insider": "Kadi Pakoda",
-    "mismatch": "Kadi Chawal"
-  },
-  {
-    "insider": "Bisibele Bath",
-    "mismatch": "Puliyogare"
-  },
-  {
-    "insider": "Lemon Rice",
-    "mismatch": "Curd Rice"
-  },
-  {
-    "insider": "Sabudana Khichdi",
-    "mismatch": "Sabudana Vada"
-  },
-  {
-    "insider": "Misal",
-    "mismatch": "Usal"
-  },
-  {
-    "insider": "Zunka Bhakar",
-    "mismatch": "Pitla Bhakri"
-  },
-  {
-    "insider": "Muthia",
-    "mismatch": "Handvo"
-  },
-  {
-    "insider": "Dal Dhokli",
-    "mismatch": "Undhiyu"
-  },
-  {
-    "insider": "Kashmiri Wazwan",
-    "mismatch": "Kahwa"
-  },
-  {
-    "insider": "Bun Maska",
-    "mismatch": "Brun Maska"
-  },
-  {
-    "insider": "Kolkata Biryani",
-    "mismatch": "Awadhi Biryani"
-  },
-  {
-    "insider": "Gautam Gambhir",
-    "mismatch": "Virender Sehwag"
-  },
-  {
-    "insider": "Sourav Ganguly",
-    "mismatch": "Anil Kumble"
-  },
-  {
-    "insider": "Zaheer Khan",
-    "mismatch": "Irfan Pathan"
-  },
-  {
-    "insider": "Suresh Raina",
-    "mismatch": "Dinesh Karthik"
-  },
-  {
-    "insider": "Axar Patel",
-    "mismatch": "Washington Sundar"
-  },
-  {
-    "insider": "Shardul Thakur",
-    "mismatch": "Deepak Chahar"
-  },
-  {
-    "insider": "Kuldeep Yadav",
-    "mismatch": "Yuzvendra Chahal"
-  },
-  {
-    "insider": "Ishan Kishan",
-    "mismatch": "Sanju Samson"
-  },
-  {
-    "insider": "Mohammed Siraj",
-    "mismatch": "Arshdeep Singh"
-  },
-  {
-    "insider": "Umran Malik",
-    "mismatch": "Navdeep Saini"
-  },
-  {
-    "insider": "Kolkata",
-    "mismatch": "Howrah"
-  },
-  {
-    "insider": "Howrah Bridge",
-    "mismatch": "Vidyasagar Setu"
-  },
-  {
-    "insider": "Victoria Memorial",
-    "mismatch": "Indian Museum"
-  },
-  {
-    "insider": "Juhu Beach",
-    "mismatch": "Versova Beach"
-  },
-  {
-    "insider": "Bandra Fort",
-    "mismatch": "Carter Road"
-  },
-  {
-    "insider": "Colaba Causeway",
-    "mismatch": "Linking Road"
-  },
-  {
-    "insider": "Connaught Place",
-    "mismatch": "Khan Market"
-  },
-  {
-    "insider": "Sarojini Nagar",
-    "mismatch": "Lajpat Nagar"
-  },
-  {
-    "insider": "Hauz Khas",
-    "mismatch": "GK M Block"
-  },
-  {
-    "insider": "Cyber Hub",
-    "mismatch": "DLF Phase 3"
-  },
-  {
-    "insider": "MG Road",
-    "mismatch": "Brigade Road"
-  },
-  {
-    "insider": "Cubbon Park",
-    "mismatch": "Lalbagh"
+    "insider": "Marine Drive",
+    "mismatch": "Juhu Beach"
   },
   {
     "insider": "Charminar",
-    "mismatch": "Hussain Sagar"
+    "mismatch": "Golconda Fort"
   },
   {
-    "insider": "Haji Ali",
-    "mismatch": "Siddhivinayak"
+    "insider": "Howrah Bridge",
+    "mismatch": "Victoria Memorial"
   },
   {
     "insider": "Golden Temple",
@@ -1785,218 +1741,434 @@
   },
   {
     "insider": "Lotus Temple",
-    "mismatch": "Iskcon Temple"
+    "mismatch": "ISKCON Temple"
   },
   {
-    "insider": "Rishikesh",
-    "mismatch": "Roorkee"
+    "insider": "Hawa Mahal",
+    "mismatch": "Amber Fort"
   },
   {
-    "insider": "Mussoorie",
-    "mismatch": "Nainital"
+    "insider": "Chandni Chowk",
+    "mismatch": "Sarojini Nagar"
   },
   {
-    "insider": "Kasol",
-    "mismatch": "Dharamshala"
-  },
-  {
-    "insider": "McLeod Ganj",
-    "mismatch": "Dalhousie"
-  },
-  {
-    "insider": "Spiti Valley",
-    "mismatch": "Ladakh"
-  },
-  {
-    "insider": "Leh",
-    "mismatch": "Kargil"
-  },
-  {
-    "insider": "Andaman",
-    "mismatch": "Lakshadweep"
-  },
-  {
-    "insider": "Alleppey",
-    "mismatch": "Munnar"
-  },
-  {
-    "insider": "Wayanad",
-    "mismatch": "Coorg"
-  },
-  {
-    "insider": "Hampi",
-    "mismatch": "Badami"
+    "insider": "Connaught Place",
+    "mismatch": "Khan Market"
   },
   {
     "insider": "Jaisalmer",
     "mismatch": "Jodhpur"
   },
   {
-    "insider": "Bikaner",
-    "mismatch": "Pushkar"
+    "insider": "Munnar",
+    "mismatch": "Ooty"
   },
   {
-    "insider": "Mamaearth",
-    "mismatch": "Wow Skin Science"
+    "insider": "Alleppey",
+    "mismatch": "Kochi"
   },
   {
-    "insider": "Boat",
-    "mismatch": "Noise"
+    "insider": "Andaman",
+    "mismatch": "Lakshadweep"
   },
   {
-    "insider": "Lenskart",
-    "mismatch": "Titan Eye Plus"
+    "insider": "Shirdi",
+    "mismatch": "Tirupati"
   },
   {
-    "insider": "Urban Company",
-    "mismatch": "Housejoy"
+    "insider": "Vaishno Devi",
+    "mismatch": "Kedarnath"
   },
   {
-    "insider": "Practo",
-    "mismatch": "1mg"
+    "insider": "Amritsar",
+    "mismatch": "Wagah Border"
   },
   {
-    "insider": "PharmEasy",
-    "mismatch": "Netmeds"
+    "insider": "Dal Lake",
+    "mismatch": "Pangong Lake"
   },
   {
-    "insider": "Dominos",
+    "insider": "Jim Corbett",
+    "mismatch": "Kaziranga"
+  },
+  {
+    "insider": "Hampi",
+    "mismatch": "Khajuraho"
+  },
+  {
+    "insider": "Pondicherry",
+    "mismatch": "Gokarna"
+  },
+  {
+    "insider": "Coorg",
+    "mismatch": "Wayanad"
+  },
+  {
+    "insider": "Leh",
+    "mismatch": "Srinagar"
+  },
+  {
+    "insider": "Nainital",
+    "mismatch": "Mount Abu"
+  },
+  {
+    "insider": "Puri",
+    "mismatch": "Dwarka"
+  },
+  {
+    "insider": "Mysore Palace",
+    "mismatch": "Lake Palace"
+  },
+  {
+    "insider": "Lonavala",
+    "mismatch": "Mahabaleshwar"
+  },
+  {
+    "insider": "Agra Fort",
+    "mismatch": "Fatehpur Sikri"
+  },
+  {
+    "insider": "Karan Johar",
+    "mismatch": "Aditya Chopra"
+  },
+  {
+    "insider": "Yash Chopra",
+    "mismatch": "Sanjay Leela Bhansali"
+  },
+  {
+    "insider": "Rohit Shetty",
+    "mismatch": "Farah Khan"
+  },
+  {
+    "insider": "Rajkumar Hirani",
+    "mismatch": "Ashutosh Gowariker"
+  },
+  {
+    "insider": "SS Rajamouli",
+    "mismatch": "S. Shankar"
+  },
+  {
+    "insider": "Prashanth Neel",
+    "mismatch": "Sandeep Reddy Vanga"
+  },
+  {
+    "insider": "Imtiaz Ali",
+    "mismatch": "Ayan Mukerji"
+  },
+  {
+    "insider": "David Dhawan",
+    "mismatch": "Anees Bazmee"
+  },
+  {
+    "insider": "HanuMan",
+    "mismatch": "Adipurush"
+  },
+  {
+    "insider": "Hum Dil De Chuke Sanam",
+    "mismatch": "Lamhe"
+  },
+  {
+    "insider": "Sairat",
+    "mismatch": "Dhadak"
+  },
+  {
+    "insider": "Phir Hera Pheri",
+    "mismatch": "Welcome Back"
+  },
+  {
+    "insider": "Pushpa 2",
+    "mismatch": "KGF Chapter 2"
+  },
+  {
+    "insider": "Chhaava",
+    "mismatch": "Samrat Prithviraj"
+  },
+  {
+    "insider": "Zomato",
+    "mismatch": "Swiggy"
+  },
+  {
+    "insider": "Paytm",
+    "mismatch": "PhonePe"
+  },
+  {
+    "insider": "Google Pay",
+    "mismatch": "BHIM"
+  },
+  {
+    "insider": "Flipkart",
+    "mismatch": "Amazon"
+  },
+  {
+    "insider": "Ola",
+    "mismatch": "Uber"
+  },
+  {
+    "insider": "IRCTC",
+    "mismatch": "MakeMyTrip"
+  },
+  {
+    "insider": "BookMyShow",
+    "mismatch": "PVR"
+  },
+  {
+    "insider": "Blinkit",
+    "mismatch": "Zepto"
+  },
+  {
+    "insider": "Nykaa",
+    "mismatch": "Myntra"
+  },
+  {
+    "insider": "Jio",
+    "mismatch": "Airtel"
+  },
+  {
+    "insider": "Meesho",
+    "mismatch": "Ajio"
+  },
+  {
+    "insider": "Dream11",
+    "mismatch": "MPL"
+  },
+  {
+    "insider": "BYJU'S",
+    "mismatch": "Physics Wallah"
+  },
+  {
+    "insider": "OYO",
+    "mismatch": "Airbnb"
+  },
+  {
+    "insider": "WhatsApp",
+    "mismatch": "Telegram"
+  },
+  {
+    "insider": "YouTube",
+    "mismatch": "Instagram"
+  },
+  {
+    "insider": "Tinder",
+    "mismatch": "Bumble"
+  },
+  {
+    "insider": "Shaadi.com",
+    "mismatch": "Bharat Matrimony"
+  },
+  {
+    "insider": "Naukri",
+    "mismatch": "LinkedIn"
+  },
+  {
+    "insider": "Domino's",
     "mismatch": "Pizza Hut"
   },
   {
     "insider": "KFC",
-    "mismatch": "Burger King"
+    "mismatch": "McDonald's"
   },
   {
-    "insider": "McDonalds India",
-    "mismatch": "Taco Bell India"
+    "insider": "Burger King",
+    "mismatch": "Subway"
   },
   {
     "insider": "Cafe Coffee Day",
-    "mismatch": "Starbucks India"
+    "mismatch": "Starbucks"
   },
   {
-    "insider": "Barista",
-    "mismatch": "Theobroma"
+    "insider": "Chaayos",
+    "mismatch": "Chai Point"
   },
   {
-    "insider": "Licious",
-    "mismatch": "Freshtohome"
+    "insider": "Haldiram's",
+    "mismatch": "Bikanervala"
   },
   {
-    "insider": "Country Delight",
-    "mismatch": "Milkbasket"
+    "insider": "Amul",
+    "mismatch": "Mother Dairy"
   },
   {
-    "insider": "Namma Yatri",
-    "mismatch": "Ola Auto"
+    "insider": "Parle-G",
+    "mismatch": "Good Day"
   },
   {
-    "insider": "Goibibo",
-    "mismatch": "Cleartrip"
+    "insider": "Maggi",
+    "mismatch": "Yippee"
   },
   {
-    "insider": "EaseMyTrip",
-    "mismatch": "Yatra"
+    "insider": "Thums Up",
+    "mismatch": "Coca-Cola"
   },
   {
-    "insider": "Zerodha",
-    "mismatch": "Groww"
+    "insider": "Crew",
+    "mismatch": "Veere Di Wedding"
   },
   {
-    "insider": "Upstox",
-    "mismatch": "Angel One"
+    "insider": "Laapataa Ladies",
+    "mismatch": "Darlings"
   },
   {
-    "insider": "Amazon Pay",
-    "mismatch": "Samsung Pay"
+    "insider": "Salaar",
+    "mismatch": "Devara"
   },
   {
-    "insider": "Classplus",
-    "mismatch": "Physics Wallah"
+    "insider": "Shaitaan",
+    "mismatch": "Bhediya"
   },
   {
-    "insider": "Allen Institute",
-    "mismatch": "Resonance Kota"
+    "insider": "Bhool Bhulaiyaa 2",
+    "mismatch": "Roohi"
   },
   {
-    "insider": "Vedantu",
-    "mismatch": "Extramarks"
+    "insider": "Bhool Bhulaiyaa 3",
+    "mismatch": "Singham Again"
   },
   {
-    "insider": "WhiteHat Jr",
-    "mismatch": "Cuemath"
+    "insider": "Saiyaara",
+    "mismatch": "Bad Newz"
   },
   {
-    "insider": "PG Accommodation",
-    "mismatch": "Flatmate Hunt"
+    "insider": "Tu Jhoothi Main Makkaar",
+    "mismatch": "Zara Hatke Zara Bachke"
   },
   {
-    "insider": "Broker Commission",
-    "mismatch": "Token Amount"
+    "insider": "Teri Baaton Mein",
+    "mismatch": "Mr. & Mrs. Mahi"
   },
   {
-    "insider": "Society Meeting",
-    "mismatch": "RWA Notice"
+    "insider": "Jigra",
+    "mismatch": "Do Patti"
   },
   {
-    "insider": "Maintenance Bill",
-    "mismatch": "Electricity Bill"
+    "insider": "Merry Christmas",
+    "mismatch": "Murder Mubarak"
   },
   {
-    "insider": "Water Bill",
-    "mismatch": "Gas Bill"
+    "insider": "Jaane Jaan",
+    "mismatch": "Killer Soup"
   },
   {
-    "insider": "LPG Subsidy",
-    "mismatch": "UPI Payment"
+    "insider": "The Archies",
+    "mismatch": "Call Me Bae"
   },
   {
-    "insider": "ATM Queue",
-    "mismatch": "Bank Passbook"
+    "insider": "Guns & Gulaabs",
+    "mismatch": "Farzi"
   },
   {
-    "insider": "Fixed Deposit",
-    "mismatch": "Mutual Fund SIP"
+    "insider": "Kohrra",
+    "mismatch": "Paatal Lok"
   },
   {
-    "insider": "Diwali Bonus",
-    "mismatch": "Increment Letter"
+    "insider": "IC 814",
+    "mismatch": "Kaala Paani"
   },
   {
-    "insider": "Appraisal Season",
-    "mismatch": "Layoff News"
+    "insider": "Sam Bahadur",
+    "mismatch": "Article 370"
   },
   {
-    "insider": "H1B Visa",
-    "mismatch": "Canada PR"
+    "insider": "Amar Singh Chamkila",
+    "mismatch": "Sanam Teri Kasam"
   },
   {
-    "insider": "UK Student Visa",
-    "mismatch": "Australia PR"
+    "insider": "Tauba Tauba",
+    "mismatch": "Aaj Ki Raat"
   },
   {
-    "insider": "NRI Return",
-    "mismatch": "Reverse Migration"
+    "insider": "Satranga",
+    "mismatch": "Jamal Kudu"
   },
   {
-    "insider": "Shaadi Biodata",
-    "mismatch": "Matrimonial Ad"
+    "insider": "Chaleya",
+    "mismatch": "Besharam Rang"
   },
   {
-    "insider": "Pandit Ji",
-    "mismatch": "Matchmaker Aunty"
+    "insider": "Heeriye",
+    "mismatch": "Husn"
   },
   {
-    "insider": "Rishta Profile",
-    "mismatch": "LinkedIn Profile"
+    "insider": "Sajni",
+    "mismatch": "O Maahi"
   },
   {
-    "insider": "Naukri Profile",
-    "mismatch": "Internshala"
+    "insider": "Kissik",
+    "mismatch": "Pushpa Pushpa"
   },
   {
-    "insider": "Freshers Party",
-    "mismatch": "Farewell Party"
+    "insider": "What Jhumka",
+    "mismatch": "Not Ramaiya Vastavaiya"
+  },
+  {
+    "insider": "Kaavaalaa",
+    "mismatch": "Arabic Kuthu"
+  },
+  {
+    "insider": "Tere Vaaste",
+    "mismatch": "Akhiyaan Gulaab"
+  },
+  {
+    "insider": "Manike",
+    "mismatch": "Pasoori Nu"
+  },
+  {
+    "insider": "Arjan Vailly",
+    "mismatch": "Lutt Putt Gaya"
+  },
+  {
+    "insider": "Jo Tum Mere Ho",
+    "mismatch": "Baarishein"
+  },
+  {
+    "insider": "Jhoome Jo Pathaan",
+    "mismatch": "Sher Khul Gaye"
+  },
+  {
+    "insider": "Aayi Nai",
+    "mismatch": "Khoobsurat"
+  },
+  {
+    "insider": "Big Dawgs",
+    "mismatch": "Hass Hass"
+  },
+  {
+    "insider": "Laal Peeli Akhiyaan",
+    "mismatch": "Guli Mata"
+  },
+  {
+    "insider": "Shubman Gill",
+    "mismatch": "Yashasvi Jaiswal"
+  },
+  {
+    "insider": "Suryakumar Yadav",
+    "mismatch": "Rinku Singh"
+  },
+  {
+    "insider": "Ahaan Panday",
+    "mismatch": "Aneet Padda"
+  },
+  {
+    "insider": "Vedang Raina",
+    "mismatch": "Agastya Nanda"
+  },
+  {
+    "insider": "Wamiqa Gabbi",
+    "mismatch": "Pratibha Ranta"
+  },
+  {
+    "insider": "Anuv Jain",
+    "mismatch": "Prateek Kuhad"
+  },
+  {
+    "insider": "Shilpa Rao",
+    "mismatch": "Jasleen Royal"
+  },
+  {
+    "insider": "Raj Shamani",
+    "mismatch": "BeerBiceps"
+  },
+  {
+    "insider": "Orry",
+    "mismatch": "Kusha Kapila"
   }
 ]

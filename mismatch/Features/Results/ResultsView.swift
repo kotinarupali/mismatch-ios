@@ -10,9 +10,11 @@ struct ResultsView: View {
             }
 
             PlaceholderScreenLayout(
-                title: viewModel.isSessionComplete ? "Game Over" : "Eliminated",
+                title: viewModel.isSessionComplete ? "Game over" : "They're out",
                 subtitle: viewModel.roundSummary,
-                icon: viewModel.isSessionComplete ? "trophy.fill" : "person.crop.circle.badge.xmark",
+                artwork: viewModel.isSessionComplete
+                    ? PartyArt.trophy
+                    : PartyArt.name(for: viewModel.eliminatedRoleValue ?? .mismatch),
                 roomStyle: .reveal
             ) {
                 VStack(spacing: 16) {
@@ -31,7 +33,7 @@ struct ResultsView: View {
                         )
                     } else {
                         OutcomeCard(title: "Eliminated", value: viewModel.eliminatedName, icon: "person.crop.circle.badge.xmark")
-                        OutcomeCard(title: "Role", value: viewModel.eliminatedRole, icon: "theatermasks.fill")
+                        OutcomeCard(title: "Role", value: viewModel.eliminatedRole, role: viewModel.eliminatedRoleValue)
                         if viewModel.shouldShowEliminatedWord {
                             OutcomeCard(title: "Word", value: viewModel.eliminatedWord, icon: "text.quote")
                         }

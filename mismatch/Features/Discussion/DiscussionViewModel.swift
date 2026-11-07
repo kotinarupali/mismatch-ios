@@ -139,6 +139,10 @@ final class DiscussionViewModel {
     }
 
     func onAppear() {
+        guard let state = dependencies.gameSessionStore.currentSession?.state else { return }
+        // A new deal is already in progress. Don't pull that round back into discussion
+        // if this screen appears while Play Again replaces the navigation stack.
+        guard state != .lobby, state != .distributing, state != .ended else { return }
         dependencies.gameSessionStore.updateState(.discussing)
         if let id = selectedPlayerId,
            allPlayers.first(where: { $0.id == id })?.isEliminated == true {

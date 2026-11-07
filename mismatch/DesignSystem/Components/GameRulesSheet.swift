@@ -38,15 +38,15 @@ struct GameRulesSheet: View {
 
     private var introSection: some View {
         VStack(spacing: 16) {
-            MismatchLogoView(size: 72, showsShadow: false)
+            PartySticker(name: PartyArt.appIcon, size: PartyArt.appIconDisplaySize, accessibilityLabel: "Sus Out")
                 .frame(maxWidth: .infinity)
 
             GameRuleSection(
                 title: "The idea",
                 icon: "lightbulb.fill",
                 text: """
-                Most players share one secret word. A few players are outsiders with a wrong word — or no word at all. \
-                Talk, bluff, and vote to eliminate whoever seems suspicious before they blend in.
+                Most of you share one secret word. A few friends get a lookalike word — or no word at all. \
+                Talk it out, bluff a little, and vote off whoever seems suspicious before they blend in.
                 """
             )
         }
@@ -66,7 +66,7 @@ struct GameRulesSheet: View {
             )
             roleRow(
                 role: .ghost,
-                detail: "Gets no word (optional role). With Ghost pick again enabled, they can swap to Insider or Mismatch when at least two other players haven't picked yet — one of them becomes Ghost."
+                detail: "Gets no word (optional role). With Ghost pick again enabled, they can swap to Insider or Mismatch when at least one other player hasn't picked yet — that player becomes Ghost."
             )
         }
     }

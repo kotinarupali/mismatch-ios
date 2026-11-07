@@ -149,7 +149,7 @@ struct FinalScoreboardView: View {
                         .shadow(color: .black.opacity(0.45), radius: 1, y: 1)
                 }
 
-                RoleOverlayMark(role: row.role, size: 14)
+                RoleOverlayMark(role: row.role, size: 20)
                     .padding(2)
             }
             .frame(width: avatarSize, height: avatarSize)

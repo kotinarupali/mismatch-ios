@@ -64,7 +64,7 @@ Use fake names **Alex**, **Blake**, **Casey**. Set your host name in **Settings*
 |------|------:|
 | General | 1,000 |
 | Hollywood Movies & Series | 250 |
-| Indian Pop Culture | 500 |
+| Indian Pop Culture | 543 |
 | Pop Culture | 250 |
 
 Words are drawn randomly from **all selected packs** in the lobby. Usage is tracked per pack.
@@ -310,7 +310,7 @@ Key suites aligned with this plan:
 
 | Suite | Covers |
 |-------|--------|
-| `WordPackLoaderTests` | 4 packs; General 1000; Indian Pop Culture 500; theme packs 250 |
+| `WordPackLoaderTests` | 4 packs; General 1000; Indian Pop Culture 543; theme packs 250 |
 | `WordPairSelectorTests` | Mixed-pack draw; usage tracking; reset when exhausted |
 | `HostPreferencesTests` | Host display name; lobby uses saved name; host profile created |
 | `ProfileRepositoryTests` | Guest + host session stats |

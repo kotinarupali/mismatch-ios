@@ -120,11 +120,12 @@ enum SessionWinChecker {
             if mismatchWasInGame || ghostWasInGame {
                 return .outsiderSideWins
             }
-        } else if activeMismatches > 0 && activeGhosts > 0 {
-            return .outsiderSideWins
-        } else if activeMismatches > 0 {
+            return nil
+        }
+        if activeMismatches > 0 {
             return .mismatchWins
-        } else if activeGhosts > 0 {
+        }
+        if activeGhosts > 0 {
             return .ghostWins
         }
         return nil

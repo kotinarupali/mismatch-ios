@@ -265,11 +265,13 @@ final class LocalNetworkCardServer {
         switch sessionStore.claimCard(playerId: playerId, cardIndex: cardIndex) {
         case .success(let assignment):
             var payload: [String: Any] = [
-                "role": assignment.role.rawValue,
                 "showRoleOnCard": sessionStore.showRoleOnCard,
                 "faceDownCardCount": sessionStore.faceDownCardCount,
                 "revision": sessionStore.revision
             ]
+            if let role = Self.roleShownOnCard(assignment.role, showRole: sessionStore.showRoleOnCard) {
+                payload["role"] = role
+            }
             if let word = assignment.word { payload["word"] = word }
             if let hint = assignment.categoryHint { payload["categoryHint"] = hint }
             if assignment.role == .ghost, let insiderWord = sessionStore.insiderWord {
@@ -320,14 +322,21 @@ final class LocalNetworkCardServer {
         sessionStore.releaseClaim(for: playerId)
 
         var payload: [String: Any] = [
-            "role": newAssignment.role.rawValue,
             "showRoleOnCard": sessionStore.showRoleOnCard,
             "faceDownCardCount": sessionStore.faceDownCardCount,
             "revision": sessionStore.revision
         ]
+        if let role = Self.roleShownOnCard(newAssignment.role, showRole: sessionStore.showRoleOnCard) {
+            payload["role"] = role
+        }
         if let word = newAssignment.word { payload["word"] = word }
         if let hint = newAssignment.categoryHint { payload["categoryHint"] = hint }
         return jsonPage(body: Self.encodeJSON(payload), status: 200)
+    }
+
+    private static func roleShownOnCard(_ role: Role, showRole: Bool) -> String? {
+        if role == .ghost || showRole { return role.rawValue }
+        return nil
     }
 
     private static func encodeJSON(_ payload: [String: Any]) -> String {

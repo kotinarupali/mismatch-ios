@@ -75,7 +75,12 @@ struct PlayerRoleRevealSheet: View {
                         .foregroundStyle(AppColor.label)
 
                     if let assignment = player.assignment {
+                        RoleIconBadge(role: assignment.role, size: .large)
                         RoleBadgeView(role: assignment.role)
+                        Text(roleExplanation(for: assignment))
+                            .font(AppTypography.body)
+                            .foregroundStyle(AppColor.secondaryLabel)
+                            .multilineTextAlignment(.center)
                         Text(wordLabel(for: assignment))
                             .font(AppTypography.title)
                             .foregroundStyle(AppColor.label)
@@ -101,14 +106,27 @@ struct PlayerRoleRevealSheet: View {
         .preferredColorScheme(.dark)
     }
 
+    private func roleExplanation(for assignment: RoleAssignment) -> String {
+        switch assignment.role {
+        case .insider: "Has the group's secret word"
+        case .mismatch: "Has a different word"
+        case .ghost: "Has no secret word"
+        }
+    }
+
     private func wordLabel(for assignment: RoleAssignment) -> String {
-        if let word = assignment.word {
-            return word
+        switch assignment.role {
+        case .ghost:
+            return "You are the Ghost"
+        case .mismatch, .insider:
+            if let word = assignment.word {
+                return word
+            }
+            if let hint = assignment.categoryHint {
+                return "Hint: \(hint)"
+            }
+            return "No word"
         }
-        if let hint = assignment.categoryHint {
-            return "Hint: \(hint)"
-        }
-        return "No word"
     }
 }
 
