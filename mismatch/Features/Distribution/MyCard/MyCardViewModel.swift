@@ -57,7 +57,8 @@ final class MyCardViewModel {
             Task { [dependencies] in
                 try? await dependencies.remoteCardSessionClient.swapGhostRole(
                     token: token,
-                    playerId: hostId
+                    playerId: hostId,
+                    hostKey: session.cloudHostKey
                 )
             }
         }

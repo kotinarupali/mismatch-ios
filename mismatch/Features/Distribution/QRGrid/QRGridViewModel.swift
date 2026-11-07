@@ -7,8 +7,11 @@ final class QRGridViewModel {
     let dependencies: AppDependencies
 
     private(set) var serverFailed = false
+    private(set) var heldPlayerIds: Set<UUID> = []
+    private(set) var giveBackError: String?
     var showPlayerRolePicker = false
     var playerToReveal: PlayerSlot?
+    var playerPendingGiveBack: PlayerSlot?
 
     private var pollTask: Task<Void, Never>?
     private var lastRevision: Int?
@@ -126,6 +129,34 @@ final class QRGridViewModel {
         playerToReveal = player
     }
 
+    func nameIsHeld(_ playerId: UUID) -> Bool {
+        heldPlayerIds.contains(playerId)
+    }
+
+    func giveBack(_ player: PlayerSlot) {
+        playerPendingGiveBack = nil
+        giveBackError = nil
+        guard let token = dependencies.gameSessionStore.currentSession?.joinSessionToken,
+              let hostKey = dependencies.gameSessionStore.currentSession?.cloudHostKey else {
+            giveBackError = "Couldn't give that card back."
+            return
+        }
+
+        Task {
+            do {
+                try await dependencies.remoteCardSessionClient.releasePlayer(
+                    token: token,
+                    hostKey: hostKey,
+                    playerId: player.id
+                )
+                dependencies.gameSessionStore.releaseCardPick(for: player.id)
+                heldPlayerIds.remove(player.id)
+            } catch {
+                giveBackError = "Couldn't give that card back."
+            }
+        }
+    }
+
     private static func computeServerFailed(dependencies: AppDependencies) -> Bool {
         dependencies.gameSessionStore.currentSession?.sharedJoinURL == nil
     }
@@ -145,6 +176,7 @@ final class QRGridViewModel {
                     if lastRevision != snapshot.revision {
                         lastRevision = snapshot.revision
                         dependencies.gameSessionStore.applyRemoteCardSnapshot(snapshot)
+                        heldPlayerIds = Set(snapshot.players.filter(\.nameHeld).map(\.id))
                     }
                 } catch {
                     // Keep polling — transient network blips are common outdoors.

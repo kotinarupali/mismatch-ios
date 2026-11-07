@@ -76,19 +76,19 @@
           return;
         }
 
-        if (selectedPlayerId && findPlayer(session, selectedPlayerId)) {
-          const player = findPlayer(session, selectedPlayerId);
-          if (player.hasOpenedCard) {
-            assignment = loadAssignment();
-            if (assignment) {
-              renderReveal(assignment);
-            } else {
-              renderPick(session);
-            }
+        if (session.holdsPlayerId && findPlayer(session, session.holdsPlayerId)) {
+          selectedPlayerId = session.holdsPlayerId;
+          localStorage.setItem('mismatch_player_' + sessionToken, selectedPlayerId);
+          if (session.myCard) {
+            assignment = session.myCard;
+            saveAssignment(session.myCard);
+            renderReveal(session.myCard);
           } else {
+            assignment = null;
             renderPick(session);
           }
         } else {
+          clearIdentity();
           renderWhoAreYou(session);
         }
       })
@@ -99,12 +99,49 @@
       });
   }
 
+  function deviceToken() {
+    const key = 'mismatch_device_' + sessionToken;
+    let token = localStorage.getItem(key);
+    if (!token) {
+      token = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : (Date.now().toString(36) + Math.random().toString(36).slice(2));
+      localStorage.setItem(key, token);
+    }
+    return token;
+  }
+
   function fetchSession() {
-    return fetch('/api/session/' + encodeURIComponent(sessionToken), { cache: 'no-store' })
+    const query = '?deviceToken=' + encodeURIComponent(deviceToken());
+    return fetch('/api/session/' + encodeURIComponent(sessionToken) + query, { cache: 'no-store' })
       .then(function (r) {
         if (!r.ok) throw new Error('not_found');
         return r.json();
       });
+  }
+
+  function stillHolds(session) {
+    return !!selectedPlayerId && session.holdsPlayerId === selectedPlayerId;
+  }
+
+  function clearIdentity() {
+    assignment = null;
+    if (selectedPlayerId) {
+      localStorage.removeItem('mismatch_assignment_' + sessionToken + '_' + selectedPlayerId);
+    }
+    selectedPlayerId = null;
+    localStorage.removeItem('mismatch_player_' + sessionToken);
+  }
+
+  function lostCard() {
+    stopPolling();
+    clearIdentity();
+    app.innerHTML = screenShell(
+      '<h2 class="headline">The host gave this card back</h2>' +
+      '<p class="sub">This phone no longer has it. Tap your name to pick again.</p>' +
+      '<button type="button" class="secondary-btn" id="pick-again">Tap your name</button>'
+    );
+    document.getElementById('pick-again').onclick = function () {
+      fetchSession().then(renderWhoAreYou).catch(showError);
+    };
   }
 
   function noteRevision(session) {
@@ -127,28 +164,46 @@
     return (session.players || []).find(function (p) { return p.id === playerId; });
   }
 
-  function renderWhoAreYou(session) {
+  function renderWhoAreYou(session, message) {
     stopPolling();
     let list = '';
     (session.players || []).forEach(function (player) {
-      const picked = player.hasOpenedCard ? ' picked' : '';
+      const taken = player.hasOpenedCard || player.nameHeld;
+      const picked = taken ? ' picked' : '';
+      const mark = player.hasOpenedCard ? ' Picked' : (player.nameHeld ? ' On a phone' : '');
       list += '<button type="button" class="player-btn' + picked + '" data-id="' + player.id + '">' +
-        escapeHtml(player.displayName) +
-        (player.hasOpenedCard ? ' ✓' : '') +
+        escapeHtml(player.displayName) + mark +
         '</button>';
     });
 
     app.innerHTML = screenShell(
       '<h2 class="headline">Who are you?</h2>' +
-      '<p class="sub">Tap your name to pick a card.</p>' +
+      '<p class="sub">Tap your name. The first phone to tap it keeps that card.</p>' +
+      (message ? '<p class="error">' + escapeHtml(message) + '</p>' : '') +
       '<div class="player-list">' + list + '</div>'
     );
 
     app.querySelectorAll('.player-btn:not(.picked)').forEach(function (btn) {
       btn.onclick = function () {
-        selectedPlayerId = btn.getAttribute('data-id');
-        localStorage.setItem('mismatch_player_' + sessionToken, selectedPlayerId);
-        fetchSession().then(renderPick).catch(showError);
+        const playerId = btn.getAttribute('data-id');
+        btn.disabled = true;
+        fetch('/api/session/' + encodeURIComponent(sessionToken) + '/lock', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ playerId: playerId, deviceToken: deviceToken() })
+        })
+          .then(function (r) {
+            if (r.status === 409) {
+              return fetchSession().then(function (next) {
+                renderWhoAreYou(next, 'That name is already on another phone.');
+              });
+            }
+            if (!r.ok) throw new Error('failed');
+            selectedPlayerId = playerId;
+            localStorage.setItem('mismatch_player_' + sessionToken, selectedPlayerId);
+            return fetchSession().then(renderPick);
+          })
+          .catch(showError);
       };
     });
   }
@@ -157,11 +212,14 @@
     if (claiming && !force) return;
     noteRevision(session);
 
+    if (!stillHolds(session)) {
+      lostCard();
+      return;
+    }
+
     const player = findPlayer(session, selectedPlayerId);
     if (!player) {
-      selectedPlayerId = null;
-      localStorage.removeItem('mismatch_player_' + sessionToken);
-      renderWhoAreYou(session);
+      lostCard();
       return;
     }
 
@@ -184,7 +242,6 @@
 
     app.innerHTML = screenShell(
       '<div class="top-bar">' +
-        '<button type="button" class="link-btn" id="change-player">Not you?</button>' +
         '<span class="player-tag">' + escapeHtml(player.displayName) + '</span>' +
       '</div>' +
       '<h2 class="headline">' +
@@ -193,13 +250,9 @@
           : 'Pick a card to see your role') +
       '</h2>' +
       sub +
+      '<p class="sub">Wrong name? Ask the host to give this card back.</p>' +
       '<div class="grid" id="grid"></div>'
     );
-
-    document.getElementById('change-player').onclick = function () {
-      assignment = null;
-      renderWhoAreYou(session);
-    };
 
     const grid = document.getElementById('grid');
     if (count <= 3) {
@@ -235,6 +288,10 @@
 
     startPolling(function () {
       fetchSession().then(function (next) {
+        if (!stillHolds(next)) {
+          lostCard();
+          return;
+        }
         if (sessionChanged(next)) {
           if (handleSessionUpdate(next)) return;
           renderPick(next, true);
@@ -310,11 +367,18 @@
     );
 
     document.getElementById('view-card').onclick = function () {
-      assignment = loadAssignment();
-      if (assignment) {
-        stopPolling();
-        renderReveal(assignment);
-      }
+      fetchSession().then(function (next) {
+        if (!stillHolds(next)) {
+          lostCard();
+          return;
+        }
+        if (next.myCard) {
+          assignment = next.myCard;
+          saveAssignment(next.myCard);
+          stopPolling();
+          renderReveal(next.myCard);
+        }
+      }).catch(showError);
     };
 
     app.querySelectorAll('.vote-btn').forEach(function (btn) {
@@ -325,6 +389,10 @@
 
     startPolling(function () {
       fetchSession().then(function (next) {
+        if (!stillHolds(next)) {
+          lostCard();
+          return;
+        }
         if (!shouldShowVote(next)) {
           boot();
           return;
@@ -342,7 +410,11 @@
     fetch('/api/session/' + encodeURIComponent(sessionToken) + '/vote', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ voterId: selectedPlayerId, targetPlayerId: targetPlayerId })
+      body: JSON.stringify({
+        voterId: selectedPlayerId,
+        targetPlayerId: targetPlayerId,
+        deviceToken: deviceToken()
+      })
     })
       .then(function (r) {
         if (!r.ok) throw new Error('failed');
@@ -383,12 +455,17 @@
     fetch('/api/session/' + encodeURIComponent(sessionToken), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ playerId: selectedPlayerId, cardIndex: cardIndex })
+      body: JSON.stringify({
+        playerId: selectedPlayerId,
+        cardIndex: cardIndex,
+        deviceToken: deviceToken()
+      })
     })
       .then(function (r) {
         if (r.status === 409) {
           return r.json().then(function (payload) {
             if (payload.revision != null) lastRevision = payload.revision;
+            if (payload.error === 'name_taken') throw new Error('name_taken');
             throw new Error('taken');
           });
         }
@@ -410,7 +487,12 @@
       })
       .catch(function (err) {
         claiming = false;
-        if (err.message === 'taken') {
+        if (err.message === 'name_taken') {
+          fetchSession().then(function (session) {
+            if (stillHolds(session)) renderPick(session, true);
+            else lostCard();
+          }).catch(showError);
+        } else if (err.message === 'taken') {
           fetchSession().then(function (session) { renderPick(session, true); }).catch(showError);
         } else {
           showError();
@@ -496,6 +578,14 @@
     app.innerHTML = screenShell(body, 'Your secret card');
 
     fetchSession().then(function (session) {
+      if (!stillHolds(session)) {
+        lostCard();
+        return;
+      }
+      if (session.myCard) {
+        assignment = session.myCard;
+        saveAssignment(session.myCard);
+      }
       if (shouldShowVote(session)) {
         const banner = document.createElement('button');
         banner.type = 'button';
@@ -508,6 +598,10 @@
 
     startPolling(function () {
       fetchSession().then(function (session) {
+        if (!stillHolds(session)) {
+          lostCard();
+          return;
+        }
         if (shouldShowVote(session)) {
           const existing = app.querySelector('.vote-banner');
           if (!existing) {
@@ -529,7 +623,7 @@
         fetch('/api/session/' + encodeURIComponent(sessionToken) + '/swap-ghost', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ playerId: selectedPlayerId })
+          body: JSON.stringify({ playerId: selectedPlayerId, deviceToken: deviceToken() })
         })
           .then(function (r) {
             if (!r.ok) throw new Error('failed');

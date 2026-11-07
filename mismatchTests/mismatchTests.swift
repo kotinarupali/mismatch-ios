@@ -1434,6 +1434,20 @@ struct CloudCardDistributionTests {
         let guest = store.currentSession?.players.first { $0.id == guestId }
         #expect(guest?.hasOpenedCard == true)
         #expect(guest?.pickedCardIndex == 2)
+
+        let cleared = RemoteCardSessionSnapshot(
+            players: [
+                .init(id: guestId, displayName: "Alex", hasOpenedCard: false, nameHeld: false)
+            ],
+            claimedCards: [],
+            faceDownCardCount: 4,
+            showRoleOnCard: false,
+            revision: 2
+        )
+        store.applyRemoteCardSnapshot(cleared)
+        let released = store.currentSession?.players.first { $0.id == guestId }
+        #expect(released?.hasOpenedCard == false)
+        #expect(released?.pickedCardIndex == nil)
     }
 
     @Test func voteTalliesDecodeByPlayerId() {

@@ -19,6 +19,16 @@ export default {
       return createSession(request, env, url);
     }
 
+    const lockMatch = url.pathname.match(/^\/api\/session\/([^/]+)\/lock\/?$/);
+    if (lockMatch && request.method === "POST") {
+      const token = lockMatch[1];
+      const stub = env.CARD_SESSION.get(env.CARD_SESSION.idFromName(token));
+      const response = await stub.fetch(
+        new Request("https://do/lock", { method: "POST", body: request.body })
+      );
+      return cors(response);
+    }
+
     const voteMatch = url.pathname.match(/^\/api\/session\/([^/]+)\/vote\/?$/);
     if (voteMatch && request.method === "POST") {
       const token = voteMatch[1];
@@ -63,6 +73,16 @@ export default {
       const stub = env.CARD_SESSION.get(env.CARD_SESSION.idFromName(token));
       const response = await stub.fetch(
         new Request("https://do/voting", { method: "POST", body: request.body })
+      );
+      return cors(response);
+    }
+
+    const releaseMatch = url.pathname.match(/^\/api\/sessions\/([^/]+)\/release\/?$/);
+    if (releaseMatch && request.method === "POST") {
+      const token = releaseMatch[1];
+      const stub = env.CARD_SESSION.get(env.CARD_SESSION.idFromName(token));
+      const response = await stub.fetch(
+        new Request("https://do/release", { method: "POST", body: request.body })
       );
       return cors(response);
     }

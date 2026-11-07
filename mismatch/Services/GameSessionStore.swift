@@ -206,6 +206,12 @@ final class GameSessionStore {
     func applyRemoteCardSnapshot(_ snapshot: RemoteCardSessionSnapshot) {
         guard var session = currentSession else { return }
 
+        let claimedIds = Set(snapshot.claimedCards.map(\.playerId))
+        for index in session.players.indices where !session.players[index].isHost && !claimedIds.contains(session.players[index].id) {
+            session.players[index].hasOpenedCard = false
+            session.players[index].pickedCardIndex = nil
+        }
+
         for claim in snapshot.claimedCards {
             guard let index = session.players.firstIndex(where: { $0.id == claim.playerId }) else { continue }
             session.players[index].hasOpenedCard = true

@@ -11,6 +11,29 @@ struct RemoteCardSessionSnapshot: Decodable, Sendable {
         let id: UUID
         let displayName: String
         let hasOpenedCard: Bool
+        let nameHeld: Bool
+
+        private enum CodingKeys: String, CodingKey {
+            case id
+            case displayName
+            case hasOpenedCard
+            case nameHeld
+        }
+
+        init(id: UUID, displayName: String, hasOpenedCard: Bool, nameHeld: Bool = false) {
+            self.id = id
+            self.displayName = displayName
+            self.hasOpenedCard = hasOpenedCard
+            self.nameHeld = nameHeld
+        }
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            id = try container.decode(UUID.self, forKey: .id)
+            displayName = try container.decode(String.self, forKey: .displayName)
+            hasOpenedCard = try container.decode(Bool.self, forKey: .hasOpenedCard)
+            nameHeld = try container.decodeIfPresent(Bool.self, forKey: .nameHeld) ?? false
+        }
     }
 
     struct Assignment: Decodable, Sendable {
@@ -189,7 +212,7 @@ final class RemoteCardSessionClient {
         try validate(response: response)
     }
 
-    func swapGhostRole(token: String, playerId: UUID) async throws {
+    func swapGhostRole(token: String, playerId: UUID, hostKey: String?) async throws {
         guard let baseURL = CloudCardConfig.baseURL else {
             throw RemoteCardSessionError.notConfigured
         }
@@ -198,7 +221,28 @@ final class RemoteCardSessionClient {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try JSONEncoder().encode(["playerId": playerId.uuidString])
+        var payload = ["playerId": playerId.uuidString]
+        if let hostKey {
+            payload["hostKey"] = hostKey
+        }
+        request.httpBody = try JSONEncoder().encode(payload)
+
+        let (_, response) = try await session.data(for: request)
+        try validate(response: response)
+    }
+
+    func releasePlayer(token: String, hostKey: String, playerId: UUID) async throws {
+        guard let baseURL = CloudCardConfig.baseURL else {
+            throw RemoteCardSessionError.notConfigured
+        }
+
+        let url = baseURL.appendingPathComponent("api/sessions/\(token)/release")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONEncoder().encode(
+            ReleasePayload(hostKey: hostKey, playerId: playerId.uuidString)
+        )
 
         let (_, response) = try await session.data(for: request)
         try validate(response: response)
@@ -270,6 +314,11 @@ private struct CreatePayload: Encodable {
 
 private struct DeletePayload: Encodable {
     let hostKey: String
+}
+
+private struct ReleasePayload: Encodable {
+    let hostKey: String
+    let playerId: String
 }
 
 private struct VotingControlPayload: Encodable {

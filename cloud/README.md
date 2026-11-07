@@ -60,7 +60,9 @@ The **audit vulnerabilities** message is dev-only tooling — safe to ignore for
 |--------|------|-------------|
 | `POST` | `/api/sessions` | Host creates session (player assignments) |
 | `GET` | `/api/session/{token}` | Public snapshot for polling |
-| `POST` | `/api/session/{token}` | Claim a card `{ playerId, cardIndex }` |
+| `POST` | `/api/session/{token}/lock` | First phone to tap a name `{ playerId, deviceToken }` |
+| `POST` | `/api/session/{token}` | Claim a card `{ playerId, cardIndex, deviceToken }` |
+| `POST` | `/api/sessions/{token}/release` | Host gives one card back `{ hostKey, playerId }` |
 | `POST` | `/api/session/{token}/vote` | Guest submits vote `{ voterId, targetPlayerId }` |
 | `POST` | `/api/sessions/{token}/voting` | Host controls voting `{ hostKey, action: open \| close \| revote, eliminatedPlayerIds, revoteExcludedPlayerIds? }` |
 | `POST` | `/api/sessions/{token}/delete` | Host ends session `{ hostKey }` |

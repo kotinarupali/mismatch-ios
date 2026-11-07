@@ -76,7 +76,7 @@ struct QRGridView: View {
                 .font(AppTypography.headline)
                 .foregroundStyle(AppColor.label)
 
-            Text("Players open the link, tap their name, then pick a card. Taken cards update live for everyone.")
+            Text("The first phone to tap a name keeps that card. Give it back here if the wrong phone took it.")
                 .font(AppTypography.caption)
                 .foregroundStyle(AppColor.secondaryLabel)
                 .multilineTextAlignment(.center)
@@ -167,9 +167,33 @@ struct QRGridView: View {
                 pickStatusRow(name: "You (host)", hasPicked: viewModel.hostHasPicked)
             }
 
-            ForEach(sessionStore.currentSession?.players.filter { !$0.isHost } ?? []) { player in
-                pickStatusRow(name: player.displayName, hasPicked: player.hasOpenedCard)
+            if let giveBackError = viewModel.giveBackError {
+                Text(giveBackError)
+                    .font(AppTypography.caption)
+                    .foregroundStyle(.red)
             }
+
+            ForEach(sessionStore.currentSession?.players.filter { !$0.isHost } ?? []) { player in
+                pickStatusRow(player: player)
+            }
+        }
+        .confirmationDialog(
+            giveBackTitle,
+            isPresented: Binding(
+                get: { viewModel.playerPendingGiveBack != nil },
+                set: { if !$0 { viewModel.playerPendingGiveBack = nil } }
+            ),
+            titleVisibility: .visible,
+            presenting: viewModel.playerPendingGiveBack
+        ) { player in
+            Button("Give back", role: .destructive) {
+                viewModel.giveBack(player)
+            }
+            Button("Cancel", role: .cancel) {
+                viewModel.playerPendingGiveBack = nil
+            }
+        } message: { player in
+            Text("\(player.displayName)'s phone will lose the card. They can tap their name again.")
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
@@ -179,6 +203,11 @@ struct QRGridView: View {
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .strokeBorder(AppColor.cardBorder, lineWidth: 1)
         }
+    }
+
+    private var giveBackTitle: String {
+        let name = viewModel.playerPendingGiveBack?.displayName ?? "This player"
+        return "Give \(name)'s card back?"
     }
 
     private func pickStatusRow(name: String, hasPicked: Bool) -> some View {
@@ -192,6 +221,30 @@ struct QRGridView: View {
             Text(hasPicked ? "Picked" : "Waiting")
                 .font(AppTypography.caption)
                 .foregroundStyle(hasPicked ? AppColor.success : AppColor.secondaryLabel)
+        }
+    }
+
+    private func pickStatusRow(player: PlayerSlot) -> some View {
+        let held = viewModel.nameIsHeld(player.id)
+        let status = player.hasOpenedCard ? "Picked" : (held ? "On a phone" : "Waiting")
+        let active = player.hasOpenedCard || held
+        return HStack(spacing: 10) {
+            Image(systemName: player.hasOpenedCard ? "checkmark.circle.fill" : (held ? "iphone" : "circle"))
+                .foregroundStyle(active ? AppColor.success : AppColor.secondaryLabel)
+            Text(player.displayName)
+                .font(AppTypography.body)
+                .foregroundStyle(active ? AppColor.label : AppColor.secondaryLabel)
+            Spacer()
+            if held || player.hasOpenedCard {
+                Button("Give back") {
+                    viewModel.playerPendingGiveBack = player
+                }
+                .font(AppTypography.caption)
+                .foregroundStyle(AppColor.accent)
+            }
+            Text(status)
+                .font(AppTypography.caption)
+                .foregroundStyle(active ? AppColor.success : AppColor.secondaryLabel)
         }
     }
 }
